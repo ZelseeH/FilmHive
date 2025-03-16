@@ -1,0 +1,133 @@
+
+-- 📌 Filmy (Movies)
+CREATE TABLE Movies (
+MovieID INTEGER PRIMARY KEY AUTOINCREMENT,
+Title TEXT NOT NULL,
+ReleaseDate DATE NOT NULL, -- Konkretny dzień premiery
+Description TEXT,
+PosterURL TEXT
+);
+
+-- 📌 Gatunki filmów (Genres)
+CREATE TABLE Genres (
+GenreID INTEGER PRIMARY KEY AUTOINCREMENT,
+GenreName TEXT UNIQUE NOT NULL
+);
+
+-- 📌 Połączenie filmów i gatunków (MoviesGenres)
+CREATE TABLE MoviesGenres (
+MovieID INTEGER NOT NULL,
+GenreID INTEGER NOT NULL,
+PRIMARY KEY (MovieID, GenreID),
+FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
+FOREIGN KEY (GenreID) REFERENCES Genres(GenreID)
+);
+
+-- 📌 Użytkownicy (Users) z rolami
+CREATE TABLE Users (
+UserID INTEGER PRIMARY KEY AUTOINCREMENT,
+Username TEXT UNIQUE NOT NULL,
+Email TEXT UNIQUE NOT NULL,
+PasswordHash TEXT NOT NULL,
+Role INTEGER DEFAULT 3 CHECK (Role IN (1, 2, 3)), -- 1 = Główny Admin, 2 = Admin, 3 = Użytkownik
+RegistrationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 📌 Oceny filmów (Ratings) – użytkownik ocenia film od 0 do 10
+CREATE TABLE Ratings (
+RatingID INTEGER PRIMARY KEY AUTOINCREMENT,
+UserID INTEGER NOT NULL,
+MovieID INTEGER NOT NULL,
+Rating INTEGER CHECK (Rating BETWEEN 0 AND 10) NOT NULL,
+RatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (UserID) REFERENCES Users(UserID),
+FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
+UNIQUE(UserID, MovieID) -- Każdy użytkownik może ocenić dany film tylko raz
+);
+
+-- 📌 Komentarze (Comments) – opinie użytkowników
+CREATE TABLE Comments (
+CommentID INTEGER PRIMARY KEY AUTOINCREMENT,
+UserID INTEGER NOT NULL,
+MovieID INTEGER NOT NULL,
+CommentText TEXT NOT NULL,
+CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (UserID) REFERENCES Users(UserID),
+FOREIGN KEY (MovieID) REFERENCES Movies(MovieID)
+);
+
+-- 📌 Ulubione filmy (FavoriteMovies) – serduszko ❤️
+CREATE TABLE FavoriteMovies (
+UserID INTEGER NOT NULL,
+MovieID INTEGER NOT NULL,
+PRIMARY KEY (UserID, MovieID),
+FOREIGN KEY (UserID) REFERENCES Users(UserID),
+FOREIGN KEY (MovieID) REFERENCES Movies(MovieID)
+);
+
+-- 📌 Chcę obejrzeć (Watchlist) – lista filmów do obejrzenia ⏳
+CREATE TABLE Watchlist (
+UserID INTEGER NOT NULL,
+MovieID INTEGER NOT NULL,
+PRIMARY KEY (UserID, MovieID),
+FOREIGN KEY (UserID) REFERENCES Users(UserID),
+FOREIGN KEY (MovieID) REFERENCES Movies(MovieID)
+);
+
+-- 📌 Aktorzy (Actors)
+CREATE TABLE Actors (
+ActorID INTEGER PRIMARY KEY AUTOINCREMENT,
+ActorName TEXT UNIQUE NOT NULL,
+BirthDate DATE,
+BirthPlace TEXT,
+Biography TEXT
+);
+
+-- 📌 Połączenie aktorów i filmów (MovieActors)
+CREATE TABLE MovieActors (
+MovieID INTEGER NOT NULL,
+ActorID INTEGER NOT NULL,
+MovieRole TEXT,
+PRIMARY KEY (MovieID, ActorID),
+FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
+FOREIGN KEY (ActorID) REFERENCES Actors(ActorID)
+);
+
+-- 📌 Reżyserzy (Directors)
+CREATE TABLE Directors (
+DirectorID INTEGER PRIMARY KEY AUTOINCREMENT,
+DirectorName TEXT UNIQUE NOT NULL,
+BirthDate DATE,
+BirthPlace TEXT,
+Biography TEXT
+);
+
+-- 📌 Połączenie reżyserów i filmów (MovieDirectors)
+CREATE TABLE MovieDirectors (
+MovieID INTEGER NOT NULL,
+DirectorID INTEGER NOT NULL,
+PRIMARY KEY (MovieID, DirectorID),
+FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
+FOREIGN KEY (DirectorID) REFERENCES Directors(DirectorID)
+);
+
+-- 📌 Rekomendacje filmów (Recommendations) – generowane przez algorytm
+CREATE TABLE Recommendations (
+RecommendationID INTEGER PRIMARY KEY AUTOINCREMENT,
+UserID INTEGER NOT NULL,
+MovieID INTEGER NOT NULL,
+Score REAL CHECK (Score BETWEEN 0 AND 1), -- Pewność rekomendacji (np. 0.85 = 85%)
+AlgorithmUsed TEXT, -- Jaki algorytm wygenerował rekomendację
+CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (UserID) REFERENCES Users(UserID),
+FOREIGN KEY (MovieID) REFERENCES Movies(MovieID)
+);
+
+-- 📌 Tabela aktywności użytwkowników (Recommendations) 
+CREATE TABLE UserActivityLogs (
+    LogID INTEGER PRIMARY KEY AUTOINCREMENT,
+    UserID INTEGER NOT NULL,
+    Activity TEXT NOT NULL,
+    ActivityTimestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
