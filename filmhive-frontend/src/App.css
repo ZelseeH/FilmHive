@@ -1,16 +1,28 @@
+html, body, #root, .App {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .App {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1; /* Dzięki temu main-content rozciąga się, a footer nie przykleja się do ostatniego diva */
+}
+
+.footer {
+  background-color: #111;
+  color: #fff;
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+  padding: 15px 0;
+  font-size: 14px;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto; /* Footer zawsze na dole */
 }
 
 .App-header {
@@ -22,6 +34,17 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
 }
 
 .App-link {

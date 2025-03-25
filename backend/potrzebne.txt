@@ -1,0 +1,4 @@
+Flask-JWT-Extended 
+Celery + Redis
+Logging
+Blueprinty 

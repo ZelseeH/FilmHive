@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask import url_for
 
 # Inicjalizacja aplikacji Flask
 app = Flask(__name__)
@@ -81,6 +82,47 @@ def update_genre(id):
     db.session.commit()
 
     return jsonify(genre.serialize()), 200
+
+
+# Model filmów (Movie)
+class Movie(db.Model):
+    __tablename__ = 'movies'
+    movie_id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    release_date = db.Column(db.Date)
+    description = db.Column(db.Text)
+    poster_url = db.Column(db.String(255))
+    duration_minutes = db.Column(db.Integer)
+    country = db.Column(db.String(100))
+    original_language = db.Column(db.String(100))
+
+    def serialize(self):
+        return {
+            "id": self.movie_id,
+            "title": self.title,
+            "release_date": self.release_date.isoformat() if self.release_date else None,
+            "description": self.description,
+            "poster_url": url_for('static', filename=f'posters/{self.poster_url}', _external=True) if self.poster_url else None,
+            "duration_minutes": self.duration_minutes,
+            "country": self.country,
+            "original_language": self.original_language
+        }
+# Endpoint do pobierania wszystkich filmów
+@app.route('/movies', methods=['GET'])
+def get_movies():
+    movies = Movie.query.all()
+    return jsonify([movie.serialize() for movie in movies])
+
+# Endpoint do pobierania szczegółów konkretnego filmu
+@app.route('/movies/<int:id>', methods=['GET'])
+def get_movie(id):
+    movie = Movie.query.get(id)
+    
+    if not movie:
+        return jsonify({"error": "Film o podanym ID nie istnieje"}), 404
+        
+    return jsonify(movie.serialize())
+
 
 # Uruchomienie serwera
 if __name__ == '__main__':

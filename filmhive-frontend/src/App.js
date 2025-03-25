@@ -1,10 +1,14 @@
 import React from 'react';
-import Genres from './components/Genres/genres';
-
+import Navbar from './components/Navbar/Navbar.jsx';
+import MainContent from './components/MainContent/MainContent.jsx';
+import Footer from './components/Footer/Footer.jsx'; // Importujemy Footer
+import "./App.css";
 function App() {
   return (
     <div className="App">
-      <Genres />
+      <Navbar />
+      <MainContent />
+      <Footer /> 
     </div>
   );
 }

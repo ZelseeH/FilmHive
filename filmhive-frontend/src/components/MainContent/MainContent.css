@@ -1,0 +1,532 @@
+/* MainContent.css */
+
+/* Define a CSS variable for the navbar height */
+:root {
+    --navbar-height: 60px; /* Adjust this value based on your navbar's actual height */
+  }
+  
+  /* Reset and base styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Arial', sans-serif;
+    color: #fff;
+  }
+  
+  /* Main content container */
+  .main-content {
+    width: 100%;
+    min-height: 100vh;
+    max-width: 1100px; /* Set max-width to 1100px */
+    margin: 0 auto; /* Center the content with auto margins */
+    position: relative;
+    background-color: transparent; /* Remove black background to avoid overriding child elements */
+    padding-top: var(--navbar-height); /* Add padding to account for the navbar */
+  }
+  
+  /* Featured movie section */
+  .featured-movie {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 20px; /* Reduced margin-top since padding-top on .main-content handles the navbar */
+    margin-bottom: 30px;
+  }
+  
+  .featured-movie-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.5);
+    z-index: 1;
+  }
+  
+  .featured-movie-backdrop::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+  }
+  
+  .featured-movie-content {
+    position: absolute;
+    bottom: 15%;
+    left: 0;
+    width: 60%;
+    max-width: 600px;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 30px;
+    box-sizing: border-box;
+    z-index: 2;
+  }
+  
+  .featured-movie-title {
+    font-size: 48px;
+    font-weight: bold;
+    margin: 0 0 15px 0;
+    text-transform: uppercase;
+  }
+  
+  .featured-movie-info {
+    display: flex;
+    gap: 15px;
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+  
+  .featured-movie-info span {
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .featured-movie-description {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #ddd;
+    max-height: 5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+  }
+  
+  /* Movies section */
+  .movies-section {
+    position: relative;
+    margin-top: -100px; /* Negative margin to make the slider overlap the featured-movie section */
+    z-index: 3; /* Ensure the slider is above the featured-movie backdrop */
+    padding: 20px 40px; /* Padding for the slider content */
+    border-radius: 10px; /* Rounded corners for the slider section */
+  }
+  .popular-movies-title {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: bold;
+    z-index: 3;
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: #fff;
+    text-align: center;
+    opacity: 0.8;
+  }
+  
+  .movies-section h2 {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: bold;
+    z-index: 3;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: #fff;
+  }
+  
+  .movies-slider-container {
+    position: relative;
+    width: 100%;
+    padding: 0 50px; /* Add padding to ensure arrows don't overlap content */
+    top: -50px;
+  }
+  
+  .movies-slider {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 20px 0;
+    scrollbar-width: none; /* Firefox */
+  }
+  
+  .movies-slider::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+  
+  .movie-card {
+    flex: 0 0 200px;
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+  }
+  
+  .movie-card.active {
+    border: 2px solid #ffd700;
+  }
+  
+  .movie-poster {
+    position: relative;
+    width: 100%;
+    height: 300px;
+  }
+  
+  .movie-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .no-poster {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
+  }
+  
+  .movie-info {
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .movie-info h3 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000; /* Black text to contrast with white background */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .eye-icon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  
+  .position-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #ffcc00;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 2;
+  }
+  
+  .star-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #ffcc00;
+    font-size: 20px;
+    z-index: 2;
+  }
+  
+  /* Slider arrows */
+  .slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 4;
+    transition: background-color 0.3s;
+  }
+  
+  .slider-arrow:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+  
+  .left-arrow {
+    left: 0;
+  }
+  
+  .right-arrow {
+    right: 0;
+  }
+  
+  /* Loading and error states */
+  .loading,
+  .error {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #fff;
+  }
+  
+  .error {
+    color: #ff4444;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 1100px) {
+    .main-content {
+      padding: 0 20px; /* Add padding on smaller screens to avoid content touching the edges */
+      padding-top: var(--navbar-height); /* Ensure padding accounts for navbar */
+    }
+  
+    .movies-section {
+      padding: 20px 20px; /* Adjust padding for the slider on smaller screens */
+    }
+  
+    .movies-slider-container {
+      padding: 0 40px; /* Adjust padding for arrows */
+    }
+  }
+  
+  @media (max-width: 768px) {
+    :root {
+      --navbar-height: 50px; /* Adjust navbar height for smaller screens if needed */
+    }
+  
+    .main-content {
+      padding-top: var(--navbar-height); /* Adjust padding for navbar */
+    }
+  
+    .featured-movie {
+      height: 400px;
+      margin-top: 20px; /* Ensure it stays below the navbar */
+    }
+  
+    .featured-movie-content {
+      width: 90%;
+      max-width: none;
+      padding: 20px;
+      bottom: 20%;
+    }
+  
+    .featured-movie-title {
+      font-size: 32px;
+    }
+  
+    .featured-movie-info {
+      font-size: 14px;
+      gap: 10px;
+    }
+  
+    .featured-movie-description {
+      font-size: 14px;
+      max-height: 4em;
+
+    }
+  
+    .movies-section {
+      margin-top: -80px; /* Adjust overlap for smaller screens */
+    }
+  
+    .movies-section h2 {
+      font-size: 24px;
+      padding: 8px 16px;
+    }
+  
+    .movie-card {
+      flex: 0 0 150px;
+    }
+  
+    .movie-poster {
+      height: 225px;
+    }
+  
+    .no-poster {
+      height: 225px;
+      font-size: 12px;
+    }
+  
+    .movie-info h3 {
+      font-size: 14px;
+    }
+  
+    .slider-arrow {
+      width: 35px;
+      height: 35px;
+      font-size: 18px;
+    }
+  
+    .movies-slider-container {
+      padding: 0 40px;
+      top: -50px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    :root {
+      --navbar-height: 50px; /* Adjust navbar height for smaller screens if needed */
+    }
+  
+    .main-content {
+      padding-top: var(--navbar-height);
+    }
+  
+    .featured-movie {
+      height: 300px;
+      margin-top: 10px;
+    }
+  
+    .featured-movie-content {
+      padding: 15px;
+      bottom: 20%;
+    }
+  
+    .featured-movie-title {
+      font-size: 24px;
+    }
+  
+    .featured-movie-info {
+      font-size: 12px;
+      gap: 8px;
+    }
+  
+    .featured-movie-description {
+      font-size: 12px;
+      max-height: 3em;
+
+    }
+  
+    .movies-section {
+      margin-top: -60px; /* Further adjust overlap for very small screens */
+      padding: 15px 15px;
+    }
+  
+    .movies-section h2 {
+      font-size: 20px;
+      padding: 6px 12px;
+    }
+  
+    .movie-card {
+      flex: 0 0 120px;
+    }
+  
+    .movie-poster {
+      height: 180px;
+    }
+  
+    .no-poster {
+      height: 180px;
+      font-size: 10px;
+    }
+  
+    .movie-info h3 {
+      font-size: 12px;
+    }
+  
+    .slider-arrow {
+      width: 30px;
+      height: 30px;
+      font-size: 16px;
+    }
+  
+    .movies-slider-container {
+      padding: 0 30px;
+    }
+  }
+  
+  @media (max-width: 360px) {
+    :root {
+      --navbar-height: 50px; /* Adjust navbar height for smaller screens if needed */
+    }
+  
+    .main-content {
+      padding-top: var(--navbar-height);
+    }
+  
+    .featured-movie {
+      height: 250px;
+      margin-top: 10px;
+    }
+  
+    .featured-movie-content {
+      padding: 10px;
+      bottom: 20%;
+
+    }
+  
+    .featured-movie-title {
+      font-size: 20px;
+    }
+  
+    .featured-movie-info {
+      font-size: 10px;
+      gap: 6px;
+    }
+  
+    .featured-movie-description {
+      font-size: 10px;
+      max-height: 3em;
+    }
+  
+    .movies-section {
+      margin-top: -50px;
+      padding: 10px 10px;
+    }
+  
+    .movies-section h2 {
+      font-size: 18px;
+      padding: 5px 10px;
+    }
+  
+    .movie-card {
+      flex: 0 0 100px;
+    }
+  
+    .movie-poster {
+      height: 150px;
+    }
+  
+    .no-poster {
+      height: 150px;
+      font-size: 8px;
+    }
+  
+    .movie-info h3 {
+      font-size: 10px;
+    }
+  
+    .slider-arrow {
+      width: 25px;
+      height: 25px;
+      font-size: 14px;
+    }
+  
+    .movies-slider-container {
+      padding: 0 25px;
+    }
+  }
