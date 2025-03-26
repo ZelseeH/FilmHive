@@ -1,15 +1,24 @@
 import React from 'react';
-import Navbar from './components/Navbar/Navbar.jsx';
-import MainContent from './components/MainContent/MainContent.jsx';
-import Footer from './components/Footer/Footer.jsx'; // Importujemy Footer
-import "./App.css";
+import { Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import Navbar from './components/Navbar/Navbar';
+import Footer from './components/Footer/Footer'; // Dodaj import Footer
+import HomePage from './pages/HomePage';
+
 function App() {
   return (
-    <div className="App">
-      <Navbar />
-      <MainContent />
-      <Footer /> 
-    </div>
+    <AuthProvider>
+      <div className="App">
+        <Navbar />
+        <div className="content">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            {/* Tutaj będą dodatkowe ścieżki */}
+          </Routes>
+        </div>
+        <Footer /> {/* Dodaj komponent Footer */}
+      </div>
+    </AuthProvider>
   );
 }
 
