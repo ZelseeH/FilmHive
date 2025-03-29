@@ -18,7 +18,7 @@ const MainContent = () => {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const response = await fetch('http://localhost:5000/movies');
+        const response = await fetch('http://localhost:5000/api/movies');
         if (!response.ok) {
           throw new Error('Nie udało się pobrać danych filmów');
         }

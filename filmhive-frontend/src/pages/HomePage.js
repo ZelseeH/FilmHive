@@ -7,7 +7,6 @@ const HomePage = () => {
   return (
     <div className="home-page">
       <MainContent />
-      {/* Tutaj możesz dodać inne komponenty strony głównej */}
     </div>
   );
 };

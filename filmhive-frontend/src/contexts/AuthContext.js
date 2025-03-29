@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,6 +11,9 @@ export const AuthProvider = ({ children }) => {
 
   // Sprawdzenie sesji przy ładowaniu strony
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
     const checkAuthStatus = async () => {
       console.log("Checking auth status...");
       const token = localStorage.getItem('token');
@@ -19,41 +21,41 @@ export const AuthProvider = ({ children }) => {
       
       if (token) {
         try {
-          console.log("Token to be sent:", token);
-          console.log("Authorization header:", `Bearer ${token}`);
-          
-          console.log("Sending request to /api/auth/profile");
-          const response = await fetch('http://localhost:5000/api/auth/profile', {
+          console.log("Sending request to /api/user/profile");
+          const response = await fetch('http://localhost:5000/api/user/profile', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`
-            }
+            },
+            signal: controller.signal
           });
-          
-          console.log("Profile response status:", response.status);
-          
-          if (response.status === 422 || response.status === 401) {
-            const errorData = await response.json();
-            console.error("Token validation error:", errorData);
-            localStorage.removeItem('token');
-          } else if (response.ok) {
+
+          if (!isMounted) return;
+
+          if (response.ok) {
             const userData = await response.json();
             console.log("User data received:", userData);
             setUser(userData);
-          } else {
-            console.log("Invalid token or error response");
+          } else if (response.status === 401 || response.status === 403) {
+            console.error("Token validation failed");
             localStorage.removeItem('token');
           }
         } catch (error) {
-          console.error('Error checking authentication status:', error);
-          localStorage.removeItem('token');
+          if (error.name !== 'AbortError') {
+            console.error('Error checking authentication status:', error);
+          }
         }
       }
-      
-      setLoading(false);
+
+      if (isMounted) setLoading(false);
     };
-    
+
     checkAuthStatus();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   // Funkcja logowania
@@ -65,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     closeLoginModal();
     
     // Odświeżenie strony po zalogowaniu
-    navigate(0); // Przekazanie 0 do navigate powoduje odświeżenie aktualnej strony
+    navigate(0); // Odświeżenie aktualnej strony
   };
 
   // Funkcja wylogowania
@@ -73,7 +75,7 @@ export const AuthProvider = ({ children }) => {
     console.log("Logout function called");
     localStorage.removeItem('token');
     setUser(null);
-    
+
     // Odświeżenie strony po wylogowaniu
     navigate(0); // Odświeżenie aktualnej strony
   };

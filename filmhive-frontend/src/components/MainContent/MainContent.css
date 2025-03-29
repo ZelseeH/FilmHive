@@ -107,13 +107,12 @@
     -webkit-box-orient: vertical;
   }
   
-  /* Movies section */
   .movies-section {
     position: relative;
-    margin-top: -100px; /* Negative margin to make the slider overlap the featured-movie section */
-    z-index: 3; /* Ensure the slider is above the featured-movie backdrop */
-    padding: 20px 40px; /* Padding for the slider content */
-    border-radius: 10px; /* Rounded corners for the slider section */
+    margin-top: -100px; 
+    z-index: 3; 
+    padding: 20px 20px; 
+    border-radius: 10px; 
   }
   .popular-movies-title {
     position: absolute;
@@ -147,21 +146,22 @@
   .movies-slider-container {
     position: relative;
     width: 100%;
-    padding: 0 50px; /* Add padding to ensure arrows don't overlap content */
+    padding: 0 50px; 
     top: -50px;
+    margin: 0 auto;
   }
   
   .movies-slider {
     display: flex;
-    gap: 20px;
+    gap: 15px;
     overflow-x: auto;
     scroll-behavior: smooth;
     padding: 20px 0;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none; 
   }
   
   .movies-slider::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Edge */
+    display: none;
   }
   
   .movie-card {
@@ -268,8 +268,8 @@
     justify-content: center;
     cursor: pointer;
     font-size: 20px;
-    z-index: 4;
-    transition: background-color 0.3s;
+    z-index: 5; /* Ensure it appears above the slider content */
+    transition: background-color 0.3s, transform 0.2s ease;
   }
   
   .slider-arrow:hover {
@@ -277,13 +277,15 @@
   }
   
   .left-arrow {
-    left: 0;
+    left: 20px; /* Adjust this value to position it slightly over the first slide */
   }
   
   .right-arrow {
-    right: 0;
+    right: 20px; /* Adjust this value to position it slightly over the last slide */
   }
-  
+  .slider-arrow:hover {
+    transform: translateY(-50%) scale(1.1);
+  }
   /* Loading and error states */
   .loading,
   .error {
@@ -297,34 +299,37 @@
     color: #ff4444;
   }
   
-  /* Responsive adjustments */
+
   @media (max-width: 1100px) {
     .main-content {
-      padding: 0 20px; /* Add padding on smaller screens to avoid content touching the edges */
-      padding-top: var(--navbar-height); /* Ensure padding accounts for navbar */
+      padding: 0 20px; 
+      padding-top: var(--navbar-height);
     }
   
     .movies-section {
-      padding: 20px 20px; /* Adjust padding for the slider on smaller screens */
+      padding: 20px 0px; 
     }
   
     .movies-slider-container {
-      padding: 0 40px; /* Adjust padding for arrows */
+      padding: 0 40px; 
     }
   }
   
   @media (max-width: 768px) {
     :root {
-      --navbar-height: 50px; /* Adjust navbar height for smaller screens if needed */
+      --navbar-height: 50px; 
     }
-  
+    .popular-movies-title {
+      font-size: 24px;
+    }
     .main-content {
-      padding-top: var(--navbar-height); /* Adjust padding for navbar */
+      padding: 0 20px;
+      padding-top: var(--navbar-height); 
     }
   
     .featured-movie {
       height: 400px;
-      margin-top: 20px; /* Ensure it stays below the navbar */
+      margin-top: 20px; 
     }
   
     .featured-movie-content {
@@ -350,7 +355,7 @@
     }
   
     .movies-section {
-      margin-top: -80px; /* Adjust overlap for smaller screens */
+      margin-top: -80px; 
     }
   
     .movies-section h2 {
@@ -389,10 +394,13 @@
   
   @media (max-width: 480px) {
     :root {
-      --navbar-height: 50px; /* Adjust navbar height for smaller screens if needed */
+      --navbar-height: 55px; 
     }
-  
+    .popular-movies-title {
+      font-size: 18px;
+    }
     .main-content {
+      padding: 0 20px;
       padding-top: var(--navbar-height);
     }
   
@@ -422,8 +430,8 @@
     }
   
     .movies-section {
-      margin-top: -60px; /* Further adjust overlap for very small screens */
-      padding: 15px 15px;
+      margin-top: -60px;
+      padding: 15px 0px;
     }
   
     .movies-section h2 {
@@ -461,10 +469,13 @@
   
   @media (max-width: 360px) {
     :root {
-      --navbar-height: 50px; /* Adjust navbar height for smaller screens if needed */
+      --navbar-height: 55px;
     }
-  
+    .popular-movies-title {
+      font-size: 15px;
+    }
     .main-content {
+      padding: 0 20px;
       padding-top: var(--navbar-height);
     }
   
@@ -495,7 +506,7 @@
   
     .movies-section {
       margin-top: -50px;
-      padding: 10px 10px;
+      padding: 10px 0px;
     }
   
     .movies-section h2 {

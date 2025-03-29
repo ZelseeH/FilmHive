@@ -74,7 +74,6 @@ const LoginModal = ({ isOpen, onClose }) => {
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode);
     setError('');
-    // Resetuj pola formularza przy przełączaniu trybu
     setUsername('');
     setEmail('');
     setPassword('');
