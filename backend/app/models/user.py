@@ -6,6 +6,7 @@ class User(Base):
 
     user_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=True)  # Dodane pole name
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[int] = mapped_column(Integer, default=3, nullable=False)  # 1=admin, 2=moderator, 3=user
@@ -24,7 +25,7 @@ class User(Base):
     watchlist: Mapped[list["Watchlist"]] = relationship("Watchlist", back_populates="user")
 
     def __repr__(self):
-        return f"<User(id={self.user_id}, username='{self.username}', email='{self.email}', role={self.role})>"
+        return f"<User(id={self.user_id}, username='{self.username}', name='{self.name}', email='{self.email}', role={self.role})>"
     
     def set_password(self, password):
         """Ustawia zahashowane hasło dla użytkownika"""
@@ -54,6 +55,7 @@ class User(Base):
         result = {
             "id": self.user_id,
             "username": self.username,
+            "name": self.name,  # Dodane pole name w serializacji
             "email": self.email,
             "role": self.role,
             "registration_date": self.registration_date.isoformat() if self.registration_date else None,

@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const navigate = useNavigate(); // Hook do nawigacji
+  const navigate = useNavigate();
 
   // Sprawdzenie sesji przy ładowaniu strony
   useEffect(() => {
@@ -66,8 +66,8 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     closeLoginModal();
     
-    // Odświeżenie strony po zalogowaniu
-    navigate(0); // Odświeżenie aktualnej strony
+    // Przekierowanie na stronę główną po zalogowaniu
+    navigate('/');
   };
 
   // Funkcja wylogowania
@@ -76,8 +76,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setUser(null);
 
-    // Odświeżenie strony po wylogowaniu
-    navigate(0); // Odświeżenie aktualnej strony
+    // Przekierowanie na stronę główną po wylogowaniu
+    navigate('/');
   };
 
   // Funkcje do zarządzania modalem logowania

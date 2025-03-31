@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.services.database import db
+from app.services.user_service import change_user_password
 
 auth_bp = Blueprint('auth', __name__)
 user_repo = UserRepository(db.session)
@@ -72,3 +73,41 @@ def login():
         "access_token": access_token,
         "user": user.serialize()
     }), 200
+
+@auth_bp.route('/change-password', methods=['POST'])
+@jwt_required()
+def change_password():
+    try:
+        user_id = int(get_jwt_identity())
+        data = request.get_json()
+        
+        if not data or 'current_password' not in data or 'new_password' not in data:
+            return jsonify({"error": "Brakujące dane: wymagane są obecne hasło i nowe hasło"}), 400
+        
+        result = change_user_password(user_id, data['current_password'], data['new_password'])
+        
+        if not result:
+            return jsonify({"error": "Nieprawidłowe obecne hasło"}), 401
+        
+        return jsonify({"message": "Hasło zostało zmienione pomyślnie"}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": "Wystąpił nieoczekiwany błąd"}), 500
+
+@auth_bp.route('/verify-token', methods=['GET'])
+@jwt_required()
+def verify_token():
+    try:
+        user_id = int(get_jwt_identity())
+        user = user_repo.get_by_id(user_id)
+        
+        if not user:
+            return jsonify({"error": "Użytkownik nie znaleziony"}), 404
+        
+        return jsonify({
+            "message": "Token jest ważny",
+            "user": user.serialize()
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
