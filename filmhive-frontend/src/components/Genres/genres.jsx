@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './genre.css';
 import GenrePopup from './GenrePopup';
-import AddGenrePopup from './AddGenrePopup'; // Nowy import
+import AddGenrePopup from './AddGenrePopup';
 
 const Genres = () => {
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedGenre, setSelectedGenre] = useState(null);
-  const [showAddPopup, setShowAddPopup] = useState(false); // Stan dla popupu dodawania
+  const [showAddPopup, setShowAddPopup] = useState(false);
 
   useEffect(() => {
     const fetchGenres = async () => {
@@ -43,7 +43,7 @@ const Genres = () => {
   };
 
   const handleAddGenre = (newGenre) => {
-    setGenres([...genres, newGenre]); // Dodajemy nowy gatunek do listy
+    setGenres([...genres, newGenre]);
   };
 
   const handleEditGenre = (updatedGenre) => {
@@ -79,7 +79,6 @@ const Genres = () => {
         ))}
       </div>
 
-      {/* Popup do edycji/usuwania */}
       {selectedGenre && (
         <GenrePopup
           genre={selectedGenre}
@@ -89,7 +88,6 @@ const Genres = () => {
         />
       )}
 
-      {/* Popup do dodawania */}
       {showAddPopup && (
         <AddGenrePopup
           onClose={closeAddPopup}

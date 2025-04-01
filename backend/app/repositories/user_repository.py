@@ -1,5 +1,6 @@
 from app.models.user import User
 
+
 class UserRepository:
     def __init__(self, session):
         self.session = session
@@ -10,10 +11,12 @@ class UserRepository:
 
     def get_by_username_or_email(self, identifier):
         """Pobiera użytkownika na podstawie nazwy użytkownika lub emaila."""
-        return self.session.query(User).filter(
-            (User.username == identifier) | (User.email == identifier)
-        ).first()
-        
+        return (
+            self.session.query(User)
+            .filter((User.username == identifier) | (User.email == identifier))
+            .first()
+        )
+
     def get_by_username(self, username):
         """Pobiera użytkownika na podstawie nazwy użytkownika."""
         return self.session.query(User).filter(User.username == username).first()
@@ -35,34 +38,30 @@ class UserRepository:
         if not user:
             return None
 
-        # Aktualizacja pól użytkownika
-        if 'username' in data and data['username'] != user.username:
-            existing_user = self.get_by_username_or_email(data['username'])
+        if "username" in data and data["username"] != user.username:
+            existing_user = self.get_by_username_or_email(data["username"])
             if existing_user and existing_user.user_id != user.user_id:
                 raise ValueError("Nazwa użytkownika jest już zajęta")
-            user.username = data['username']
+            user.username = data["username"]
 
-        if 'email' in data and data['email'] != user.email:
-            existing_user = self.get_by_username_or_email(data['email'])
+        if "email" in data and data["email"] != user.email:
+            existing_user = self.get_by_username_or_email(data["email"])
             if existing_user and existing_user.user_id != user.user_id:
                 raise ValueError("Email jest już zajęty")
-            user.email = data['email']
+            user.email = data["email"]
 
-        # Dodana obsługa pola name
-        if 'name' in data:
-            user.name = data['name']
+        if "name" in data:
+            user.name = data["name"]
 
-        if 'bio' in data:
-            user.bio = data['bio']
+        if "bio" in data:
+            user.bio = data["bio"]
 
-        if 'profile_picture' in data:
-            user.profile_picture = data['profile_picture']
+        if "profile_picture" in data:
+            user.profile_picture = data["profile_picture"]
 
-        # Aktualizacja innych pól, jeśli są dostępne w data
-        if 'is_active' in data:
-            user.is_active = data['is_active']
+        if "is_active" in data:
+            user.is_active = data["is_active"]
 
-        # Zapisz zmiany
         self.session.commit()
         return user
 

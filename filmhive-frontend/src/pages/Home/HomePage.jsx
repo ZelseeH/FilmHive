@@ -1,7 +1,6 @@
-// src/pages/HomePage.js
 import React from 'react';
 import MainContent from '../../components/MainContent/MainContent';
-import styles from './HomePage.module.css'; // Zmiana importu na moduł CSS
+import styles from './HomePage.module.css';
 
 const HomePage = () => {
   return (

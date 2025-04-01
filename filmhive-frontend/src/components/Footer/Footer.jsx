@@ -1,9 +1,9 @@
 import React from "react";
-import styles from "./Footer.module.css"; // Zmiana importu na moduł CSS
+import styles from "./Footer.module.css";
 
 const Footer = () => {
   return (
-    <footer className={styles.footer}> {/* Użycie styles.footer zamiast "footer" */}
+    <footer className={styles.footer}>
       <p>© {new Date().getFullYear()} FilmHive. Wszelkie prawa zastrzeżone.</p>
     </footer>
   );

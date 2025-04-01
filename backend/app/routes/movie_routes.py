@@ -36,12 +36,16 @@ def get_all_movies_list():
 def get_movie(id):
     """Zwraca szczegóły filmu na podstawie ID."""
     try:
-        movie = get_movie_by_id(id)
+        # Sprawdzamy, czy żądanie zawiera parametr include_roles
+        include_roles = request.args.get('include_roles', 'false').lower() == 'true'
+        
+        movie = get_movie_by_id(id, include_actors_roles=include_roles)
         if not movie:
             return jsonify({"error": "Film o podanym ID nie istnieje"}), 404
         return jsonify(movie), 200
     except Exception as e:
         return jsonify({"error": "Wystąpił błąd podczas pobierania filmu", "details": str(e)}), 500
+
 
 @movies_bp.route('/', methods=['POST'])
 def add_movie():

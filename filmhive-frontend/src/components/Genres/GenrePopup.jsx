@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './genre.css'; // Używamy tych samych stylów
+import './genre.css';
 
 const GenrePopup = ({ genre, onClose, onEdit, onDelete }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [isConfirmingDelete, setIsConfirmingDelete] = useState(false); // Nowy stan dla potwierdzenia usunięcia
+    const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
     const [newGenreName, setNewGenreName] = useState(genre.name);
 
     const handleEditGenre = async () => {
@@ -17,7 +17,7 @@ const GenrePopup = ({ genre, onClose, onEdit, onDelete }) => {
             const response = await axios.put(`http://localhost:5000/genres/${genre.id}`, {
                 name: newGenreName,
             });
-            onEdit(response.data); // Przekazujemy zaktualizowany gatunek do rodzica
+            onEdit(response.data);
         } catch (err) {
             alert('Nie udało się edytować gatunku.');
         }
@@ -26,18 +26,18 @@ const GenrePopup = ({ genre, onClose, onEdit, onDelete }) => {
     const handleDeleteGenre = async () => {
         try {
             await axios.delete(`http://localhost:5000/genres/${genre.id}`);
-            onDelete(genre.id); // Przekazujemy ID usuniętego gatunku do rodzica
+            onDelete(genre.id);
         } catch (err) {
             alert('Nie udało się usunąć gatunku.');
         }
     };
 
     const startDeleteConfirmation = () => {
-        setIsConfirmingDelete(true); // Przełączamy na tryb potwierdzenia usunięcia
+        setIsConfirmingDelete(true);
     };
 
     const cancelDelete = () => {
-        setIsConfirmingDelete(false); // Wracamy do widoku domyślnego
+        setIsConfirmingDelete(false);
     };
 
     return (

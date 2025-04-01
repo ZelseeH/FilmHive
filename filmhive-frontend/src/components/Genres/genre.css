@@ -1,151 +1,148 @@
 /* Stylizacja ogólna dla całej aplikacji */
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-  }
-  
-  /* Stylizacja listy gatunków */
-  .genres-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 20px;
-    padding: 0 20px;
-  }
-  
-  .genre-item {
-    padding: 10px 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .genre-item:hover {
-    background-color: #e6e6e6;
-  }
-  
-  /* Stylizacja dla popupów (wspólna dla GenrePopup i AddGenrePopup) */
-  .popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-  }
-  
-  .popup-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-  }
-  
-  .popup-container h2 {
-    font-size: 1.5rem;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  .popup-container input {
-    padding: 12px;
-    margin-bottom: 15px;
-    width: calc(100% - 24px);
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-  }
-  
-  .popup-container input:focus {
-    border-color: #4caf50;
-    outline: none;
-  }
-  
-  /* Stylizacja przycisków w popupach i na liście */
-  button {
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-    margin: 5px;
-  }
-  
-  .add-genre-btn {
-    background-color: #4caf50;
-    color: #fff;
-  }
-  
-  .add-genre-btn:hover {
-    background-color: #45a049;
-  }
-  
-  .popup-container button.edit-btn {
-    background-color: #4caf50;
-    color: #fff;
-  }
-  
-  .popup-container button.edit-btn:hover {
-    background-color: #45a049;
-  }
-  
-  .popup-container button.delete-btn {
-    background-color: #f44336;
-    color: #fff;
-  }
-  
-  .popup-container button.delete-btn:hover {
-    background-color: #d32f2f;
-  }
-  
-  .popup-container button.cancel-btn {
-    background-color: #ccc;
-  }
-  
-  .popup-container button.cancel-btn:hover {
-    background-color: #b0b0b0;
-  }
-  
-  /* Stylizacja komunikatów */
-  .message {
-    margin: 15px 0;
-    font-size: 1rem;
-    text-align: center;
-  }
-  
-  .message.success {
-    color: #4caf50;
-  }
-  
-  .message.error {
-    color: #f44336;
-  }
-  
-  /* Styl dla potwierdzenia usunięcia w GenrePopup */
-  .delete-confirmation-text {
-    color: #f44336;
-    font-weight: bold;
-    margin-bottom: 20px;
-    font-size: 1.1rem;
-  }
-  
-  /* Stylizacja nagłówka w Genres */
-  h1 {
-    font-size: 2rem;
-    color: #333;
-    text-align: center;
-    margin: 20px 0;
-  }
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Stylizacja listy gatunków */
+.genres-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 0 20px;
+}
+
+.genre-item {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.genre-item:hover {
+  background-color: #e6e6e6;
+}
+
+/* Stylizacja dla popupów (wspólna dla GenrePopup i AddGenrePopup) */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.popup-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.popup-container h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.popup-container input {
+  padding: 12px;
+  margin-bottom: 15px;
+  width: calc(100% - 24px);
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.popup-container input:focus {
+  border-color: #4caf50;
+  outline: none;
+}
+
+/* Stylizacja przycisków w popupach i na liście */
+button {
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  margin: 5px;
+}
+
+.add-genre-btn {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.add-genre-btn:hover {
+  background-color: #45a049;
+}
+
+.popup-container button.edit-btn {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.popup-container button.edit-btn:hover {
+  background-color: #45a049;
+}
+
+.popup-container button.delete-btn {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.popup-container button.delete-btn:hover {
+  background-color: #d32f2f;
+}
+
+.popup-container button.cancel-btn {
+  background-color: #ccc;
+}
+
+.popup-container button.cancel-btn:hover {
+  background-color: #b0b0b0;
+}
+
+.message {
+  margin: 15px 0;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.message.success {
+  color: #4caf50;
+}
+
+.message.error {
+  color: #f44336;
+}
+
+.delete-confirmation-text {
+  color: #f44336;
+  font-weight: bold;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+
+h1 {
+  font-size: 2rem;
+  color: #333;
+  text-align: center;
+  margin: 20px 0;
+}

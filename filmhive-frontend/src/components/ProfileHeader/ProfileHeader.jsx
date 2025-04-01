@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import styles from './ProfileHeader.module.css'; // Zmiana importu na moduł CSS
+import styles from './ProfileHeader.module.css';
 
 const ProfileHeader = ({ profileData, isOwnProfile, onBioUpdate }) => {
   const [bio, setBio] = useState(profileData?.bio || '');
@@ -35,7 +35,6 @@ const ProfileHeader = ({ profileData, isOwnProfile, onBioUpdate }) => {
 
       if (response.ok) {
         setIsEditingBio(false);
-        // Wywołaj funkcję onBioUpdate, aby odświeżyć dane profilu
         if (onBioUpdate) {
           onBioUpdate();
         }
@@ -69,15 +68,15 @@ const ProfileHeader = ({ profileData, isOwnProfile, onBioUpdate }) => {
           <h2>{profileData?.username || ''}</h2>
         </div>
       </div>
-      
-      <div 
-        className={`${styles['profile-bio']} ${isOwnProfile ? styles.editable : ''}`} 
+
+      <div
+        className={`${styles['profile-bio']} ${isOwnProfile ? styles.editable : ''}`}
         onClick={!isEditingBio && isOwnProfile ? handleBioClick : undefined}
       >
         {isEditingBio ? (
           <>
-            <textarea 
-              value={bio} 
+            <textarea
+              value={bio}
               onChange={handleBioChange}
               placeholder="Kliknij, aby powiedzieć innym coś o sobie"
             />
@@ -94,7 +93,7 @@ const ProfileHeader = ({ profileData, isOwnProfile, onBioUpdate }) => {
           <p>{profileData?.bio || (isOwnProfile ? 'Kliknij, aby powiedzieć innym coś o sobie' : 'Użytkownik nie dodał jeszcze opisu.')}</p>
         )}
       </div>
-      
+
       <div className={styles['profile-footer']}>
         <p>Na FilmHive od {profileData?.registration_date ? new Date(profileData.registration_date).toLocaleDateString('pl-PL') : '31 lipca 2020'}</p>
       </div>

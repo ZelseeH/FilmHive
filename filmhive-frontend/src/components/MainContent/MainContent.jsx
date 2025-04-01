@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../contexts/AuthContext';
 import styles from './MainContent.module.css'; // Zmiana importu na moduł CSS
+import { Link } from 'react-router-dom';
+
+
 
 const MainContent = () => {
+  const { user, getToken } = useAuth();
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [userRatings, setUserRatings] = useState({});
   const sliderRef = useRef(null);
+
 
   const formatDuration = (durationMinutes) => {
     const hours = Math.floor(durationMinutes / 60);
@@ -15,6 +22,13 @@ const MainContent = () => {
     return hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
   };
 
+  const createSlug = (title) => {
+    return title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/--+/g, '-');
+  };
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -28,6 +42,27 @@ const MainContent = () => {
           setSelectedMovie(data[0]);
         }
         setLoading(false);
+
+        // Fetch user ratings
+        if (user) {
+          const token = getToken();
+          const ratingsPromises = data.map(movie =>
+            fetch(`http://localhost:5000/api/ratings/movies/${movie.id}/user-rating`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+              }
+            }).then(res => res.json())
+          );
+          const ratings = await Promise.all(ratingsPromises);
+          const ratingsMap = {};
+          ratings.forEach((rating, index) => {
+            if (rating && rating.rating !== undefined) {
+              ratingsMap[data[index].id] = rating.rating;
+            }
+          });
+          setUserRatings(ratingsMap);
+        }
       } catch (err) {
         setError(err.message);
         setLoading(false);
@@ -35,7 +70,8 @@ const MainContent = () => {
     };
 
     fetchMovies();
-  }, []);
+  }, [user, getToken]);
+
 
   const handleMovieSelect = (movie) => {
     setSelectedMovie(movie);
@@ -59,7 +95,7 @@ const MainContent = () => {
       <div className={styles.loading}>Ładowanie filmów...</div>
     </div>
   );
-  
+
   if (error) return (
     <div className={styles['page-container']}>
       <div className={styles.error}>Błąd: {error}</div>
@@ -78,20 +114,24 @@ const MainContent = () => {
               animate={{ opacity: 1, y: 0, transition: { duration: 0.5 } }}
               exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
             >
-              <h2 className={styles['popular-movies-title']}>FILMY <br/> Najpopularniejsze</h2>
+              <h2 className={styles['popular-movies-title']}>FILMY <br /> Najpopularniejsze</h2>
               <motion.div
                 className={styles['featured-movie-backdrop']}
-                style={{ backgroundImage: `url(${selectedMovie.poster_url})` }}
+                style={{ backgroundImage: `url(${selectedMovie?.poster_url || '/placeholder-poster.jpg'})` }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, transition: { duration: 0.5 } }}
               />
+
               <motion.div
                 className={styles['featured-movie-content']}
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0, transition: { duration: 0.5 } }}
                 exit={{ opacity: 0, x: 50, transition: { duration: 0.3 } }}
               >
-                <h1 className={styles['featured-movie-title']}>{selectedMovie.title}</h1>
+                <Link to={`/movie/details/${createSlug(selectedMovie.title)}`} state={{ movieId: selectedMovie.id }} className={styles['featured-movie-title']}>
+                  {selectedMovie.title}
+                </Link>
+
                 <div className={styles['featured-movie-info']}>
                   <span>{selectedMovie.release_date ? new Date(selectedMovie.release_date).getFullYear() : 'Brak daty'}</span>
                   <span>{selectedMovie.duration_minutes ? formatDuration(selectedMovie.duration_minutes) : 'Brak czasu trwania'}</span>
@@ -107,8 +147,8 @@ const MainContent = () => {
             <div className={`${styles['slider-arrow']} ${styles['left-arrow']}`} onClick={scrollLeft}>❮</div>
             <div className={styles['movies-slider']} ref={sliderRef}>
               {movies.map((movie) => (
-                <motion.div 
-                  className={`${styles['movie-card']} ${selectedMovie && selectedMovie.id === movie.id ? styles.active : ''}`} 
+                <motion.div
+                  className={`${styles['movie-card']} ${selectedMovie && selectedMovie.id === movie.id ? styles.active : ''}`}
                   key={movie.id}
                   onClick={() => handleMovieSelect(movie)}
                   whileHover={{ scale: 1.05 }}
@@ -120,11 +160,18 @@ const MainContent = () => {
                     ) : (
                       <div className={styles['no-poster']}>Brak plakatu</div>
                     )}
+                    {userRatings[movie.id] && (
+                      <div className={styles['user-rating']}>
+                        <span className={styles.star}>★</span>
+                        <span className={styles['rating-value']}>{userRatings[movie.id]}</span>
+                      </div>
+                    )}
                   </div>
                   <div className={styles['movie-info2']}>
                     <h3>{movie.title}</h3>
                   </div>
                 </motion.div>
+
               ))}
             </div>
             <div className={`${styles['slider-arrow']} ${styles['right-arrow']}`} onClick={scrollRight}>❯</div>

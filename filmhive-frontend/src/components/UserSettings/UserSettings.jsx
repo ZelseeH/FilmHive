@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import styles from './UserSettings.module.css'; // Zmiana importu na moduł CSS
+import styles from './UserSettings.module.css';
 
 const UserSettings = () => {
   const { user } = useAuth();
@@ -10,14 +10,14 @@ const UserSettings = () => {
     bio: '',
     email: '',
   });
-  
+
   const [editMode, setEditMode] = useState({
     username: false,
     bio: false,
     email: false,
     password: false
   });
-  
+
   const [formValues, setFormValues] = useState({
     username: '',
     name: '',
@@ -27,7 +27,7 @@ const UserSettings = () => {
     newPassword: '',
     confirmPassword: ''
   });
-  
+
   const [message, setMessage] = useState({ type: '', text: '' });
   const [modalErrors, setModalErrors] = useState({
     username: '',
@@ -48,14 +48,14 @@ const UserSettings = () => {
         setMessage({ type: 'error', text: 'Brak tokenu autoryzacyjnego. Zaloguj się ponownie.' });
         return;
       }
-      
+
       const response = await fetch('http://localhost:5000/api/user/profile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setUserData({
@@ -161,7 +161,7 @@ const UserSettings = () => {
         },
         body: JSON.stringify({ name: formValues.name })
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         setUserData(prev => ({ ...prev, name: data.name }));
@@ -210,7 +210,7 @@ const UserSettings = () => {
 
   const handleUpdateEmail = async () => {
     setModalErrors(prev => ({ ...prev, email: '' }));
-    
+
     if (!formValues.currentPassword) {
       setModalErrors(prev => ({ ...prev, email: 'Podaj aktualne hasło, aby zmienić email.' }));
       return;
@@ -225,9 +225,9 @@ const UserSettings = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: formValues.email,
-          current_password: formValues.currentPassword 
+          current_password: formValues.currentPassword
         })
       });
 
@@ -249,7 +249,7 @@ const UserSettings = () => {
 
   const handleUpdatePassword = async () => {
     setModalErrors(prev => ({ ...prev, password: '' }));
-    
+
     if (formValues.newPassword !== formValues.confirmPassword) {
       setModalErrors(prev => ({ ...prev, password: 'Nowe hasła nie są identyczne.' }));
       return;
@@ -293,13 +293,13 @@ const UserSettings = () => {
     <div className={styles['page-container']}>
       <div className={styles['user-settings-container']}>
         <div className={styles['settings-divider']}></div>
-        
+
         {message.text && (
           <div className={`${styles.message} ${styles[message.type]}`}>
             {message.text}
           </div>
         )}
-        
+
         <h2 className={styles['settings-section-title']}>Dane logowania</h2>
         <div className={styles['settings-section']}>
           <div className={styles['setting-item']}>
@@ -316,7 +316,7 @@ const UserSettings = () => {
               {userData.username}
             </div>
           </div>
-          
+
           <div className={styles['setting-item']}>
             <div className={styles['setting-label']}>E-mail</div>
             <div className={styles['setting-value']}>
@@ -324,7 +324,7 @@ const UserSettings = () => {
               <button className={styles['edit-button']} onClick={() => handleEdit('email')}>✏️</button>
             </div>
           </div>
-          
+
           <div className={styles['setting-item']}>
             <div className={styles['setting-label']}>Hasło</div>
             <div className={styles['setting-value']}>
@@ -333,20 +333,20 @@ const UserSettings = () => {
             </div>
           </div>
         </div>
-        
+
         <div className={styles['settings-divider']}></div>
-      
+
         {editMode.name && (
           <div className={styles['modal-overlay']}>
             <div className={styles['edit-modal']}>
               <h2>Zmień nazwę użytkownika</h2>
-              
+
               {modalErrors.name && (
                 <div className={styles['modal-error']}>
                   {modalErrors.name}
                 </div>
               )}
-              
+
               <div className={styles['form-group']}>
                 <label>Nazwa użytkownika</label>
                 <input
@@ -365,18 +365,18 @@ const UserSettings = () => {
             </div>
           </div>
         )}
-      
+
         {editMode.bio && (
           <div className={styles['modal-overlay']}>
             <div className={styles['edit-modal']}>
               <h2>Zmień opis</h2>
-              
+
               {modalErrors.bio && (
                 <div className={styles['modal-error']}>
                   {modalErrors.bio}
                 </div>
               )}
-              
+
               <div className={styles['form-group']}>
                 <label>O mnie</label>
                 <textarea
@@ -395,18 +395,18 @@ const UserSettings = () => {
             </div>
           </div>
         )}
-      
+
         {editMode.email && (
           <div className={styles['modal-overlay']}>
             <div className={styles['edit-modal']}>
               <h2>Zmień adres email</h2>
-              
+
               {modalErrors.email && (
                 <div className={styles['modal-error']}>
                   {modalErrors.email}
                 </div>
               )}
-              
+
               <div className={styles['form-group']}>
                 <label>Nowy adres email</label>
                 <input
@@ -434,18 +434,18 @@ const UserSettings = () => {
             </div>
           </div>
         )}
-      
+
         {editMode.password && (
           <div className={styles['modal-overlay']}>
             <div className={styles['edit-modal']}>
               <h2>Zmień hasło</h2>
-              
+
               {modalErrors.password && (
                 <div className={styles['modal-error']}>
                   {modalErrors.password}
                 </div>
               )}
-              
+
               <div className={styles['form-group']}>
                 <label>Aktualne hasło</label>
                 <input

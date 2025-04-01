@@ -17,9 +17,9 @@ const AddGenrePopup = ({ onClose, onAdd }) => {
       const response = await axios.post('http://localhost:5000/genres', { name: genreName });
       setMessage('Gatunek został dodany!');
       setGenreName('');
-      onAdd(response.data); // Przekazujemy nowy gatunek do rodzica
+      onAdd(response.data);
       setTimeout(() => {
-        onClose(); // Zamykamy popup po 1 sekundzie
+        onClose();
       }, 1000);
     } catch (err) {
       setMessage('Nie udało się dodać gatunku.');

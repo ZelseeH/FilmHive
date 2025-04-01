@@ -1,0 +1,81 @@
+.rating-container {
+    margin: 1rem 0;
+}
+
+.stars-container {
+    display: flex;
+    align-items: center;
+}
+
+.star {
+    font-size: 1.8rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.star.filled {
+    color: #f5c518;
+}
+
+.star:hover {
+    transform: scale(1.1);
+}
+
+.current-rating {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+.current-rating:hover {
+    color: #f5c518;
+}
+
+.loading,
+.error,
+.login-prompt {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.loading {
+    color: #666;
+}
+
+.error {
+    color: #e53935;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.login-prompt {
+    color: #666;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.login-prompt:hover {
+    color: #f5c518;
+}
+
+@media (max-width: 480px) {
+    .rating-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .stars-container {
+        justify-content: center;
+    }
+
+    .current-rating,
+    .loading,
+    .error,
+    .login-prompt {
+        text-align: center;
+    }
+}

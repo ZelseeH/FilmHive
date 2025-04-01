@@ -5,11 +5,12 @@ import { useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar/Navbar.jsx';
 import Footer from './components/Footer/Footer';
 import HomePage from './pages/Home/HomePage.jsx';
-import SettingsPage from './pages/Settings/SettingsPage.jsx'; 
-import ProfilePage from './pages/Profile/ProfilePage.jsx'; 
+import SettingsPage from './pages/Settings/SettingsPage.jsx';
+import ProfilePage from './pages/Profile/ProfilePage.jsx';
 import MovieListPage from './pages/MovieList/MovieListPage.jsx';
+import MovieDetail from './pages/MovieDetails/MovieDetails.jsx';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute.js';
-import styles from './App.module.css'; // Import CSS Modules
+import styles from './App.module.css';
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ function AppRoutes() {
           <Route path="/profile" element={<ProtectedRoute>{user ? <Navigate to={`/profile/${user.username}`} replace /> : <Navigate to="/" replace />}</ProtectedRoute>} />
           <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="/movies" element={<MovieListPage />} />
+          <Route path="/movie/details/:movieTitle" element={<MovieDetail />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
