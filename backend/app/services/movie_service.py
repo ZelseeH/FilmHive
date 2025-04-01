@@ -13,13 +13,29 @@ def get_all_movies():
     except Exception as e:
         raise Exception(f"Błąd podczas pobierania filmów: {str(e)}")
 
+def get_movies_paginated(page=1, per_page=10, genre_id=None):
+    """Pobiera filmy z paginacją i serializuje je."""
+    try:
+        result = movie_repo.get_paginated(page, per_page, genre_id)
+        
+        # Serializacja filmów z dołączonymi gatunkami
+        serialized_movies = [movie.serialize(include_genres=True) for movie in result["movies"]]
+        
+        return {
+            "movies": serialized_movies,
+            "pagination": result["pagination"]
+        }
+    except Exception as e:
+        raise Exception(f"Błąd podczas pobierania filmów z paginacją: {str(e)}")
+
 def get_movie_by_id(movie_id):
     """Pobiera film na podstawie ID i serializuje go."""
     try:
         movie = movie_repo.get_by_id(movie_id)
         if not movie:
             return None
-        return movie.serialize()
+        # Dołączamy gatunki, aktorów i reżyserów do szczegółów filmu
+        return movie.serialize(include_genres=True, include_actors=True, include_directors=True)
     except Exception as e:
         raise Exception(f"Błąd podczas pobierania filmu o ID {movie_id}: {str(e)}")
 
@@ -29,11 +45,11 @@ def create_movie(data):
         new_movie = Movie(
             title=data.get('title'),
             release_date=data.get('release_date'),
-            description=data.get('description', ''),  # Domyślnie pusty opis
-            poster_url=data.get('poster_url', ''),   # Domyślnie brak URL
-            duration_minutes=data.get('duration_minutes', 0),  # Domyślna długość 0
-            country=data.get('country', ''),         # Domyślnie brak kraju
-            original_language=data.get('original_language', '')  # Domyślnie brak języka
+            description=data.get('description', ''),
+            poster_url=data.get('poster_url', ''),
+            duration_minutes=data.get('duration_minutes', 0),
+            country=data.get('country', ''),
+            original_language=data.get('original_language', '')
         )
         movie_repo.add(new_movie)
         return new_movie.serialize()

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import './UserSettings.css';
+import styles from './UserSettings.module.css'; // Zmiana importu na moduł CSS
 
 const UserSettings = () => {
   const { user } = useAuth();
@@ -20,12 +20,12 @@ const UserSettings = () => {
   
   const [formValues, setFormValues] = useState({
     username: '',
-  name: '',
-  bio: '',
-  email: '',
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: ''
+    name: '',
+    bio: '',
+    email: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
   
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -59,10 +59,10 @@ const UserSettings = () => {
       if (response.ok) {
         const data = await response.json();
         setUserData({
-            username: data.username || '',
-               name: data.name || '',
-                  bio: data.bio || '',
-                     email: data.email || ''
+          username: data.username || '',
+          name: data.name || '',
+          bio: data.bio || '',
+          email: data.email || ''
         });
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -95,6 +95,7 @@ const UserSettings = () => {
     setEditMode(Object.keys(editMode).reduce((acc, key) => ({ ...acc, [key]: false }), {}));
     setFormValues({
       username: '',
+      name: '',
       bio: '',
       email: '',
       currentPassword: '',
@@ -146,6 +147,7 @@ const UserSettings = () => {
       setLoading(false);
     }
   };
+
   const handleUpdateName = async () => {
     setModalErrors(prev => ({ ...prev, name: '' }));
     setLoading(true);
@@ -175,7 +177,6 @@ const UserSettings = () => {
       setLoading(false);
     }
   };
-  
 
   const handleUpdateBio = async () => {
     setModalErrors(prev => ({ ...prev, bio: '' }));
@@ -289,201 +290,199 @@ const UserSettings = () => {
   };
 
   return (
-    <div className="page-container">
-      <div className="user-settings-container">
-        <div className="settings-divider"></div>
+    <div className={styles['page-container']}>
+      <div className={styles['user-settings-container']}>
+        <div className={styles['settings-divider']}></div>
         
         {message.text && (
-          <div className={`message ${message.type}`}>
+          <div className={`${styles.message} ${styles[message.type]}`}>
             {message.text}
           </div>
         )}
         
-        <h2 className="settings-section-title">Dane logowania</h2>
-        <div className="settings-section">
-        <div className="setting-item">
-  <div className="setting-label">Nazwa Użytkownika</div>
-  <div className="setting-value">
-    {userData.name || 'Nie podano'}
-    <button className="edit-button" onClick={() => handleEdit('name')}>✏️</button>
-  </div>
-</div>
+        <h2 className={styles['settings-section-title']}>Dane logowania</h2>
+        <div className={styles['settings-section']}>
+          <div className={styles['setting-item']}>
+            <div className={styles['setting-label']}>Nazwa Użytkownika</div>
+            <div className={styles['setting-value']}>
+              {userData.name || 'Nie podano'}
+              <button className={styles['edit-button']} onClick={() => handleEdit('name')}>✏️</button>
+            </div>
+          </div>
 
-          <div className="setting-item">
-            <div className="setting-label">Login</div>
-            <div className="setting-value">
+          <div className={styles['setting-item']}>
+            <div className={styles['setting-label']}>Login</div>
+            <div className={styles['setting-value']}>
               {userData.username}
             </div>
           </div>
           
-          <div className="setting-item">
-            <div className="setting-label">E-mail</div>
-            <div className="setting-value">
+          <div className={styles['setting-item']}>
+            <div className={styles['setting-label']}>E-mail</div>
+            <div className={styles['setting-value']}>
               {userData.email}
-              <button className="edit-button" onClick={() => handleEdit('email')}>✏️</button>
+              <button className={styles['edit-button']} onClick={() => handleEdit('email')}>✏️</button>
             </div>
           </div>
           
-          <div className="setting-item">
-            <div className="setting-label">Hasło</div>
-            <div className="setting-value">
+          <div className={styles['setting-item']}>
+            <div className={styles['setting-label']}>Hasło</div>
+            <div className={styles['setting-value']}>
               ••••••
-              <button className="edit-button" onClick={() => handleEdit('password')}>✏️</button>
+              <button className={styles['edit-button']} onClick={() => handleEdit('password')}>✏️</button>
             </div>
           </div>
         </div>
         
-        <div className="settings-divider"></div>
+        <div className={styles['settings-divider']}></div>
       
+        {editMode.name && (
+          <div className={styles['modal-overlay']}>
+            <div className={styles['edit-modal']}>
+              <h2>Zmień nazwę użytkownika</h2>
+              
+              {modalErrors.name && (
+                <div className={styles['modal-error']}>
+                  {modalErrors.name}
+                </div>
+              )}
+              
+              <div className={styles['form-group']}>
+                <label>Nazwa użytkownika</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formValues.name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles['modal-actions']}>
+                <button onClick={handleCancel}>Anuluj</button>
+                <button onClick={handleUpdateName} disabled={loading}>
+                  {loading ? 'Zapisywanie...' : 'Zapisz'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       
-      {editMode.name && (
-  <div className="modal-overlay">
-    <div className="edit-modal">
-      <h2>Zmień nazwe użytkownika</h2>
+        {editMode.bio && (
+          <div className={styles['modal-overlay']}>
+            <div className={styles['edit-modal']}>
+              <h2>Zmień opis</h2>
+              
+              {modalErrors.bio && (
+                <div className={styles['modal-error']}>
+                  {modalErrors.bio}
+                </div>
+              )}
+              
+              <div className={styles['form-group']}>
+                <label>O mnie</label>
+                <textarea
+                  name="bio"
+                  value={formValues.bio}
+                  onChange={handleChange}
+                  rows="4"
+                />
+              </div>
+              <div className={styles['modal-actions']}>
+                <button onClick={handleCancel}>Anuluj</button>
+                <button onClick={handleUpdateBio} disabled={loading}>
+                  {loading ? 'Zapisywanie...' : 'Zapisz'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       
-      {modalErrors.name && (
-        <div className="modal-error">
-          {modalErrors.name}
-        </div>
-      )}
+        {editMode.email && (
+          <div className={styles['modal-overlay']}>
+            <div className={styles['edit-modal']}>
+              <h2>Zmień adres email</h2>
+              
+              {modalErrors.email && (
+                <div className={styles['modal-error']}>
+                  {modalErrors.email}
+                </div>
+              )}
+              
+              <div className={styles['form-group']}>
+                <label>Nowy adres email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formValues.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles['form-group']}>
+                <label>Aktualne hasło</label>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  value={formValues.currentPassword}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles['modal-actions']}>
+                <button onClick={handleCancel}>Anuluj</button>
+                <button onClick={handleUpdateEmail} disabled={loading}>
+                  {loading ? 'Zapisywanie...' : 'Zapisz'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       
-      <div className="form-group">
-        <label>Nazwa użytkownika</label>
-        <input
-          type="text"
-          name="name"
-          value={formValues.name}
-          onChange={handleChange}
-        />
+        {editMode.password && (
+          <div className={styles['modal-overlay']}>
+            <div className={styles['edit-modal']}>
+              <h2>Zmień hasło</h2>
+              
+              {modalErrors.password && (
+                <div className={styles['modal-error']}>
+                  {modalErrors.password}
+                </div>
+              )}
+              
+              <div className={styles['form-group']}>
+                <label>Aktualne hasło</label>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  value={formValues.currentPassword}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles['form-group']}>
+                <label>Nowe hasło</label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={formValues.newPassword}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles['form-group']}>
+                <label>Powtórz nowe hasło</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formValues.confirmPassword}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles['modal-actions']}>
+                <button onClick={handleCancel}>Anuluj</button>
+                <button onClick={handleUpdatePassword} disabled={loading}>
+                  {loading ? 'Zapisywanie...' : 'Zapisz'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      <div className="modal-actions">
-        <button onClick={handleCancel}>Anuluj</button>
-        <button onClick={handleUpdateName} disabled={loading}>
-          {loading ? 'Zapisywanie...' : 'Zapisz'}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-      
-      {editMode.bio && (
-        <div className="modal-overlay">
-          <div className="edit-modal">
-            <h2>Zmień opis</h2>
-            
-            {modalErrors.bio && (
-              <div className="modal-error">
-                {modalErrors.bio}
-              </div>
-            )}
-            
-            <div className="form-group">
-              <label>O mnie</label>
-              <textarea
-                name="bio"
-                value={formValues.bio}
-                onChange={handleChange}
-                rows="4"
-              />
-            </div>
-            <div className="modal-actions">
-              <button onClick={handleCancel}>Anuluj</button>
-              <button onClick={handleUpdateBio} disabled={loading}>
-                {loading ? 'Zapisywanie...' : 'Zapisz'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {editMode.email && (
-        <div className="modal-overlay">
-          <div className="edit-modal">
-            <h2>Zmień adres email</h2>
-            
-            {modalErrors.email && (
-              <div className="modal-error">
-                {modalErrors.email}
-              </div>
-            )}
-            
-            <div className="form-group">
-              <label>Nowy adres email</label>
-              <input
-                type="email"
-                name="email"
-                value={formValues.email}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Aktualne hasło</label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={formValues.currentPassword}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="modal-actions">
-              <button onClick={handleCancel}>Anuluj</button>
-              <button onClick={handleUpdateEmail} disabled={loading}>
-                {loading ? 'Zapisywanie...' : 'Zapisz'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {editMode.password && (
-        <div className="modal-overlay">
-          <div className="edit-modal">
-            <h2>Zmień hasło</h2>
-            
-            {modalErrors.password && (
-              <div className="modal-error">
-                {modalErrors.password}
-              </div>
-            )}
-            
-            <div className="form-group">
-              <label>Aktualne hasło</label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={formValues.currentPassword}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Nowe hasło</label>
-              <input
-                type="password"
-                name="newPassword"
-                value={formValues.newPassword}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Powtórz nowe hasło</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formValues.confirmPassword}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="modal-actions">
-              <button onClick={handleCancel}>Anuluj</button>
-              <button onClick={handleUpdatePassword} disabled={loading}>
-                {loading ? 'Zapisywanie...' : 'Zapisz'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
     </div>
   );
 };

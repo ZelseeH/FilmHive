@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import './Navbar.css';
+import styles from './Navbar.module.css'; // Zmiana importu na moduł CSS
 import logo from './FilmHiveLogo.png';
 import LoginModal from '../LoginModal/LoginModal';
 import { useAuth } from '../../contexts/AuthContext';
@@ -39,7 +39,7 @@ const Navbar = () => {
       if (isUserMenuOpen && userMenuRef.current && userSectionRef.current) {
         const userSectionRect = userSectionRef.current.getBoundingClientRect();
         const windowWidth = window.innerWidth;
-        const isMobile = windowWidth <= 992;
+        const isMobile = windowWidth <= 1100;
 
         if (isMobile) {
           userMenuRef.current.style.right = '0px';
@@ -71,7 +71,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth > 992 && isOpen) {
+      if (window.innerWidth > 1100 && isOpen) {
         setIsOpen(false);
       }
     };
@@ -127,69 +127,68 @@ const Navbar = () => {
   };
 
   const UserAvatar = ({ user }) => (
-    <div className="user-avatar" onClick={toggleUserMenu}>
+    <div className={styles['user-avatar']} onClick={toggleUserMenu}>
       {user.avatar ? (
         <img src={user.avatar} alt={user.username} />
       ) : (
-        <div className="user-initial">{user.username[0].toUpperCase()}</div>
+        <div className={styles['user-initial']}>{user.username[0].toUpperCase()}</div>
       )}
     </div>
   );
 
   const UserMenu = () => (
     <motion.div
-      className="user-menu"
+      className={styles['user-menu']}
       ref={userMenuRef}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2 }}
     >
-      <Link to={`/profile/${user.username}`} className="user-menu-item" onClick={() => setIsUserMenuOpen(false)}>Mój Profil</Link>
-      <Link to="/settings" className="user-menu-item" onClick={() => setIsUserMenuOpen(false)}>Ustawienia</Link>
-      <button className="user-menu-item logout-btn" onClick={handleLogout}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" className="logout-icon">
+      <Link to={`/profile/${user.username}`} className={styles['user-menu-item']} onClick={() => setIsUserMenuOpen(false)}>Mój Profil</Link>
+      <Link to="/settings" className={styles['user-menu-item']} onClick={() => setIsUserMenuOpen(false)}>Ustawienia</Link>
+      <button className={`${styles['user-menu-item']} ${styles['logout-btn']}`} onClick={handleLogout}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" className={styles['logout-icon']}>
           <path fillRule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
           <path fillRule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
         </svg>
-        <span className="logout-text">Wyloguj</span>
+        <span className={styles['logout-text']}>Wyloguj</span>
       </button>
     </motion.div>
   );
   
   return (
-    <div className="navbar-container">
-      <nav className="navbar">
-        <div className="navbar-logo">
+    <div className={styles['navbar-container']}>
+      <nav className={styles.navbar}>
+        <div className={styles['navbar-logo']}>
           <Link to="/">
             <img src={logo} alt="FilmHive Logo" />
           </Link>
         </div>
         
-        <div className="navbar-links desktop-links">
-          <div className="search-container">
-            <div className="search-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-              </svg>
-            </div>
-            <input type="text" placeholder="Szukaj na FilmHive" className="search-input" />
-          </div>
-          <a href="#" className="nav-link dropdown">
-            Filmy
-            <span className="dropdown-arrow">▼</span>
-          </a>
-        </div>
+        <div className={`${styles['navbar-links']} ${styles['desktop-links']}`}>
+  <div className={styles['search-container']}>
+    <div className={styles['search-icon']}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+      </svg>
+    </div>
+    <input type="text" placeholder="Szukaj na FilmHive" className={styles['search-input']} />
+  </div>
+  <Link to="/movies" className={styles['movies-link']}>
+    Filmy
+  </Link>
+</div>
 
-        <div className="user-section" ref={userSectionRef}>
+        <div className={styles['user-section']} ref={userSectionRef}>
           {user ? (
-            <div className="user-info">
-              <span className="username">{user.username}</span>
+            <div className={styles['user-info']}>
+              <span className={styles.username}>{user.username}</span>
               <UserAvatar user={user} />
             </div>
           ) : (
-            <button className="login-btn" onClick={openLoginModal}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" className="login-icon">
+            <button className={styles['login-btn']} onClick={openLoginModal}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" className={styles['login-icon']}>
                 <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
               </svg>
               Zaloguj się
@@ -197,7 +196,7 @@ const Navbar = () => {
           )}
         </div>
 
-        <div className={`hamburger ${isOpen ? 'open' : ''}`} onClick={toggleMenu}>
+        <div className={`${styles.hamburger} ${isOpen ? styles.open : ''}`} onClick={toggleMenu}>
           <span></span>
           <span></span>
           <span></span>
@@ -206,26 +205,27 @@ const Navbar = () => {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            className="mobile-links"
-            initial="closed"
-            animate="open"
-            exit="closed"
-            variants={menuVariants}
-          >
-            <motion.div className="search-container" variants={childVariants}>
-              <div className="search-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                </svg>
-              </div>
-              <input type="text" placeholder="Szukaj na FilmHive" className="search-input" />
-            </motion.div>
-            <motion.a href="#" className="nav-link dropdown" variants={childVariants}>
-              Filmy
-              <span className="dropdown-arrow">▼</span>
-            </motion.a>
-          </motion.div>
+        <motion.div
+        className={styles['mobile-links']}
+        initial="closed"
+        animate="open"
+        exit="closed"
+        variants={menuVariants}
+      >
+        <motion.div className={styles['search-container']} variants={childVariants}>
+          <div className={styles['search-icon']}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+          </div>
+          <input type="text" placeholder="Szukaj na FilmHive" className={styles['search-input']} />
+        </motion.div>
+        <motion.div variants={childVariants}>
+          <Link to="/movies" className={styles['movies-link']}>
+            Filmy
+          </Link>
+        </motion.div>
+      </motion.div>
         )}
       </AnimatePresence>
 

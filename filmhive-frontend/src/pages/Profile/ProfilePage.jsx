@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import ProfileHeader from '../../components/ProfileHeader/ProfileHeader';
-import './ProfilePage.css';
+import styles from './ProfilePage.module.css';
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -40,27 +40,27 @@ const ProfilePage = () => {
   }, [username, user]);
 
   if (loading) {
-    return <div className="profile-page loading">Ładowanie profilu...</div>;
+    return <div className={`${styles['profile-page']} ${styles.loading}`}>Ładowanie profilu...</div>;
   }
 
   if (error) {
-    return <div className="profile-page error">Błąd: {error}</div>;
+    return <div className={`${styles['profile-page']} ${styles.error}`}>Błąd: {error}</div>;
   }
 
   if (!profileData) {
-    return <div className="profile-page error">Nie znaleziono profilu</div>;
+    return <div className={`${styles['profile-page']} ${styles.error}`}>Nie znaleziono profilu</div>;
   }
 
   return (
-    <div className="profile-page">
+    <div className={styles['profile-page']}>
       <ProfileHeader 
         profileData={profileData} 
         isOwnProfile={isOwnProfile}
         onBioUpdate={fetchProfileData}
       />
       
-      <div className="profile-content">
-        <div className="profile-section">
+      <div className={styles['profile-content']}>
+        <div className={styles['profile-section']}>
           <h2>Aktywność</h2>
           <p>Tutaj będzie wyświetlana aktywność użytkownika</p>
         </div>

@@ -1,11 +1,11 @@
 // src/pages/HomePage.js
 import React from 'react';
 import MainContent from '../../components/MainContent/MainContent';
-import './HomePage.css';
+import styles from './HomePage.module.css'; // Zmiana importu na moduł CSS
 
 const HomePage = () => {
   return (
-    <div className="home-page">
+    <div className={styles['home-page']}>
       <MainContent />
     </div>
   );

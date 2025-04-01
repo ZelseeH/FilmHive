@@ -1,8 +1,7 @@
-// src/components/LoginModal/LoginModal.jsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import './LoginModal.css';
+import styles from './LoginModal.module.css'; // Zmiana importu na moduł CSS
 
 const LoginModal = ({ isOpen, onClose }) => {
   const { login } = useAuth();
@@ -44,7 +43,6 @@ const LoginModal = ({ isOpen, onClose }) => {
         throw new Error(data.error || 'Wystąpił błąd');
       }
 
-      // Sprawdź, czy access_token istnieje
       if (!data.access_token) {
         console.error("No access_token in response");
         throw new Error("Brak tokenu w odpowiedzi");
@@ -55,13 +53,10 @@ const LoginModal = ({ isOpen, onClose }) => {
         token: data.access_token ? "Token exists" : "No token" 
       });
       
-      // Użyj funkcji login z kontekstu
       login(data.user, data.access_token);
       
-      // Sprawdź, czy token został zapisany
       console.log("Token saved:", localStorage.getItem('token') ? "Yes" : "No");
       
-      // Zamknij modal
       onClose();
     } catch (err) {
       console.error("Login error:", err);
@@ -83,26 +78,26 @@ const LoginModal = ({ isOpen, onClose }) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div 
-          className="modal-overlay"
+          className={styles['modal-overlay']} // Użycie styles['modal-overlay']
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
           <motion.div 
-            className="login-modal"
+            className={styles['login-modal']} // Użycie styles['login-modal']
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -50, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <button className="close-button" onClick={onClose}>×</button>
+            <button className={styles['close-button']} onClick={onClose}>×</button>
             <h2>{isLoginMode ? 'Zaloguj się' : 'Zarejestruj się'}</h2>
             
-            {error && <div className="error-message">{error}</div>}
+            {error && <div className={styles['error-message']}>{error}</div>}
             
             <form onSubmit={handleSubmit}>
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label htmlFor="username">Nazwa użytkownika</label>
                 <input
                   type="text"
@@ -114,7 +109,7 @@ const LoginModal = ({ isOpen, onClose }) => {
               </div>
               
               {!isLoginMode && (
-                <div className="form-group">
+                <div className={styles['form-group']}>
                   <label htmlFor="email">Email</label>
                   <input
                     type="email"
@@ -126,7 +121,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 </div>
               )}
               
-              <div className="form-group">
+              <div className={styles['form-group']}>
                 <label htmlFor="password">Hasło</label>
                 <input
                   type="password"
@@ -139,18 +134,18 @@ const LoginModal = ({ isOpen, onClose }) => {
               
               <button 
                 type="submit" 
-                className="submit-button"
+                className={styles['submit-button']}
                 disabled={loading}
               >
                 {loading ? 'Przetwarzanie...' : isLoginMode ? 'Zaloguj' : 'Zarejestruj'}
               </button>
             </form>
             
-            <p className="toggle-mode">
+            <p className={styles['toggle-mode']}>
               {isLoginMode ? 'Nie masz konta?' : 'Masz już konto?'} 
               <button 
                 type="button" 
-                className="toggle-button" 
+                className={styles['toggle-button']} 
                 onClick={toggleMode}
               >
                 {isLoginMode ? 'Zarejestruj się' : 'Zaloguj się'}

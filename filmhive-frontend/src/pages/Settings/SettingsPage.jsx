@@ -1,10 +1,10 @@
 import React from 'react';
-import './SettingsPage.css';
+import styles from './SettingsPage.module.css';
 import UserSettings from '../../components/UserSettings/UserSettings';
 
 const SettingsPage = () => {
   return (
-    <div className="settings-page">
+    <div className={styles.settingsPage}>
       <h1>Ustawienia użytkownika</h1>
       <UserSettings />
     </div>

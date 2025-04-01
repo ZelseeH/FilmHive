@@ -107,7 +107,7 @@ body {
   -webkit-box-orient: vertical;
 }
 
-.movies-section {
+.movies-section2 {
   position: relative;
   margin-top: -100px; 
   z-index: 3; 
@@ -186,12 +186,12 @@ body {
   font-size: 14px;
 }
 
-.movie-info {
+.movie-info2 {
   padding: 10px;
   text-align: center;
 }
 
-.movie-info h3 {
+.movie-info2 h3 {
   font-size: 16px;
   font-weight: bold;
   color: #000;
@@ -253,7 +253,7 @@ body {
     padding-top: var(--navbar-height);
   }
 
-  .movies-section {
+  .movies-section2 {
     padding: 20px 0px; 
   }
 
@@ -302,7 +302,7 @@ body {
     max-height: 4em;
   }
 
-  .movies-section {
+  .movies-section2 {
     margin-top: -80px; 
   }
 
@@ -319,7 +319,7 @@ body {
     font-size: 12px;
   }
 
-  .movie-info h3 {
+  .movie-info2 h3 {
     font-size: 14px;
   }
 
@@ -373,7 +373,7 @@ body {
     max-height: 3em;
   }
 
-  .movies-section {
+  .movies-section2 {
     margin-top: -60px;
     padding: 15px 0px;
   }
@@ -391,7 +391,7 @@ body {
     font-size: 10px;
   }
 
-  .movie-info h3 {
+  .movie-info2 h3 {
     font-size: 12px;
   }
 
@@ -444,7 +444,7 @@ body {
     max-height: 3em;
   }
 
-  .movies-section {
+  .movies-section2 {
     margin-top: -50px;
     padding: 10px 0px;
   }
@@ -462,7 +462,7 @@ body {
     font-size: 8px;
   }
 
-  .movie-info h3 {
+  .movie-info2 h3 {
     font-size: 10px;
   }
 
