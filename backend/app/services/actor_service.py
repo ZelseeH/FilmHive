@@ -52,7 +52,6 @@ class ActorService:
     def delete_actor(self, actor_id):
         """Usuwa aktora."""
         try:
-            # Opcjonalnie: usunięcie zdjęcia aktora z systemu plików
             actor = self.actor_repository.get_by_id(actor_id)
             if actor and actor.photo_url:
                 photo_path = os.path.join(
@@ -85,8 +84,6 @@ class ActorService:
             actor = self.actor_repository.get_by_id(actor_id)
             if not actor:
                 return None
-
-            # Usuń stare zdjęcie, jeśli istnieje
             if actor.photo_url:
                 old_photo_path = os.path.join(
                     current_app.static_folder, "actors", actor.photo_url
@@ -94,16 +91,13 @@ class ActorService:
                 if os.path.exists(old_photo_path):
                     os.remove(old_photo_path)
 
-            # Zapisz nowe zdjęcie
             filename = f"actor_{actor_id}_{photo_file.filename}"
             photo_path = os.path.join(current_app.static_folder, "actors", filename)
 
-            # Upewnij się, że folder istnieje
             os.makedirs(os.path.dirname(photo_path), exist_ok=True)
 
             photo_file.save(photo_path)
 
-            # Zaktualizuj ścieżkę w bazie danych
             actor = self.actor_repository.update(actor_id, {"photo_url": filename})
             return actor
         except Exception as e:

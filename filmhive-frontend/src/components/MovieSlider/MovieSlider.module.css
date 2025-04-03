@@ -1,0 +1,128 @@
+.movies-section {
+    position: relative;
+    margin-top: -100px;
+    z-index: 3;
+    padding: 20px 20px;
+    border-radius: 10px;
+}
+
+.movies-slider-container {
+    position: relative;
+    width: 100%;
+    padding: 0 50px;
+    top: -50px;
+    margin: 0 auto;
+}
+
+.movies-slider {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 20px 0;
+    scrollbar-width: none;
+}
+
+.movies-slider::-webkit-scrollbar {
+    display: none;
+}
+
+.slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 5;
+    transition: background-color 0.3s, transform 0.2s ease;
+}
+
+.slider-arrow:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.left-arrow {
+    left: 20px;
+}
+
+.right-arrow {
+    right: 20px;
+}
+
+@media (max-width: 1100px) {
+    .movies-section {
+        padding: 20px 0px;
+    }
+
+    .movies-slider-container {
+        padding: 0 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .movies-section {
+        margin-top: -80px;
+    }
+
+    .slider-arrow {
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+    }
+
+    .movies-slider-container {
+        padding: 0 40px;
+        top: -50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .movies-section {
+        margin-top: -60px;
+        padding: 15px 0px;
+    }
+
+    .slider-arrow {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
+
+    .movies-slider-container {
+        padding: 0 15px;
+    }
+
+    .left-arrow {
+        left: 0;
+    }
+
+    .right-arrow {
+        right: 0;
+    }
+}
+
+@media (max-width: 360px) {
+    .movies-section {
+        margin-top: -50px;
+        padding: 10px 0px;
+    }
+
+    .slider-arrow {
+        width: 25px;
+        height: 25px;
+        font-size: 14px;
+    }
+
+    .movies-slider-container {
+        padding: 0 25px;
+    }
+}

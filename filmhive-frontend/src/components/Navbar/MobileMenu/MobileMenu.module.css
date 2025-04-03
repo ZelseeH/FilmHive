@@ -1,0 +1,94 @@
+.mobile-links {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: #000000;
+    padding: 1rem;
+    z-index: 999;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.movies-link {
+    color: #ffcc00;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 0.5rem 0;
+    width: 100%;
+    text-align: center;
+    display: block;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.movies-link:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.mobile-links .search-container,
+.mobile-links .nav-link {
+    opacity: 0;
+}
+
+.mobile-links .nav-link {
+    display: block;
+    text-align: center;
+}
+
+.mobile-links.active {
+    display: flex;
+}
+
+@media (max-width: 992px) {
+    .mobile-links {
+        width: 100%;
+    }
+
+    .mobile-links.active {
+        display: flex;
+    }
+
+    .mobile-links .search-container {
+        width: 100%;
+        max-width: 400px;
+        margin: 0.5rem auto;
+    }
+
+    .mobile-links .movies-link {
+        color: #ffcc00;
+        text-decoration: none;
+        font-size: 16px;
+        padding: 0.5rem 0;
+        width: 100%;
+        text-align: center;
+        display: block;
+        transition: color 0.2s ease, text-decoration 0.2s ease;
+    }
+
+    .mobile-links .movies-link:hover {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+
+    .mobile-links .movies-link:active,
+    .mobile-links .movies-link:focus,
+    .mobile-links .movies-link:visited {
+        color: #ffcc00;
+        text-decoration: none;
+    }
+
+    .mobile-links .dropdown {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .mobile-links .dropdown-arrow {
+        margin-left: 5px;
+    }
+}

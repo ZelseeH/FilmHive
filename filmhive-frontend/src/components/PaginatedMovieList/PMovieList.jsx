@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext.tsx';
 import styles from './PMovieList.module.css';
 
 const PMovieList = () => {
@@ -135,7 +135,7 @@ const PMovieList = () => {
                   <Link to={`/movie/details/${createSlug(movie.title)}`} state={{ movieId: movie.id }}>{movie.title}</Link>
                 </h3>
                 <p className={styles['movie-original-title']}>
-                  {movie.original_title || movie.title} {movie.release_date && new Date(movie.release_date).getFullYear()}
+                  {new Date(movie.release_date).getFullYear()}
                 </p>
               </div>
               <div className={styles['movie-details']}>

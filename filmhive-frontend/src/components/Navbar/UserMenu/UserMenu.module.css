@@ -1,0 +1,42 @@
+.user-menu {
+    position: fixed;
+    z-index: 9999;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    overflow: hidden;
+}
+
+.user-menu-item {
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.user-menu-item:hover {
+    background-color: #3a3a3a;
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    padding: 12px 16px;
+    text-align: left;
+    width: 100%;
+}
+
+.logout-icon {
+    margin-right: 8px;
+}

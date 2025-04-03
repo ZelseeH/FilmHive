@@ -1,13 +1,67 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root {
+  --navbar-height: 60px;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  color: #fff;
+}
+
+/* Dodaj te style do globalnego pliku CSS */
+
+/* Styles for react-burger-menu */
+.bm-menu {
+  background: #1a1a1a;
+  padding: 0;
+  font-size: 1.15em;
+}
+
+.bm-menu-wrap {
+  top: 60px;
+}
+
+.bm-item-list {
+  padding: 0;
+}
+
+.bm-item {
+  display: inline-block;
+  text-decoration: none;
+  margin-bottom: 10px;
+  color: #d1d1d1;
+  transition: color 0.2s;
+}
+
+.bm-item:hover {
+  color: #ffffff;
+}
+
+.bm-overlay {
+  top: 60px;
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+
+@media (max-width: 768px) {
+  :root {
+    --navbar-height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --navbar-height: 60px;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --navbar-height: 55px;
+  }
 }

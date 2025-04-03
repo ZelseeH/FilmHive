@@ -1,9 +1,136 @@
+/* src/components/Footer/Footer.module.css */
 .footer {
-    background-color: #111;
+    background-color: #1a1a1a;
     color: #fff;
-    text-align: center;
-    padding: 15px 0;
+    padding: 40px 0 20px;
+    margin-top: 60px;
+}
+
+.footerContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.footerSection {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 30px;
+    padding: 0 15px;
+}
+
+.footerTitle {
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.footerTitle::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 40px;
+    background-color: #e50914;
+}
+
+.footerDescription {
+    color: #ccc;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.footerLinks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footerLinks li {
+    margin-bottom: 12px;
+}
+
+.footerLinks a {
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footerLinks a:hover {
+    color: #e50914;
+}
+
+.socialLinks {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.socialLinks a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #333;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.socialLinks a:hover {
+    background-color: #e50914;
+    transform: translateY(-3px);
+}
+
+.footerBottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    border-top: 1px solid #333;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.copyright {
+    color: #999;
     font-size: 14px;
-    margin-top: 40px;
-    border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.attribution {
+    color: #999;
+    font-size: 14px;
+}
+
+.attribution a {
+    color: #e50914;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .footerContainer {
+        flex-direction: column;
+    }
+
+    .footerSection {
+        margin-bottom: 30px;
+    }
+
+    .footerBottom {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .copyright,
+    .attribution {
+        margin: 5px 0;
+    }
 }
