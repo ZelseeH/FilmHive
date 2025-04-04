@@ -26,17 +26,32 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  // Inicjalizujemy stan użytkownika z localStorage
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
   const [loading, setLoading] = useState<boolean>(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  // Synchronizujemy stan użytkownika z localStorage
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, [user]);
+
+  // Weryfikujemy token w tle, ale nie blokujemy renderowania
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
 
-    const checkAuthStatus = async (): Promise<void> => {
-      console.log("Checking auth status...");
+    const verifyTokenInBackground = async (): Promise<void> => {
+      console.log("Verifying token in background...");
       const token = localStorage.getItem('token');
 
       if (!token) {
@@ -55,6 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (response.status === 401 || response.status === 403) {
             console.error("Token validation failed");
             localStorage.removeItem('token');
+            localStorage.removeItem('user');
             setUser(null);
           }
         } else {
@@ -63,14 +79,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error: any) {
         if (error.name !== 'AbortError') {
-          console.error('Error checking authentication status:', error);
+          console.error('Error verifying token:', error);
         }
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuthStatus();
+    // Uruchamiamy weryfikację tokenu, ale nie blokujemy renderowania
+    verifyTokenInBackground();
 
     return () => controller.abort();
   }, []);
@@ -78,6 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = (userData: User, token: string): void => {
     console.log("Login function called with:", { userData, tokenExists: !!token });
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData)); // Zapisujemy użytkownika do localStorage
     setUser(userData);
     closeLoginModal();
 
@@ -87,6 +105,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = (): void => {
     console.log("Logout function called");
     localStorage.removeItem('token');
+    localStorage.removeItem('user'); // Usuwamy użytkownika z localStorage
     setUser(null);
 
     if (window.location.pathname !== '/') {

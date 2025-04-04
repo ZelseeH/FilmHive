@@ -1,4 +1,3 @@
-// src/services/youtubeService.ts
 export const getEmbedUrl = (youtubeUrl: string): string | null => {
     if (!youtubeUrl) return null;
     let videoId: string | null = null;
