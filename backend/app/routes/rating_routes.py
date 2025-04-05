@@ -84,7 +84,6 @@ def rate_movie(movie_id):
 
         rating_value = data.get("rating")
 
-        # Sprawdzenie, czy ocena jest w poprawnym zakresie
         if not isinstance(rating_value, (int, float)) or not (1 <= rating_value <= 10):
             return jsonify({"error": "Ocena musi być liczbą od 1 do 10"}), 400
 

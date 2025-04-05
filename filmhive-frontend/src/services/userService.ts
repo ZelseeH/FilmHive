@@ -1,10 +1,9 @@
 import { authUtils } from '../utils/authUtils';
 
-// Define interfaces for the data structures
 interface ProfileData {
     name?: string;
     bio?: string;
-    [key: string]: any; // For any additional fields
+    [key: string]: any;
 }
 
 export const userService = {
@@ -43,6 +42,29 @@ export const userService = {
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.error || 'Nie udało się zaktualizować profilu.');
+        }
+
+        return await response.json();
+    },
+
+    updateBio: async (bio: string) => {
+        const token = authUtils.getToken();
+        if (!token) {
+            throw new Error('Brak tokenu autoryzacyjnego. Zaloguj się ponownie.');
+        }
+
+        const response = await fetch('http://localhost:5000/api/user/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ bio })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Nie udało się zaktualizować opisu.');
         }
 
         return await response.json();

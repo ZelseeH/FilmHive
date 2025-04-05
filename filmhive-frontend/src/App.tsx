@@ -1,4 +1,3 @@
-// App.tsx
 import React from 'react';
 import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar/Navbar';

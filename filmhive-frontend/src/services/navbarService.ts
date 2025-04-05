@@ -1,11 +1,10 @@
-// services/navbarService.ts
 import { NavigateFunction } from 'react-router-dom';
 
 /**
- * Obsługuje proces wylogowania użytkownika
- * @param logout Funkcja wylogowująca z kontekstu autoryzacji
- * @param closeUserMenu Funkcja zamykająca menu użytkownika
- * @param navigate Funkcja nawigacji z React Router
+
+ * @param logout 
+ * @param closeUserMenu 
+ * @param navigate 
  */
 export const handleLogout = (
     logout: () => void,
@@ -18,9 +17,8 @@ export const handleLogout = (
 };
 
 /**
- * Sprawdza, czy użytkownik jest zalogowany
- * @param user Obiekt użytkownika z kontekstu autoryzacji
- * @returns true, jeśli użytkownik jest zalogowany, false w przeciwnym przypadku
+ * @param user 
+ * @returns 
  */
 export const isUserLoggedIn = (user: any): boolean => {
     return !!user;

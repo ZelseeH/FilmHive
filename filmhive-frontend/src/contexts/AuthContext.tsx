@@ -1,12 +1,18 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Definiujemy typy
-interface User {
-  // Dodaj odpowiednie pola użytkownika
-  [key: string]: any;
+// Interfejs użytkownika
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  name?: string;
+  bio?: string;
+  profile_picture?: string;
+  registration_date?: string;
 }
 
+// Typy dla kontekstu autoryzacji
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -18,7 +24,7 @@ interface AuthContextType {
   getToken: () => string | null;
 }
 
-// Tworzymy kontekst z domyślnymi wartościami
+// Tworzymy kontekst autoryzacji
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
@@ -26,7 +32,6 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // Inicjalizujemy stan użytkownika z localStorage
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
@@ -45,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [user]);
 
-  // Weryfikujemy token w tle, ale nie blokujemy renderowania
+  // Weryfikujemy token w tle podczas inicjalizacji aplikacji
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
@@ -86,26 +91,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Uruchamiamy weryfikację tokenu, ale nie blokujemy renderowania
     verifyTokenInBackground();
 
     return () => controller.abort();
   }, []);
 
+  // Funkcja logowania
   const login = (userData: User, token: string): void => {
     console.log("Login function called with:", { userData, tokenExists: !!token });
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData)); // Zapisujemy użytkownika do localStorage
+    localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     closeLoginModal();
 
     navigate('/');
   };
 
+  // Funkcja wylogowania
   const logout = (): void => {
     console.log("Logout function called");
     localStorage.removeItem('token');
-    localStorage.removeItem('user'); // Usuwamy użytkownika z localStorage
+    localStorage.removeItem('user');
     setUser(null);
 
     if (window.location.pathname !== '/') {
@@ -113,6 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Funkcje do zarządzania modalem logowania
   const openLoginModal = (): void => {
     setIsLoginModalOpen(true);
   };
@@ -121,6 +128,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoginModalOpen(false);
   };
 
+  // Pobieranie tokenu z localStorage
   const getToken = (): string | null => {
     return localStorage.getItem('token');
   };
@@ -143,6 +151,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 };
 
+// Hook do korzystania z kontekstu autoryzacji
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {

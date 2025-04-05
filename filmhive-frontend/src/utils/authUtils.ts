@@ -1,4 +1,3 @@
-// Define an interface for validation result
 interface ValidationResult {
     valid: boolean;
     error: string;

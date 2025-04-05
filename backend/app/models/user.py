@@ -10,6 +10,10 @@ from .base import (
     Boolean,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import url_for
+import os
+import json
+from flask import current_app
 
 
 class User(Base):
@@ -19,7 +23,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
     )
-    name: Mapped[str] = mapped_column(String(100), nullable=True)  # Dodane pole name
+    name: Mapped[str] = mapped_column(String(100), nullable=True)
     email: Mapped[str] = mapped_column(
         String(100), unique=True, nullable=False, index=True
     )
@@ -33,6 +37,7 @@ class User(Base):
     last_login: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     profile_picture: Mapped[str] = mapped_column(String(255), nullable=True)
+    background_image: Mapped[str] = mapped_column(String(255), nullable=True)
     bio: Mapped[str] = mapped_column(String(500), nullable=True)
 
     ratings: Mapped[list["Rating"]] = relationship("Rating", back_populates="user")
@@ -85,6 +90,21 @@ class User(Base):
         include_watchlist=False,
     ):
         """Serializuje obiekt użytkownika do formatu JSON"""
+        # Sprawdź, czy istnieje plik z pozycją dla zdjęcia w tle
+        background_position = {"x": 50, "y": 50}  # Domyślna pozycja
+        if self.background_image:
+            bg_path = self.background_image.lstrip("/static/")
+            position_file = bg_path.replace(".jpg", "_position.json").replace(
+                ".png", "_position.json"
+            )
+            position_path = os.path.join(current_app.root_path, "static", position_file)
+            if os.path.exists(position_path):
+                try:
+                    with open(position_path, "r") as f:
+                        background_position = json.load(f)
+                except:
+                    pass
+
         result = {
             "id": self.user_id,
             "username": self.username,
@@ -96,7 +116,25 @@ class User(Base):
             ),
             "last_login": self.last_login.isoformat() if self.last_login else None,
             "is_active": self.is_active,
-            "profile_picture": self.profile_picture,
+            "profile_picture": (
+                url_for(
+                    "static",
+                    filename=self.profile_picture.lstrip("/static/"),
+                    _external=True,
+                )
+                if self.profile_picture
+                else None
+            ),
+            "background_image": (
+                url_for(
+                    "static",
+                    filename=self.background_image.lstrip("/static/"),
+                    _external=True,
+                )
+                if self.background_image
+                else None
+            ),
+            "background_position": background_position,
             "bio": self.bio,
         }
 

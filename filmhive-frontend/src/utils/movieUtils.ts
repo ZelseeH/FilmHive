@@ -1,4 +1,4 @@
-// src/utils/movieUtils.ts
+
 export const handleImageError = (
     e: React.SyntheticEvent<HTMLImageElement, Event>,
     fallbackSrc: string = '/placeholder-poster.jpg'
@@ -7,7 +7,6 @@ export const handleImageError = (
     target.src = fallbackSrc;
     target.onerror = null;
 };
-// src/utils/movieUtils.ts
 export const formatReleaseYear = (releaseDate?: string): string => {
     if (!releaseDate) return '';
     return new Date(releaseDate).getFullYear().toString();

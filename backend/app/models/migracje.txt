@@ -1,0 +1,2 @@
+python -m alembic revision --autogenerate -m "nazwa"
+python -m alembic upgrade head

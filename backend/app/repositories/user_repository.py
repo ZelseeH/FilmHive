@@ -73,3 +73,21 @@ class UserRepository:
         user.set_password(new_password)
         self.session.commit()
         return True
+
+    def update_profile_picture(self, user_id, profile_picture_path):
+        """Aktualizuje zdjęcie profilowe użytkownika."""
+        user = self.get_by_id(user_id)
+        if not user:
+            return None
+        user.profile_picture = profile_picture_path
+        self.session.commit()
+        return user
+
+    def update_background_image(self, user_id, background_image_path):
+        """Aktualizuje zdjęcie w tle użytkownika."""
+        user = self.get_by_id(user_id)
+        if not user:
+            return None
+        user.background_image = background_image_path
+        self.session.commit()
+        return user
