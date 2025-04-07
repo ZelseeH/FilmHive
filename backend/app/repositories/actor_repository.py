@@ -1,6 +1,7 @@
 from app.models.actor import Actor
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import or_
+from sqlalchemy import or_, func  # Dodaj import func tutaj
+from functools import reduce
 
 
 class ActorRepository:
@@ -149,3 +150,80 @@ class ActorRepository:
                 "total_pages": total_pages,
             },
         }
+
+    def filter_actors(self, filters, page=1, per_page=10):
+        """Filtruje aktorów na podstawie różnych kryteriów."""
+        query = self.session.query(Actor)
+
+        # Filtrowanie po nazwie aktora
+        if "name" in filters and filters["name"]:
+            search_name = f"%{filters['name']}%"
+            query = query.filter(Actor.actor_name.ilike(search_name))
+
+        # Filtrowanie po krajach (miejsce urodzenia)
+        if "countries" in filters and filters["countries"]:
+            countries = filters["countries"].split(",")
+            country_conditions = []
+            for country in countries:
+                country_conditions.append(Actor.birth_place.ilike(f"%{country}%"))
+            if country_conditions:
+                query = query.filter(or_(*country_conditions))
+
+        # Filtrowanie po latach urodzenia
+        if "years" in filters and filters["years"]:
+            years = filters["years"].split(",")
+            year_conditions = []
+            for year in years:
+                # Zakładamy, że data urodzenia jest w formacie YYYY-MM-DD
+                start_date = f"{year}-01-01"
+                end_date = f"{year}-12-31"
+                year_conditions.append(Actor.birth_date.between(start_date, end_date))
+            if year_conditions:
+                query = query.filter(or_(*year_conditions))
+
+        # Filtrowanie po płci
+        if "gender" in filters and filters["gender"]:
+            from app.models.actor import Gender
+
+            gender_value = filters["gender"]
+            if gender_value == "M":
+                query = query.filter(Actor.gender == Gender.M)
+            elif gender_value == "K":
+                query = query.filter(Actor.gender == Gender.K)
+
+        # Obliczanie całkowitej liczby wyników
+        total = query.count()
+
+        # Dodanie paginacji
+        actors = (
+            query.order_by(Actor.actor_name)
+            .offset((page - 1) * per_page)
+            .limit(per_page)
+            .all()
+        )
+
+        total_pages = (total + per_page - 1) // per_page
+
+        return {
+            "actors": actors,
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "total_pages": total_pages,
+            },
+        }
+
+    def get_unique_birthplaces(self):
+        """Pobiera unikalne miejsca urodzenia aktorów."""
+        # Wyciągnij kraj z pola birth_place (zakładając format "miasto, kraj")
+        query = (
+            self.session.query(
+                func.split_part(Actor.birth_place, ",", -1).label("country")
+            )
+            .distinct()
+            .order_by("country")
+        )
+
+        countries = [row.country.strip() for row in query.all() if row.country]
+        return countries

@@ -9,6 +9,10 @@ export interface ProfileData {
     bio?: string;
     profile_picture?: string;
     background_image?: string;
+    background_position?: {
+        x: number;
+        y: number;
+    };
     registration_date?: string;
 }
 
@@ -37,8 +41,10 @@ export const profileService = {
             throw new Error(errorData.error || 'Nie udało się pobrać danych profilu');
         }
 
-        return await response.json();
-    },
+        const rawData = await response.json();
+        return rawData;
+    }
+    ,
     uploadProfilePicture: async (file: File): Promise<string> => {
         const token = authUtils.getToken();
         if (!token) {
@@ -76,6 +82,7 @@ export const profileService = {
         formData.append('file', file);
         formData.append('position_x', position.x.toString());
         formData.append('position_y', position.y.toString());
+
 
         const response = await fetch('http://localhost:5000/api/user/background-image', {
             method: 'POST',

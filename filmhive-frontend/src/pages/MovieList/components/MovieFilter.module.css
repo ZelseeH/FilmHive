@@ -1,0 +1,39 @@
+/* MovieFilter.module.css */
+.filterContainer {
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.filterContainer h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.genreOptions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.genreOption {
+    padding: 8px 16px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.genreOption:hover {
+    background-color: #f0f0f0;
+}
+
+.genreOption.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}

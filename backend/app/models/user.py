@@ -128,7 +128,11 @@ class User(Base):
             "background_image": (
                 url_for(
                     "static",
-                    filename=self.background_image.lstrip("/static/"),
+                    filename=(
+                        self.background_image.lstrip("/static/")
+                        if self.background_image.startswith("/static/")
+                        else self.background_image
+                    ),
                     _external=True,
                 )
                 if self.background_image
@@ -137,6 +141,9 @@ class User(Base):
             "background_position": background_position,
             "bio": self.bio,
         }
+        print(
+            f"Zwracany obiekt zawiera background_position: {result['background_position']}"
+        )
 
         if include_ratings:
             result["ratings"] = [rating.serialize() for rating in self.ratings]

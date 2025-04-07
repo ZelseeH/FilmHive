@@ -7,19 +7,28 @@ interface UserRatings {
     [movieId: number]: number;
 }
 
-export const useMovies = () => {
+export const useMovies = (currentPage: number = 1) => {
     const { user, getToken } = useAuth();
     const [movies, setMovies] = useState<Movie[]>([]);
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [userRatings, setUserRatings] = useState<UserRatings>({});
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [totalPages, setTotalPages] = useState<number>(1);
+
+    // Stała określająca liczbę filmów na stronę
+    const moviesPerPage = 10;
 
     const fetchMovies = useCallback(async () => {
         try {
             setLoading(true);
             const data = await getAllMovies();
             setMovies(data);
+
+            // Oblicz całkowitą liczbę stron
+            const calculatedTotalPages = Math.ceil(data.length / moviesPerPage);
+            setTotalPages(calculatedTotalPages);
+
             if (data.length > 0) {
                 setSelectedMovie(data[0]);
             }
@@ -36,7 +45,7 @@ export const useMovies = () => {
         try {
             const ratingsPromises = movies.map(movie =>
                 getUserRating(movie.id)
-                    .then(rating => ({ movieId: movie.id, rating })) // Bezpośrednio użyj rating jako wartości
+                    .then(rating => ({ movieId: movie.id, rating }))
                     .catch(() => ({ movieId: movie.id, rating: undefined }))
             );
 
@@ -53,7 +62,7 @@ export const useMovies = () => {
         } catch (error) {
             console.error('Error fetching user ratings:', error);
         }
-    }, [user, movies]);
+    }, [user, movies, getToken]);
 
     useEffect(() => {
         fetchMovies();
@@ -79,6 +88,7 @@ export const useMovies = () => {
         loading,
         error,
         handleMovieSelect,
-        refreshMovies
+        refreshMovies,
+        totalPages
     };
 };

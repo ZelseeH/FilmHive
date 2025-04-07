@@ -16,7 +16,6 @@ export const useProfileData = (username: string | undefined) => {
         try {
             setLoading(true);
 
-            // Używamy profileService zamiast bezpośredniego fetcha
             const data = await profileService.getUserProfile(username);
             setProfileData(data);
 

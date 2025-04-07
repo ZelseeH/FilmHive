@@ -62,3 +62,30 @@ def get_actor_movies(actor_id):
     if result:
         return jsonify(result)
     return jsonify({"error": "Actor not found"}), 404
+
+
+@actors_bp.route("/filter", methods=["GET"])
+def filter_actors():
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    # Zbieramy wszystkie filtry z parametrów zapytania
+    filters = {}
+    if "name" in request.args:
+        filters["name"] = request.args.get("name")
+    if "countries" in request.args:
+        filters["countries"] = request.args.get("countries")
+    if "years" in request.args:
+        filters["years"] = request.args.get("years")
+    if "gender" in request.args:
+        filters["gender"] = request.args.get("gender")
+
+    result = actor_service.filter_actors(filters, page, per_page)
+    return jsonify(result)
+
+
+@actors_bp.route("/birthplaces", methods=["GET"])
+def get_birthplaces():
+    """Pobiera unikalne miejsca urodzenia aktorów."""
+    birthplaces = actor_service.get_unique_birthplaces()
+    return jsonify({"birthplaces": birthplaces})

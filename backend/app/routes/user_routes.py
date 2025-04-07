@@ -46,12 +46,14 @@ def get_user_profile(username):
             return jsonify({"error": "Użytkownik nie znaleziony"}), 404
 
         # Return only public information
+        # Return only public information
         public_data = {
             "username": user.get("username"),
             "name": user.get("name"),
             "bio": user.get("bio"),
             "profile_picture": user.get("profile_picture"),
             "background_image": user.get("background_image"),
+            "background_position": user.get("background_position"),  # Dodaj tę linię
             "registration_date": user.get("registration_date"),
         }
 
@@ -164,19 +166,20 @@ def upload_user_background_image():
             user_id, file, {"x": float(position_x), "y": float(position_y)}
         )
 
-        if not updated_user:
-            return jsonify({"error": "Użytkownik nie znaleziony"}), 404
+        print(f"Zaktualizowany użytkownik: {updated_user}")
 
         return (
             jsonify(
                 {
                     "message": "Tło profilu zaktualizowane",
                     "background_image": updated_user.get("background_image"),
+                    "background_position": updated_user.get(
+                        "background_position"
+                    ),  # Dodaj tę linię
                 }
             ),
             200,
         )
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
     except Exception as e:
+        print(f"Błąd w endpoincie: {str(e)}")
         return jsonify({"error": str(e)}), 500

@@ -1,0 +1,178 @@
+.actor-list-container {
+    margin: 0 auto;
+}
+
+.actorItem {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #fff;
+    padding: 10px;
+    position: relative;
+}
+
+.actorPhoto {
+    position: relative;
+    width: 120px;
+    height: 180px;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.actorPhoto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.actorInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+    width: 100%;
+    position: relative;
+    min-height: 150px;
+}
+
+.actorLabel {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #999;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+    text-align: left;
+}
+
+.actorHeader {
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.actorName {
+    margin: 0 0 2px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+    text-align: left;
+}
+
+.actorName a {
+    color: #000;
+    text-decoration: none;
+}
+
+.actorName a:hover {
+    text-decoration: underline;
+}
+
+.actorAge {
+    color: #666;
+    margin: 0;
+    font-size: 14px;
+    text-align: left;
+}
+
+.actorDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    width: calc(100% - 20px);
+}
+
+.actorDetails p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    display: flex;
+    width: 100%;
+}
+
+.actorDetails>p>span:first-child {
+    color: #666;
+    margin-right: 5px;
+    font-weight: normal;
+    display: inline-block;
+    width: 90px;
+    flex-shrink: 0;
+}
+
+.birthPlaceText {
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    max-width: calc(100% - 95px);
+}
+
+.actorBirthPlace {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    color: #000;
+    width: 100%;
+}
+
+.noImage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #333;
+    color: #fff;
+    font-size: 2rem;
+    font-weight: bold;
+    border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    .actorPhoto {
+        width: 100px;
+        height: 150px;
+    }
+
+    .actorInfo {
+        padding-left: 8px;
+    }
+
+    .actorDetails {
+        width: calc(100% - 15px);
+    }
+
+    .actorDetails>p>span:first-child {
+        width: 80px;
+    }
+
+    .birthPlaceText {
+        max-width: calc(100% - 85px);
+    }
+}
+
+@media (max-width: 480px) {
+    .actorItem {
+        padding: 8px;
+    }
+
+    .actorPhoto {
+        width: 80px;
+        height: 120px;
+    }
+
+    .actorInfo {
+        min-height: 120px;
+    }
+
+    .actorDetails>p>span:first-child {
+        width: 70px;
+    }
+
+    .birthPlaceText {
+        max-width: calc(100% - 75px);
+    }
+}

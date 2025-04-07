@@ -50,6 +50,7 @@ def save_user_image(file, username, image_type, position=None):
 
     file_path = os.path.join(user_folder, new_filename)
     file.save(file_path)
+    print(f"Zapisano plik: {file_path}")
 
     # Zapisz pozycję do pliku JSON, jeśli podano
     if position and image_type == "background_image":
@@ -59,4 +60,4 @@ def save_user_image(file, username, image_type, position=None):
         with open(position_file, "w") as f:
             json.dump(position, f)
 
-    return f"uploads/users/{username}/{new_filename}"
+    return f"/static/uploads/users/{username}/{new_filename}"

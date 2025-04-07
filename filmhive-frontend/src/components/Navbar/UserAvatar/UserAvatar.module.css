@@ -29,4 +29,9 @@
     .user-avatar {
         margin-left: 0;
     }
+
+    /* Larger font size for the initial in the mobile menu */
+    .mobileUserAvatar .user-initial {
+        font-size: 32px;
+    }
 }

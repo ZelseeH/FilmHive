@@ -33,7 +33,8 @@ const UserSettings: React.FC = () => {
       handleCancel();
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setModalErrors(prev => ({ ...prev, name: error.message || 'Wystąpił błąd podczas aktualizacji imienia i nazwiska.' }));
+        const errorMessage: string = error.message;
+        setModalErrors(prev => ({ ...prev, name: errorMessage || 'Wystąpił błąd podczas aktualizacji imienia i nazwiska.' }));
       } else {
         setModalErrors(prev => ({ ...prev, name: 'Wystąpił nieznany błąd podczas aktualizacji imienia i nazwiska.' }));
       }
@@ -52,7 +53,8 @@ const UserSettings: React.FC = () => {
       handleCancel();
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setModalErrors(prev => ({ ...prev, bio: error.message || 'Wystąpił błąd podczas aktualizacji opisu.' }));
+        const errorMessage: string = error.message;
+        setModalErrors(prev => ({ ...prev, bio: errorMessage || 'Wystąpił błąd podczas aktualizacji opisu.' }));
       } else {
         setModalErrors(prev => ({ ...prev, bio: 'Wystąpił nieznany błąd podczas aktualizacji opisu.' }));
       }
@@ -77,7 +79,8 @@ const UserSettings: React.FC = () => {
       handleCancel();
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setModalErrors(prev => ({ ...prev, email: error.message || 'W podczas aktualizacji adresu email.' }));
+        const errorMessage: string = error.message;
+        setModalErrors(prev => ({ ...prev, email: errorMessage || 'Wystąpił błąd podczas aktualizacji adresu email.' }));
       } else {
         setModalErrors(prev => ({ ...prev, email: 'Wystąpił nieznany błąd podczas aktualizacji adresu email.' }));
       }
@@ -107,9 +110,10 @@ const UserSettings: React.FC = () => {
       handleCancel();
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setModalErrors(prev => ({ ...prev, password: error.message || 'Wystąpił błąd podczas zmiany hasĹa.' }));
+        const errorMessage: string = error.message;
+        setModalErrors(prev => ({ ...prev, password: errorMessage || 'Wystąpił błąd podczas zmiany hasła.' }));
       } else {
-        setModalErrors(prev => ({ ...prev, password: 'Wystąpił nieznany błąd podczas zmiany hasĹa.' }));
+        setModalErrors(prev => ({ ...prev, password: 'Wystąpił nieznany błąd podczas zmiany hasła.' }));
       }
     } finally {
       setLoading(false);

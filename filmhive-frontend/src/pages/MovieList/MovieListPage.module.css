@@ -1,4 +1,4 @@
-.page-container {
+.pageContainer {
   display: flex;
   justify-content: center;
   max-width: 1100px;
@@ -8,18 +8,19 @@
   box-sizing: border-box;
 }
 
-.movie-list-page {
+.movieListPage {
   padding-top: 60px;
   width: 600px;
   flex-shrink: 0;
 }
 
-.movie-list-page h1 {
+.movieListPage h1 {
   margin-top: 0;
   font-size: 24px;
   color: #fff;
 }
-.filter-container {
+
+.filterContainer {
   padding-top: 60px;
   width: 500px;
   height: 500px;
@@ -28,32 +29,32 @@
   color: white;
   border-radius: 8px;
   padding: 20px;
-  position: sticky;
-  top: 80px;
+  position: relative;
+  top: 60px;
 }
 
-.filter-container h2 {
+.filterContainer h2 {
   margin-top: 0;
   border-bottom: 1px solid #444;
   padding-bottom: 10px;
 }
 
 @media (max-width: 1100px) {
-  .page-container {
+  .pageContainer {
     flex-direction: column-reverse;
     width: 100%;
   }
 
-  .movie-list-page,
-  .filter-container {
+  .movieListPage,
+  .filterContainer {
     width: 100%;
   }
 
-  .movie-list-page {
+  .movieListPage {
     margin-top: -30px;
   }
 
-  .filter-container {
+  .filterContainer {
     position: static;
     height: auto;
     margin-bottom: 0;

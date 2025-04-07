@@ -1,15 +1,17 @@
+// src/pages/MovieList/MovieListPage.tsx
 import React from 'react';
-import PMovieList from '../../components/PaginatedMovieList/PMovieList';
+import MovieList from '../../components/MovieList/MovieList';
 import styles from './MovieListPage.module.css';
 
 const MovieListPage: React.FC = () => {
   return (
-    <div className={styles['page-container']}>
-      <div className={styles['movie-list-page']}>
-        <PMovieList />
+    <div className={styles.pageContainer}>
+      <div className={styles.movieListPage}>
+        <MovieList />
       </div>
-      <div className={styles['filter-container']}>
+      <div className={styles.filterContainer}>
         <h2>Filtrowanie</h2>
+        {/* Tutaj będą komponenty filtrowania */}
       </div>
     </div>
   );

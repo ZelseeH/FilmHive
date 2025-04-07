@@ -42,7 +42,7 @@
     padding-left: 15px;
     padding-right: 15px;
   }
-  
+
   .profile-header {
     width: 100%;
     border-radius: 0;
@@ -51,18 +51,9 @@
 
 @media (max-width: 768px) {
   .profile-page {
-    padding-top: 70px;
-    width: calc(100% - 20px);
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  .profile-page {
-    padding-top: 70px;
-    width: calc(100% - 20px);
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-top: 60px;
+    width: calc(100% - 0px);
+    padding-left: 0px;
+    padding-right: 0px;
   }
 }

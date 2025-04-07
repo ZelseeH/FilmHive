@@ -1,4 +1,3 @@
-/* src/layouts/MainLayout.module.css */
 .app {
     display: flex;
     flex-direction: column;
@@ -8,4 +7,15 @@
 .content {
     flex: 1;
     padding: 20px;
+}
+
+/* Blokada przewijania na wszystkich poziomach */
+html.menu-open,
+body.menu-open,
+.app.menu-open,
+.content.menu-open {
+    overflow: hidden;
+    height: 100vh;
+    position: fixed;
+    width: 100%;
 }

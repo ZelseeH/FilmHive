@@ -7,9 +7,17 @@ from .base import (
     Integer,
     Date,
     datetime,
+    Enum,  # Dodaj import Enum
 )
+import enum  # Dodaj import enum
 from .movie import Movie
 from flask import url_for
+
+
+# Dodaj klasę Enum dla płci
+class Gender(enum.Enum):
+    M = "M"
+    K = "K"
 
 
 class Actor(Base):
@@ -26,6 +34,9 @@ class Actor(Base):
         String(255), nullable=True
     )  # Dodane pole dla zdjęcia
 
+    # Dodaj pole płci
+    gender: Mapped[Gender] = mapped_column(Enum(Gender), nullable=True)
+
     movies: Mapped[list["Movie"]] = relationship(
         "Movie", secondary="movie_actors", back_populates="actors"
     )
@@ -33,26 +44,26 @@ class Actor(Base):
     def __repr__(self):
         return f"<Actor(id={self.actor_id}, name='{self.actor_name}', birth_date={self.birth_date})>"
 
-    from flask import url_for
+    def serialize(self, include_movies=False):
+        from flask import url_for
 
+        result = {
+            "id": self.actor_id,
+            "name": self.actor_name,
+            "birth_date": self.birth_date.isoformat() if self.birth_date else None,
+            "birth_place": self.birth_place,
+            "biography": self.biography,
+            "photo_url": (
+                url_for("static", filename=f"actors/{self.photo_url}", _external=True)
+                if self.photo_url
+                else None
+            ),
+            "gender": (self.gender.value if self.gender else None),
+        }
 
-def serialize(self, include_movies=False):
-    result = {
-        "id": self.actor_id,
-        "name": self.actor_name,
-        "birth_date": self.birth_date.isoformat() if self.birth_date else None,
-        "birth_place": self.birth_place,
-        "biography": self.biography,
-        "photo_url": (
-            url_for("static", filename=f"actors/{self.photo_url}", _external=True)
-            if self.photo_url
-            else None
-        ),
-    }
+        if include_movies:
+            result["movies"] = [
+                {"id": movie.movie_id, "title": movie.title} for movie in self.movies
+            ]
 
-    if include_movies:
-        result["movies"] = [
-            {"id": movie.movie_id, "title": movie.title} for movie in self.movies
-        ]
-
-    return result
+        return result

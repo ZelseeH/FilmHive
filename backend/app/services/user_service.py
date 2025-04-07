@@ -92,7 +92,6 @@ def upload_profile_picture(user_id, file):
         raise Exception(f"Błąd podczas przesyłania zdjęcia profilowego: {str(e)}")
 
 
-# services/user_service.py
 def upload_background_image(user_id, file, position=None):
     """Przesyła i aktualizuje zdjęcie w tle użytkownika."""
     try:
@@ -100,18 +99,29 @@ def upload_background_image(user_id, file, position=None):
         if not user:
             return None
 
+        print(f"Przesyłanie zdjęcia w tle dla użytkownika {user.username}")
+
         # Domyślna pozycja, jeśli nie podano
         if position is None:
             position = {"x": 50, "y": 50}
 
+        print(f"Pozycja zdjęcia: {position}")
+
         # Zapisz plik i pozycję
         file_path = save_user_image(file, user.username, "background_image", position)
+        print(f"Zapisana ścieżka do pliku: {file_path}")
+
         if not file_path:
             raise ValueError(
                 "Nieprawidłowy format pliku. Dozwolone formaty: png, jpg, jpeg, gif, webp"
             )
 
-        updated_user = user_repo.update_background_image(user_id, file_path, position)
+        updated_user = user_repo.update_background_image(user_id, file_path)
+        print(
+            f"Zaktualizowana ścieżka do zdjęcia w tle: {updated_user.background_image}"
+        )
+
         return updated_user.serialize()
     except Exception as e:
-        raise Exception(f"Błąd podczas przesyłania zdjęcia w tle: {str(e)}")
+        print(f"Błąd podczas przesyłania zdjęcia w tle: {str(e)}")
+        raise

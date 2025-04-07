@@ -4,21 +4,24 @@ import styles from './UserAvatar.module.css';
 
 interface User {
     username?: string;
-    avatar?: string;
+    profile_picture?: string;
 }
 
 interface UserAvatarProps {
     user: User;
-    onClick: () => void;
+    onClick: (e: React.MouseEvent) => void;
+    className?: string;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, onClick }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ user, onClick, className }) => {
     return (
-        <div className={styles['user-avatar']} onClick={onClick}>
-            {user.avatar ? (
-                <img src={user.avatar} alt={user.username} />
+        <div className={`${styles['user-avatar']} ${className || ''}`} onClick={onClick}>
+            {user.profile_picture ? (
+                <img src={user.profile_picture} alt={user.username || 'Użytkownik'} />
             ) : (
-                <div className={styles['user-initial']}>{user.username?.[0].toUpperCase()}</div>
+                <div className={styles['user-initial']}>
+                    {user.username ? user.username[0].toUpperCase() : '?'}
+                </div>
             )}
         </div>
     );
