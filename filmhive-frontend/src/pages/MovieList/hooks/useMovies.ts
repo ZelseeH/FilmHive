@@ -24,11 +24,20 @@ interface Filters {
     average_rating?: number;
 }
 
+interface SortOption {
+    field: string;
+    order: 'asc' | 'desc';
+}
+
 interface UserRatings {
     [movieId: number]: number;
 }
 
-export const useMovies = (filters: Filters, page: number) => {
+export const useMovies = (
+    filters: Filters,
+    page: number,
+    sortOption: SortOption = { field: 'title', order: 'asc' }
+) => {
     const { user, getToken } = useAuth();
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -44,8 +53,9 @@ export const useMovies = (filters: Filters, page: number) => {
             // Dodaj parametry paginacji
             queryParams.append('page', page.toString());
             queryParams.append('per_page', '10');
+            queryParams.append('include_actors', 'true');
 
-            // Dodaj parametry filtrowania, konwertując wartości na string
+            // Dodaj parametry filtrowania
             if (filters.title) queryParams.append('title', filters.title);
             if (filters.countries) queryParams.append('countries', filters.countries);
             if (filters.years) queryParams.append('years', filters.years);
@@ -54,6 +64,10 @@ export const useMovies = (filters: Filters, page: number) => {
                 queryParams.append('rating_count_min', filters.rating_count_min.toString());
             if (filters.average_rating !== undefined)
                 queryParams.append('average_rating', filters.average_rating.toString());
+
+            // Dodaj parametry sortowania
+            queryParams.append('sort_by', sortOption.field);
+            queryParams.append('sort_order', sortOption.order);
 
             const response = await fetch(`http://localhost:5000/api/movies/filter?${queryParams}`);
 
@@ -71,7 +85,7 @@ export const useMovies = (filters: Filters, page: number) => {
         } finally {
             setLoading(false);
         }
-    }, [filters, page]);
+    }, [filters, page, sortOption]);
 
     const fetchUserRatings = useCallback(async () => {
         if (!user || !movies.length) return;

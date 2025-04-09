@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useMovies } from './hooks/useMovies';
 import MovieItem from './components/MovieItem/MovieItem';
 import MovieFilter from './components/MovieFilters/MovieFilter';
+import SortingComponent from './components/MovieSorting/MovieSorting';
 import Pagination from '../../components/ui/Pagination';
 import styles from './MovieListPage.module.css';
 import { FaFilter } from 'react-icons/fa';
@@ -16,12 +17,23 @@ interface MovieFilters {
   average_rating?: number;
 }
 
+interface SortOption {
+  field: string;
+  order: 'asc' | 'desc';
+}
+
 const MovieListPage: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null);
+  const sortingRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filters, setFilters] = useState<MovieFilters>({});
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
-  const { movies, loading, error, totalPages, userRatings } = useMovies(filters, currentPage);
+  const [isSortingOpen, setIsSortingOpen] = useState<boolean>(false);
+  const [sortOption, setSortOption] = useState<SortOption>({ field: 'title', order: 'asc' });
+  const [isSortingBarVisible, setIsSortingBarVisible] = useState<boolean>(true);
+  const [lastScrollY, setLastScrollY] = useState<number>(0);
+  const { movies, loading, error, totalPages, userRatings } = useMovies(filters, currentPage, sortOption);
+
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     window.scrollTo(0, 0);
@@ -32,56 +44,102 @@ const MovieListPage: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const toggleFilter = () => {
-    if (isFilterOpen) {
-      setIsFilterOpen(false);
-      document.body.style.overflow = 'auto';
-    } else {
-      setIsFilterOpen(true);
-      document.body.style.overflow = 'hidden';
-    }
+  const handleSortChange = (newSortOption: SortOption) => {
+    setSortOption(newSortOption);
+    setCurrentPage(1);
   };
 
-  // Efekt kliknięcia poza filtrem
+  const toggleFilter = () => {
+    setIsFilterOpen(!isFilterOpen);
+    setIsSortingOpen(false);
+    document.body.style.overflow = !isFilterOpen ? 'hidden' : 'auto';
+  };
+
+  const toggleSorting = () => {
+    setIsSortingOpen(!isSortingOpen);
+    setIsFilterOpen(false);
+    document.body.style.overflow = !isSortingOpen ? 'hidden' : 'auto';
+  };
+
+  const closeAllPanels = () => {
+    setIsFilterOpen(false);
+    setIsSortingOpen(false);
+    document.body.style.overflow = 'auto';
+  };
+
+  // Logika przewijania dla sortingBar
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 60) {
+        // Przewijanie w dół – chowaj pasek
+        setIsSortingBarVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        // Przewijanie w górę – pokazuj pasek
+        setIsSortingBarVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (filterRef.current && !filterRef.current.contains(event.target as Node) && isFilterOpen) {
         toggleFilter();
       }
+      if (sortingRef.current && !sortingRef.current.contains(event.target as Node) && isSortingOpen) {
+        toggleSorting();
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isFilterOpen]);
+  }, [isFilterOpen, isSortingOpen]);
 
-  // Obsługa klawisza Escape
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isFilterOpen) {
-        toggleFilter();
+      if (event.key === 'Escape') {
+        closeAllPanels();
       }
     };
 
     document.addEventListener('keydown', handleEscKey);
     return () => document.removeEventListener('keydown', handleEscKey);
-  }, [isFilterOpen]);
+  }, [isFilterOpen, isSortingOpen]);
 
   return (
-    <div className={styles.pageContainer}>
-      <div className={styles.mobileFilterButton}>
-        <button onClick={toggleFilter} className={styles.filterToggleButton}>
-          <FaFilter /> Filtruj
-        </button>
+    <div className={styles.pageWrapper}>
+      {/* Pasek sortowania na górze */}
+      <div className={`${styles.sortingBar} ${isSortingBarVisible ? styles.visible : styles.hidden}`}>
+        <SortingComponent value={sortOption} onChange={handleSortChange} />
       </div>
 
-      <div className={styles.movieListPage}>
-        {loading ? (
-          <div className={styles.loading}>Ładowanie filmów...</div>
-        ) : error ? (
-          <div className={styles.error}>Błąd: {error}</div>
-        ) : (
-          <>
-            <div className={styles.movieListContainer}>
+      {/* Przyciski mobilne */}
+      <div className={styles.mobileControlsContainer}>
+        <div className={styles.mobileButtons}>
+          <button onClick={toggleFilter} className={styles.filterToggleButton}>
+            <FaFilter /> Filtruj
+          </button>
+          <button onClick={toggleSorting} className={styles.sortToggleButton}>
+            Sortuj
+          </button>
+        </div>
+      </div>
+
+      {/* Główna zawartość */}
+      <div className={styles.pageContainer}>
+        <div className={styles.movieListPage}>
+          {loading ? (
+            <div className={styles.loading}>Ładowanie filmów...</div>
+          ) : error ? (
+            <div className={styles.error}>Błąd: {error}</div>
+          ) : (
+            <>
               {movies.length > 0 ? (
                 movies.map(movie => (
                   <MovieItem
@@ -93,31 +151,32 @@ const MovieListPage: React.FC = () => {
               ) : (
                 <div className={styles.noMovies}>Nie znaleziono filmów</div>
               )}
-            </div>
 
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            )}
-          </>
-        )}
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </>
+          )}
+        </div>
+
+        <div className={`${styles.filterContainer} ${styles.desktopFilter}`}>
+          <h2>Filtrowanie</h2>
+          <MovieFilter
+            value={filters}
+            onChange={handleFilterChange}
+            isLoading={loading}
+          />
+        </div>
       </div>
 
-      <div className={`${styles.filterContainer} ${styles.desktopFilter}`}>
-        <h2>Filtrowanie</h2>
-        <MovieFilter
-          value={filters}
-          onChange={handleFilterChange}
-          isLoading={loading}
-        />
-      </div>
-
+      {/* Mobilny filtr */}
       <div
         ref={filterRef}
-        className={`${styles.filterContainer} ${styles.mobileFilter} ${isFilterOpen ? styles.open : styles.hidden}`}
+        className={`${styles.mobileFilter} ${isFilterOpen ? styles.open : ''}`}
       >
         <div className={styles.filterHeader}>
           <h2>Filtrowanie</h2>
@@ -133,9 +192,24 @@ const MovieListPage: React.FC = () => {
         />
       </div>
 
+      {/* Mobilne sortowanie */}
       <div
-        className={`${styles.filterOverlay} ${isFilterOpen ? styles.open : styles.hidden}`}
-        onClick={toggleFilter}
+        ref={sortingRef}
+        className={`${styles.mobileSorting} ${isSortingOpen ? styles.open : ''}`}
+      >
+        <div className={styles.sortingHeader}>
+          <h2>Sortowanie</h2>
+          <button onClick={toggleSorting} className={styles.closeSortingButton}>
+            <IoMdClose size={24} />
+          </button>
+        </div>
+        <SortingComponent value={sortOption} onChange={handleSortChange} onClose={toggleSorting} />
+      </div>
+
+      {/* Overlay */}
+      <div
+        className={`${styles.overlay} ${(isFilterOpen || isSortingOpen) ? styles.open : ''}`}
+        onClick={closeAllPanels}
       />
     </div>
   );

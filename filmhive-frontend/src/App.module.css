@@ -16,16 +16,22 @@ body {
   flex-direction: column;
 }
 
-.App {
+.app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-width: 260px;
+  /* Główny kontener nie może być węższy niż 260px */
+  overflow-x: auto;
+  /* Poziomy scroll poniżej 260px */
 }
 
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 260px;
+  /* Zawartość też nie skaluje się poniżej 260px */
 }
 
 .main-content {
@@ -39,9 +45,11 @@ body {
   padding: 15px 0;
   font-size: 14px;
   border-top: 2px solid rgba(255, 255, 255, 0.1);
+  min-width: 260px;
+  /* Footer też ma minimalną szerokość */
 }
 
-/* Pozostałe style pozostają bez zmian */
+/* Pozostałe style bez zmian */
 .App-header {
   background-color: #282c34;
   min-height: 100vh;

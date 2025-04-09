@@ -8,7 +8,6 @@ import { useUserMenu } from './hooks/useUserMenu';
 import { useMobileMenu } from './hooks/useMobileMenu';
 import { handleLogout } from './services/navbarService';
 import logo from './FilmHiveLogo.png';
-
 import SearchBar from './SearchBar/SearchBar';
 import LoginModal from '../../components/LoginModal/LoginModal';
 import UserMenu from './UserMenu/UserMenu';
@@ -24,12 +23,16 @@ const Navbar: React.FC = () => {
 
   const onLogout = () => handleLogout(logout, closeUserMenu, navigate);
 
+  // Blokada przewijania dla menu mobilnego z zachowaniem pozycji
   useEffect(() => {
+    let scrollPosition = 0;
     const preventTouchMove = (e: TouchEvent) => {
       e.preventDefault();
     };
 
     if (mobileMenuOpen) {
+      // Zapisz aktualną pozycję przewinięcia
+      scrollPosition = window.scrollY;
       document.body.classList.add('menu-open');
       document.documentElement.classList.add('menu-open');
       document.addEventListener('touchmove', preventTouchMove, { passive: false });
@@ -41,6 +44,8 @@ const Navbar: React.FC = () => {
       document.removeEventListener('touchmove', preventTouchMove);
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
+      // Przywróć pozycję przewinięcia po zamknięciu menu
+      window.scrollTo(0, scrollPosition);
     }
 
     return () => {
@@ -49,8 +54,36 @@ const Navbar: React.FC = () => {
       document.removeEventListener('touchmove', preventTouchMove);
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
+      window.scrollTo(0, scrollPosition);
     };
   }, [mobileMenuOpen]);
+
+  // Blokada przewijania dla LoginModal z zachowaniem pozycji
+  useEffect(() => {
+    let scrollPosition = 0;
+
+    if (isLoginModalOpen) {
+      scrollPosition = window.scrollY;
+      document.body.classList.add('modal-open');
+      document.documentElement.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      window.scrollTo(0, scrollPosition);
+    }
+
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      window.scrollTo(0, scrollPosition);
+    };
+  }, [isLoginModalOpen]);
 
   return (
     <div className={`${styles['navbar-container']} ${show ? '' : styles.hidden}`}>
@@ -127,7 +160,7 @@ const Navbar: React.FC = () => {
               Aktorzy
             </Link>
           </div>
-          <div className={styles.spacer}></div> {/* Pusty element wypełniający przestrzeń */}
+          <div className={styles.spacer}></div>
           <div className={styles.mobileUserSection}>
             {user ? (
               <>

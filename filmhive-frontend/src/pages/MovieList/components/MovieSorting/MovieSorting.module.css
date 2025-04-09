@@ -1,0 +1,191 @@
+.sortingWrapper {
+    width: 100%;
+}
+
+.sortingContainer {
+    background-color: white;
+    color: black;
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.sortingHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.sortingHeader h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.sortingContent {
+    margin-bottom: 20px;
+}
+
+.sortingSection {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.sortingSection h3 {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.optionLabel {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.optionLabel span {
+    flex-grow: 1;
+}
+
+.optionLabel input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #ffcc00;
+}
+
+.closeButtonContainer {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.closeButtonLarge {
+    background-color: #ffcc00;
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.closeButtonLarge:hover {
+    background-color: #e6b800;
+}
+
+/* Styl dla navbaru powyżej 1100px */
+@media (min-width: 1100px) {
+    .sortingWrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .sortingContainer {
+        padding: 0 20px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        border-radius: 0;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .sortingHeader {
+        margin: 0;
+        padding: 0;
+        border: none;
+        flex: 0 0 auto;
+    }
+
+    .sortingHeader h2 {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #333;
+        margin-right: 20px;
+    }
+
+    .sortingContent {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        gap: 30px;
+    }
+
+    .sortingSection {
+        margin: 0;
+        padding: 0;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sortingSection h3 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .optionLabel {
+        margin: 0;
+        gap: 5px;
+        cursor: pointer;
+    }
+
+    .optionLabel span {
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .optionLabel input[type="radio"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #ffcc00;
+    }
+
+    .closeButtonContainer {
+        display: none;
+        /* Ukrywamy kontener z przyciskiem w widoku desktopowym */
+    }
+
+    .closeButtonLarge {
+        display: none;
+        /* Ukrywamy przycisk w widoku desktopowym */
+    }
+
+    .closeButton {
+        display: none;
+        /* Ukrywamy górny przycisk zamykania w widoku desktopowym */
+    }
+}
+
+/* Styl dla widoku mobilnego (poniżej 1100px) */
+@media (max-width: 1100px) {
+    .closeButton {
+        display: none;
+        /* Ukrywamy górny przycisk zamykania, bo mamy go na dole */
+    }
+}

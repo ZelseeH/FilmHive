@@ -1,3 +1,38 @@
+.pageWrapper {
+  width: 100%;
+  position: relative;
+  padding-top: 120px;
+  /* Navbar (60px) + SortingBar (60px) */
+}
+
+.sortingBar {
+  background-color: white;
+  position: fixed;
+  /* Przyklejony pod Navbar */
+  top: 60px;
+  /* Przyklejony tuż pod Navbar */
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 900;
+  /* Mniejszy niż Navbar (1000), ale większy niż reszta */
+  max-width: 1100px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  transition: transform 0.3s ease-in-out;
+  /* Płynne chowanie/pokazywanie */
+}
+
+.sortingBar.visible {
+  transform: translateY(0);
+  /* Widoczny pod Navbar */
+}
+
+.sortingBar.hidden {
+  transform: translateY(-100%);
+  /* Chowa się nad ekranem */
+}
+
 .pageContainer {
   display: flex;
   justify-content: center;
@@ -10,7 +45,6 @@
 }
 
 .movieListPage {
-  padding-top: 60px;
   width: 600px;
   flex-shrink: 0;
 }
@@ -22,15 +56,12 @@
 }
 
 .filterContainer {
-  padding-top: 60px;
   width: 500px;
   flex-shrink: 0;
   background-color: #222;
   color: white;
   border-radius: 8px;
   padding: 20px;
-  position: relative;
-  top: 60px;
   height: fit-content;
   max-height: calc(100vh - 100px);
   overflow-y: auto;
@@ -43,7 +74,6 @@
   padding-bottom: 10px;
 }
 
-/* Mobile filter toggle button */
 .mobileFilterButton {
   display: none;
 }
@@ -52,8 +82,7 @@
   background-color: #ffcc00;
   color: #000;
   border: none;
-  border-radius: 4px;
-  padding: 10px 15px;
+  border-radius: 5px;
   font-weight: bold;
   cursor: pointer;
   display: flex;
@@ -62,22 +91,111 @@
   width: 100%;
   justify-content: center;
   font-size: 16px;
-  margin-bottom: 15px;
-  margin-top: 70px;
+  margin-top: 0;
 }
 
 .filterToggleButton:hover {
   background-color: #e6b800;
 }
 
-/* Mobile filter styles */
+.mobileControlsContainer {
+  width: 100%;
+}
+
+.desktopSorting {
+  display: block;
+  margin-bottom: 20px;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sortingContainer {
+  background-color: white;
+  color: black;
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+  height: fit-content;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sortingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.sortingHeader h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.closeSortingButton {
+  background: none;
+  border: none;
+  color: #000;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.mobileSorting {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 85%;
+  height: 100vh;
+  background-color: white;
+  z-index: 999;
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+  overscroll-behavior: contain;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.mobileSorting.open {
+  transform: translateX(0);
+}
+
+.mobileButtons {
+  display: none;
+  height: 3em;
+  margin: 10px;
+}
+
+.sortToggleButton {
+  background-color: #ffcc00;
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  font-size: 16px;
+  margin-top: 0;
+}
+
+.sortToggleButton:hover {
+  background-color: #e6b800;
+}
+
 .mobileFilter {
   position: fixed;
   top: 0;
   right: 0;
   width: 85%;
   height: 100vh;
-  /* Pełna wysokość viewportu */
   background-color: #222;
   z-index: 999;
   overflow-y: auto;
@@ -87,11 +205,12 @@
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
   will-change: transform;
-  /* Dodajemy dla lepszej wydajności animacji */
   backface-visibility: hidden;
-  /* Dodajemy dla lepszej wydajności animacji */
   perspective: 1000px;
-  /* Dodajemy dla lepszej wydajności animacji */
+}
+
+.mobileFilter.open {
+  transform: translateX(0);
 }
 
 .filterHeader {
@@ -109,7 +228,6 @@
   padding: 5px;
 }
 
-/* Duży przycisk X do zamykania na małych ekranach */
 .closeFilterButtonLarge {
   display: none;
   position: fixed;
@@ -134,7 +252,7 @@
   background-color: #e6b800;
 }
 
-.filterOverlay {
+.overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -147,7 +265,11 @@
   pointer-events: none;
 }
 
-/* Ukrycie wewnętrznych pasków przewijania */
+.overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .filterForm {
   overflow: visible;
 }
@@ -161,13 +283,85 @@
   scrollbar-width: none;
 }
 
-.mobileFilter.open {
-  transform: translateX(0);
+.sortingSection {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
 }
 
-.filterOverlay.open {
-  opacity: 1;
-  pointer-events: auto;
+.sortingSection h3 {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+.optionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.optionRow span {
+  flex-grow: 1;
+}
+
+.optionRow input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #ffcc00;
+}
+
+.applyButton {
+  width: 100%;
+  padding: 12px;
+  background-color: #ffcc00;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.applyButton:hover {
+  background-color: #e6b800;
+}
+
+.loading,
+.error,
+.noMovies {
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+
+@media (min-width: 1100px) {
+  .sortingBar {
+    display: block;
+    position: fixed;
+    /* Zamiast sticky, aby zawsze był przyklejony i mógł się chować */
+    top: 60px;
+    /* Przyklejony pod Navbar */
+    z-index: 900;
+  }
+
+  .desktopSorting {
+    display: none;
+  }
+
+  .mobileControlsContainer {
+    display: none;
+  }
+
+  .mobileFilter,
+  .mobileSorting {
+    display: none;
+  }
+
+  .pageContainer {
+    margin-top: 20px;
+  }
 }
 
 @media (max-width: 1100px) {
@@ -193,16 +387,38 @@
   .mobileFilter {
     display: block;
     max-height: 100vh;
-    /* Dodajemy, aby upewnić się, że nie przekracza viewportu */
   }
 
-  /* Wszystkie wewnętrzne elementy nie powinny mieć własnego przewijania */
   .mobileFilter * {
     overflow: visible;
   }
 
-  .filterOverlay {
+  .overlay {
     display: block;
+  }
+
+  .desktopSorting {
+    display: none;
+  }
+
+  .mobileButtons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .filterToggleButton,
+  .sortToggleButton {
+    flex: 1;
+  }
+
+  .mobileSorting {
+    display: block;
+  }
+
+  .sortingBar {
+    display: none;
+    /* Ukrywamy sortingBar w widoku mobilnym, bo mamy mobilne sortowanie */
   }
 }
 
@@ -213,11 +429,12 @@
 }
 
 @media (max-width: 576px) {
-  .mobileFilter {
+
+  .mobileFilter,
+  .mobileSorting {
     width: 100%;
     border-radius: 0;
     padding-bottom: 80px;
-    /* Zachowujemy miejsce na duży przycisk X */
   }
 
   .closeFilterButtonLarge {

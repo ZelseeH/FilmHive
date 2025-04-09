@@ -79,14 +79,26 @@ def delete_movie(movie_id):
         raise Exception(f"Błąd podczas usuwania filmu o ID {movie_id}: {str(e)}")
 
 
-def filter_movies(filters, page=1, per_page=10):
-    """Filtruje filmy na podstawie podanych kryteriów."""
+def filter_movies(
+    filters,
+    page=1,
+    per_page=10,
+    include_actors=False,
+    sort_by="title",
+    sort_order="asc",
+):
     try:
-        result = movie_repo.filter_movies(page=page, per_page=per_page, filters=filters)
+        result = movie_repo.filter_movies(
+            filters=filters,
+            page=page,
+            per_page=per_page,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
 
-        # Serializacja filmów z dołączonymi gatunkami
         serialized_movies = [
-            movie.serialize(include_genres=True) for movie in result["movies"]
+            movie.serialize(include_genres=True, include_actors=include_actors)
+            for movie in result["movies"]
         ]
 
         return {"movies": serialized_movies, "pagination": result["pagination"]}

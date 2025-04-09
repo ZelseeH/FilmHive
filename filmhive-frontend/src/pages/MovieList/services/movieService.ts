@@ -69,7 +69,6 @@ export const getMovieById = async (id: number): Promise<Movie> => {
         throw error;
     }
 };
-
 export const getFilteredMovies = async (
     filters: any = {},
     page: number = 1,
@@ -78,7 +77,8 @@ export const getFilteredMovies = async (
     try {
         const queryParams = new URLSearchParams({
             page: page.toString(),
-            per_page: perPage.toString()
+            per_page: perPage.toString(),
+            include_cast: 'true' // Dodaj ten parametr, jeśli backend go obsługuje
         });
 
         // Add filter parameters
@@ -100,6 +100,7 @@ export const getFilteredMovies = async (
         throw error;
     }
 };
+
 
 export const getAllMovies = async (): Promise<Movie[]> => {
     return fetchWithAuth('movies/all');

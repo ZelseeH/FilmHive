@@ -78,7 +78,6 @@ const MovieFilter: React.FC<MovieFilterProps> = ({ value, onChange, onClose, isL
 
     const handleClearFilters = () => {
         setFiltersDirectly({});
-        // Nie wywołujemy onChange, aby nie przeładowywać strony
     };
 
     return (

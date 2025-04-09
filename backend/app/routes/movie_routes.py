@@ -113,7 +113,6 @@ def remove_movie(id):
 
 @movies_bp.route("/filter", methods=["GET"])
 def filter_movies_route():
-    """Filtruje filmy na podstawie podanych kryteriów."""
     try:
         # Zbieramy wszystkie filtry z parametrów zapytania
         filters = {}
@@ -126,9 +125,25 @@ def filter_movies_route():
         if "genres" in request.args:
             filters["genres"] = request.args.get("genres")
         if "rating_count_min" in request.args:
-            filters["rating_count"] = {"min": int(request.args.get("rating_count_min"))}
+            filters["rating_count_min"] = int(request.args.get("rating_count_min"))
         if "average_rating" in request.args:
-            filters["averageRating"] = float(request.args.get("average_rating"))
+            filters["average_rating"] = float(request.args.get("average_rating"))
+
+        # Dodaj parametry sortowania
+        sort_by = request.args.get("sort_by", "title")
+        sort_order = request.args.get("sort_order", "asc")
+
+        # Walidacja parametrów sortowania
+        valid_sort_fields = ["title", "average_rating", "rating_count", "year"]
+        valid_sort_orders = ["asc", "desc"]
+
+        if sort_by not in valid_sort_fields:
+            sort_by = "title"
+        if sort_order.lower() not in valid_sort_orders:
+            sort_order = "asc"
+
+        # Dodaj obsługę parametru include_actors
+        include_actors = request.args.get("include_actors", "false").lower() == "true"
 
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 10, type=int)
@@ -136,7 +151,14 @@ def filter_movies_route():
         if per_page > 20:
             per_page = 20
 
-        result = filter_movies(filters, page, per_page)
+        result = filter_movies(
+            filters,
+            page=page,
+            per_page=per_page,
+            include_actors=include_actors,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
         return jsonify(result), 200
     except Exception as e:
         return (

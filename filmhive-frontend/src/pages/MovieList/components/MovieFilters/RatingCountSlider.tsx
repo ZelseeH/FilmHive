@@ -10,8 +10,8 @@ interface RatingCountSliderProps {
 
 const RatingCountSlider: React.FC<RatingCountSliderProps> = ({ value, onChange }) => {
     const formatRatingCount = (count: number) => {
-        if (count >= 1000000) return '1M+';
-        if (count >= 1000) return `${(count / 1000).toFixed(0)}K`;
+        if (count >= 1000) return '1k+';
+        if (count >= 1) return `${(count / 1).toFixed(0)}`;
         return count.toString();
     };
 
@@ -28,14 +28,14 @@ const RatingCountSlider: React.FC<RatingCountSliderProps> = ({ value, onChange }
                 </div>
                 <Slider
                     min={0}
-                    max={1000000}
+                    max={1000}
                     value={value}
                     onChange={handleChange}
                     tooltip={false}
                 />
                 <div className={styles.sliderLabels}>
                     <span>0</span>
-                    <span>1M+</span>
+                    <span>10K+</span>
                 </div>
             </div>
         </div>
