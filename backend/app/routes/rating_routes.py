@@ -6,6 +6,8 @@ from app.services.rating_service import (
     get_movie_ratings,
     get_user_ratings,
     get_movie_average_rating,
+    get_movie_rating_count,
+    get_movie_rating_stats,
     create_rating,
     update_rating,
     delete_rating,
@@ -37,6 +39,26 @@ def get_average_rating(movie_id):
         return jsonify({"average_rating": result}), 200
     except Exception as e:
         return jsonify({"error": f"Błąd pobierania średniej oceny: {str(e)}"}), 500
+
+
+@ratings_bp.route("/movies/<int:movie_id>/rating-count", methods=["GET"])
+def get_rating_count(movie_id):
+    """Pobiera liczbę ocen dla danego filmu."""
+    try:
+        result = get_movie_rating_count(movie_id)
+        return jsonify({"rating_count": result}), 200
+    except Exception as e:
+        return jsonify({"error": f"Błąd pobierania liczby ocen: {str(e)}"}), 500
+
+
+@ratings_bp.route("/movies/<int:movie_id>/rating-stats", methods=["GET"])
+def get_rating_stats(movie_id):
+    """Pobiera statystyki ocen (średnia i liczba) dla danego filmu."""
+    try:
+        result = get_movie_rating_stats(movie_id)
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": f"Błąd pobierania statystyk ocen: {str(e)}"}), 500
 
 
 @ratings_bp.route("/users/<int:user_id>/ratings", methods=["GET"])
@@ -90,6 +112,10 @@ def rate_movie(movie_id):
         user_id = int(get_jwt_identity())
         result = create_rating(user_id, movie_id, rating_value)
 
+        # Pobierz zaktualizowane statystyki ocen
+        stats = get_movie_rating_stats(movie_id)
+        result.update(stats)
+
         return jsonify(result), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -121,6 +147,12 @@ def update_movie_rating(rating_id):
                 403,
             )
 
+        # Pobierz zaktualizowane statystyki ocen dla filmu
+        movie_id = result.get("movie_id")
+        if movie_id:
+            stats = get_movie_rating_stats(movie_id)
+            result.update(stats)
+
         return jsonify(result), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -142,7 +174,13 @@ def delete_movie_rating(rating_id):
                 403,
             )
 
-        return jsonify({"message": "Ocena usunięta"}), 200
+        # Pobierz zaktualizowane statystyki ocen dla filmu
+        movie_id = result.get("movie_id")
+        if movie_id:
+            stats = get_movie_rating_stats(movie_id)
+            result.update(stats)
+
+        return jsonify({"message": "Ocena usunięta", **result}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

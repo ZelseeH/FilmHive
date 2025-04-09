@@ -84,6 +84,46 @@ class RatingRepository:
             .scalar()
         ) or None
 
+    def get_movie_rating_count(self, movie_id):
+        """Pobiera liczbę ocen dla danego filmu."""
+        return (
+            self.session.query(func.count(Rating.rating_id))
+            .filter(Rating.movie_id == movie_id)
+            .scalar()
+        ) or 0
+
+    def get_movie_rating_stats(self, movie_id):
+        """Pobiera statystyki ocen dla danego filmu (średnia i liczba ocen)."""
+        result = (
+            self.session.query(
+                func.avg(Rating.rating).label("average"),
+                func.count(Rating.rating_id).label("count"),
+            )
+            .filter(Rating.movie_id == movie_id)
+            .first()
+        )
+
+        return {
+            "average_rating": (
+                float(result.average) if result.average is not None else None
+            ),
+            "rating_count": result.count,
+        }
+
+    def get_user_ratings_for_movies(self, user_id, movie_ids):
+        """Pobiera oceny użytkownika dla listy filmów."""
+        if not movie_ids:
+            return {}
+
+        ratings = (
+            self.session.query(Rating)
+            .filter(Rating.user_id == user_id, Rating.movie_id.in_(movie_ids))
+            .all()
+        )
+
+        # Tworzymy słownik {movie_id: rating_value}
+        return {rating.movie_id: rating.rating for rating in ratings}
+
     def add(self, rating):
         """Dodaje nową ocenę."""
         try:

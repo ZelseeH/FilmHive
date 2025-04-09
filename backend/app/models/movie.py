@@ -34,6 +34,33 @@ class Movie(Base):
         "Recommendation", back_populates="movie"
     )
 
+    @property
+    def average_rating(self):
+        from sqlalchemy import func
+        from sqlalchemy.orm import Session
+        from app.models.rating import Rating
+
+        session = Session.object_session(self)
+        avg_rating = (
+            session.query(func.avg(Rating.rating))
+            .filter(Rating.movie_id == self.movie_id)
+            .scalar()
+        )
+        return float(avg_rating) if avg_rating is not None else None
+
+    @property
+    def rating_count(self):
+        from sqlalchemy import func
+        from sqlalchemy.orm import Session
+        from app.models.rating import Rating
+
+        session = Session.object_session(self)
+        return (
+            session.query(func.count(Rating.rating_id))
+            .filter(Rating.movie_id == self.movie_id)
+            .scalar()
+        )
+
     def __repr__(self):
         return f"<Movie(id={self.movie_id}, title='{self.title}', release_date={self.release_date})>"
 
@@ -62,6 +89,8 @@ class Movie(Base):
             "country": self.country,
             "original_language": self.original_language,
             "trailer_url": self.trailer_url,
+            "average_rating": self.average_rating,
+            "rating_count": self.rating_count,
         }
 
         if include_genres:

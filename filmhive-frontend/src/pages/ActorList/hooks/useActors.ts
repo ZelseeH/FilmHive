@@ -1,6 +1,6 @@
 // hooks/useActors.ts
 import { useState, useEffect, useCallback } from 'react';
-import { Actor } from '../../../services/actorService';
+import { Actor } from '../services/actorService';
 
 interface PaginationData {
     page: number;

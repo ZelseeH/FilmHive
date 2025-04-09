@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import * as authService from '../../services/authService';
+import * as authService from './services/authService';
 import styles from './LoginModal.module.css';
 
 interface LoginModalProps {

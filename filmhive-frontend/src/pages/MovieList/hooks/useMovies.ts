@@ -1,95 +1,110 @@
 // hooks/useMovies.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Movie, getUserRating } from '../services/movieService';
+import { useAuth } from '../../../contexts/AuthContext';
 
-interface Movie {
-    id: number;
-    title: string;
-    release_year: number;
-    poster_path: string;
-    rating: number;
-    genres: string[];
+interface PaginationData {
+    page: number;
+    per_page: number;
+    total: number;
+    total_pages: number;
+}
+
+interface MoviesResponse {
+    movies: Movie[];
+    pagination: PaginationData;
 }
 
 interface Filters {
     title?: string;
-    genres?: string;
+    countries?: string;
     years?: string;
-    rating?: string;
+    genres?: string;
+    rating_count_min?: number;
+    average_rating?: number;
+}
+
+interface UserRatings {
+    [movieId: number]: number;
 }
 
 export const useMovies = (filters: Filters, page: number) => {
+    const { user, getToken } = useAuth();
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [totalPages, setTotalPages] = useState<number>(1);
+    const [userRatings, setUserRatings] = useState<UserRatings>({});
 
-    useEffect(() => {
-        const fetchMovies = async () => {
-            try {
-                setLoading(true);
-                setError(null);
+    const fetchMovies = useCallback(async () => {
+        try {
+            setLoading(true);
+            const queryParams = new URLSearchParams();
 
-                // Tutaj będzie faktyczne pobieranie filmów z API z uwzględnieniem filtrów
-                // Na razie symulujemy odpowiedź
-                await new Promise(resolve => setTimeout(resolve, 800));
+            // Dodaj parametry paginacji
+            queryParams.append('page', page.toString());
+            queryParams.append('per_page', '10');
 
-                // Przykładowe filmy
-                const sampleMovies: Movie[] = Array.from({ length: 20 }, (_, i) => ({
-                    id: i + 1,
-                    title: `Film przykładowy ${i + 1}`,
-                    release_year: 2000 + Math.floor(Math.random() * 23),
-                    poster_path: 'https://via.placeholder.com/300x450',
-                    rating: Math.floor(Math.random() * 5) + 5, // Ocena 5-10
-                    genres: ['Akcja', 'Dramat', 'Komedia'].slice(0, Math.floor(Math.random() * 3) + 1)
-                }));
+            // Dodaj parametry filtrowania, konwertując wartości na string
+            if (filters.title) queryParams.append('title', filters.title);
+            if (filters.countries) queryParams.append('countries', filters.countries);
+            if (filters.years) queryParams.append('years', filters.years);
+            if (filters.genres) queryParams.append('genres', filters.genres);
+            if (filters.rating_count_min !== undefined)
+                queryParams.append('rating_count_min', filters.rating_count_min.toString());
+            if (filters.average_rating !== undefined)
+                queryParams.append('average_rating', filters.average_rating.toString());
 
-                // Filtrowanie filmów na podstawie przekazanych filtrów
-                let filteredMovies = [...sampleMovies];
+            const response = await fetch(`http://localhost:5000/api/movies/filter?${queryParams}`);
 
-                if (filters.title) {
-                    filteredMovies = filteredMovies.filter(movie =>
-                        movie.title.toLowerCase().includes(filters.title!.toLowerCase())
-                    );
-                }
-
-                if (filters.genres) {
-                    const genreList = filters.genres.split(',');
-                    filteredMovies = filteredMovies.filter(movie =>
-                        genreList.some(genre => movie.genres.includes(genre))
-                    );
-                }
-
-                if (filters.years) {
-                    const yearList = filters.years.split(',').map(Number);
-                    filteredMovies = filteredMovies.filter(movie =>
-                        yearList.includes(movie.release_year)
-                    );
-                }
-
-                if (filters.rating) {
-                    const minRating = parseInt(filters.rating);
-                    filteredMovies = filteredMovies.filter(movie =>
-                        movie.rating >= minRating
-                    );
-                }
-
-                // Paginacja
-                const itemsPerPage = 10;
-                const start = (page - 1) * itemsPerPage;
-                const paginatedMovies = filteredMovies.slice(start, start + itemsPerPage);
-
-                setMovies(paginatedMovies);
-                setTotalPages(Math.ceil(filteredMovies.length / itemsPerPage));
-            } catch (err) {
-                setError('Wystąpił błąd podczas pobierania filmów');
-                console.error('Error fetching movies:', err);
-            } finally {
-                setLoading(false);
+            if (!response.ok) {
+                throw new Error('Nie udało się pobrać filmów');
             }
-        };
 
-        fetchMovies();
+            const data: MoviesResponse = await response.json();
+            console.log('API response:', data);
+
+            setMovies(data.movies || []);
+            setTotalPages(data.pagination?.total_pages || 1);
+        } catch (err: any) {
+            setError(err.message || 'Wystąpił błąd podczas pobierania danych');
+        } finally {
+            setLoading(false);
+        }
     }, [filters, page]);
 
-    return { movies, loading, error, totalPages };
+    const fetchUserRatings = useCallback(async () => {
+        if (!user || !movies.length) return;
+
+        try {
+            const ratingsPromises = movies.map(movie =>
+                getUserRating(movie.id)
+                    .then(rating => ({ movieId: movie.id, rating }))
+                    .catch(() => ({ movieId: movie.id, rating: undefined }))
+            );
+
+            const ratingsResults = await Promise.all(ratingsPromises);
+            const ratingsMap: UserRatings = {};
+
+            ratingsResults.forEach(result => {
+                if (result.rating !== undefined) {
+                    ratingsMap[result.movieId] = result.rating;
+                }
+            });
+
+            setUserRatings(ratingsMap);
+        } catch (error) {
+            console.error('Error fetching user ratings:', error);
+        }
+    }, [user, movies, getToken]);
+
+    useEffect(() => {
+        fetchMovies();
+    }, [fetchMovies]);
+
+    useEffect(() => {
+        fetchUserRatings();
+    }, [fetchUserRatings]);
+
+    return { movies, loading, error, totalPages, userRatings };
 };

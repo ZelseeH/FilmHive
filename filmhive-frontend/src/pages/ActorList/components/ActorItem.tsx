@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Actor } from '../../../services/actorService';
-import { getActorInitials, getActorSlug } from '../../../utils/actorUtils';
+import { Actor } from '../services/actorService';
+import { getActorInitials, getActorSlug } from '../utils/actorUtils';
 import styles from './ActorItem.module.css';
 
 interface ActorItemProps {

@@ -2,6 +2,7 @@ from app.repositories.movie_repository import MovieRepository
 from app.services.database import db
 from app.models.movie import Movie
 
+
 # Inicjalizacja repozytorium
 movie_repo = MovieRepository(db.session)
 
@@ -76,3 +77,26 @@ def delete_movie(movie_id):
         return success
     except Exception as e:
         raise Exception(f"Błąd podczas usuwania filmu o ID {movie_id}: {str(e)}")
+
+
+def filter_movies(filters, page=1, per_page=10):
+    """Filtruje filmy na podstawie podanych kryteriów."""
+    try:
+        result = movie_repo.filter_movies(page=page, per_page=per_page, filters=filters)
+
+        # Serializacja filmów z dołączonymi gatunkami
+        serialized_movies = [
+            movie.serialize(include_genres=True) for movie in result["movies"]
+        ]
+
+        return {"movies": serialized_movies, "pagination": result["pagination"]}
+    except Exception as e:
+        raise Exception(f"Błąd podczas filtrowania filmów: {str(e)}")
+
+
+def get_movie_filter_options():
+    """Pobiera dostępne opcje filtrów dla filmów."""
+    try:
+        return movie_repo.get_filter_options()
+    except Exception as e:
+        raise Exception(f"Błąd podczas pobierania opcji filtrów: {str(e)}")

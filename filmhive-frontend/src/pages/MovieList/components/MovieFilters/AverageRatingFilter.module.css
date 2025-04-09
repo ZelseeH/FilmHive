@@ -1,0 +1,41 @@
+.filterSection {
+    margin-bottom: 20px;
+}
+
+.filterSection h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #fff;
+}
+
+.ratingButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ratingButton {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ratingButton:hover {
+    background-color: #444;
+}
+
+.ratingButton.selected {
+    background-color: #ffcc00;
+    color: #000;
+    border-color: #ffcc00;
+}

@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './HomePage.module.css';
-import { useMovies } from '../../hooks/useMovies';
+import { useMovies } from './hooks/useMovies';
 import { useAuth } from '../../contexts/AuthContext';
-import FeaturedMovie from '../../components/FeaturedMovie/FeaturedMovie';
-import MovieSlider from '../../components/MovieSlider/MovieSlider';
+import FeaturedMovie from './components/FeaturedMovie/FeaturedMovie';
+import MovieSlider from './components/MovieSlider/MovieSlider';
 
 const HomePage = () => {
   const { movies, selectedMovie, userRatings, loading, error, handleMovieSelect } = useMovies();

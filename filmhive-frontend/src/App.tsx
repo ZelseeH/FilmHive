@@ -1,7 +1,7 @@
 import React from 'react';
 import { AuthProvider } from './contexts/AuthContext';
-import Navbar from './components/Navbar/Navbar';
-import Footer from './components/Footer/Footer';
+import Navbar from './layouts/Navbar/Navbar';
+import Footer from './layouts/Footer/Footer';
 import AppRoutes from './routes';
 import styles from './App.module.css';
 

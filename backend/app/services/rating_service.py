@@ -65,13 +65,30 @@ def get_movie_average_rating(movie_id):
         raise Exception(f"Błąd podczas pobierania średniej oceny: {str(e)}")
 
 
+def get_movie_rating_count(movie_id):
+    """Pobiera liczbę ocen dla danego filmu."""
+    try:
+        count = rating_repo.get_movie_rating_count(movie_id)
+        return {"rating_count": count}
+    except Exception as e:
+        raise Exception(f"Błąd podczas pobierania liczby ocen: {str(e)}")
+
+
+def get_movie_rating_stats(movie_id):
+    """Pobiera statystyki ocen dla danego filmu."""
+    try:
+        stats = rating_repo.get_movie_rating_stats(movie_id)
+        return stats
+    except Exception as e:
+        raise Exception(f"Błąd podczas pobierania statystyk ocen: {str(e)}")
+
+
 def create_rating(user_id, movie_id, rating_value):
     """Tworzy nową ocenę lub aktualizuje istniejącą."""
     try:
         if not (1 <= rating_value <= 10):
             raise ValueError("Ocena musi być w zakresie od 1 do 10")
 
-        # Pobierz użytkownika i film w jednym zapytaniu
         user, movie = db.session.get(User, user_id), db.session.get(Movie, movie_id)
         if not user or not movie:
             raise ValueError("Użytkownik lub film nie istnieje")
@@ -81,16 +98,20 @@ def create_rating(user_id, movie_id, rating_value):
             existing_rating.rating = rating_value
             existing_rating.rated_at = datetime.utcnow()
             db.session.commit()
-            return existing_rating.serialize()
+            result = existing_rating.serialize()
+        else:
+            new_rating = Rating(
+                user_id=user_id,
+                movie_id=movie_id,
+                rating=rating_value,
+                rated_at=datetime.utcnow(),
+            )
+            rating_repo.add(new_rating)
+            result = new_rating.serialize()
 
-        new_rating = Rating(
-            user_id=user_id,
-            movie_id=movie_id,
-            rating=rating_value,
-            rated_at=datetime.utcnow(),
-        )
-        rating_repo.add(new_rating)
-        return new_rating.serialize()
+        stats = get_movie_rating_stats(movie_id)
+        result.update(stats)
+        return result
     except ValueError as e:
         raise e
     except Exception as e:
@@ -111,7 +132,10 @@ def update_rating(rating_id, new_rating_value, user_id):
             raise ValueError("Nie masz uprawnień do edycji tej oceny")
 
         updated_rating = rating_repo.update(rating_id, new_rating_value)
-        return updated_rating.serialize()
+        result = updated_rating.serialize()
+        stats = get_movie_rating_stats(updated_rating.movie_id)
+        result.update(stats)
+        return result
     except ValueError as e:
         raise e
     except Exception as e:
@@ -128,8 +152,13 @@ def delete_rating(rating_id, user_id):
         if rating.user_id != user_id:
             raise ValueError("Nie masz uprawnień do usunięcia tej oceny")
 
+        movie_id = rating.movie_id
         success = rating_repo.delete(rating_id)
-        return {"success": success}
+        result = {"success": success}
+        if success:
+            stats = get_movie_rating_stats(movie_id)
+            result.update(stats)
+        return result
     except ValueError as e:
         raise e
     except Exception as e:

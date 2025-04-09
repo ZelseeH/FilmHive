@@ -1,10 +1,13 @@
 from flask import Blueprint, jsonify, request
+
 from app.services.movie_service import (
     get_all_movies,
     get_movies_paginated,
     get_movie_by_id,
     create_movie,
     delete_movie,
+    filter_movies,
+    get_movie_filter_options,
 )
 
 
@@ -103,6 +106,60 @@ def remove_movie(id):
         return (
             jsonify(
                 {"error": "Wystąpił błąd podczas usuwania filmu", "details": str(e)}
+            ),
+            500,
+        )
+
+
+@movies_bp.route("/filter", methods=["GET"])
+def filter_movies_route():
+    """Filtruje filmy na podstawie podanych kryteriów."""
+    try:
+        # Zbieramy wszystkie filtry z parametrów zapytania
+        filters = {}
+        if "title" in request.args:
+            filters["title"] = request.args.get("title")
+        if "countries" in request.args:
+            filters["countries"] = request.args.get("countries")
+        if "years" in request.args:
+            filters["years"] = request.args.get("years")
+        if "genres" in request.args:
+            filters["genres"] = request.args.get("genres")
+        if "rating_count_min" in request.args:
+            filters["rating_count"] = {"min": int(request.args.get("rating_count_min"))}
+        if "average_rating" in request.args:
+            filters["averageRating"] = float(request.args.get("average_rating"))
+
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 10, type=int)
+
+        if per_page > 20:
+            per_page = 20
+
+        result = filter_movies(filters, page, per_page)
+        return jsonify(result), 200
+    except Exception as e:
+        return (
+            jsonify(
+                {"error": "Wystąpił błąd podczas filtrowania filmów", "details": str(e)}
+            ),
+            500,
+        )
+
+
+@movies_bp.route("/filter-options", methods=["GET"])
+def get_filter_options_route():
+    """Pobiera dostępne opcje filtrów dla filmów."""
+    try:
+        options = get_movie_filter_options()
+        return jsonify(options), 200
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas pobierania opcji filtrów",
+                    "details": str(e),
+                }
             ),
             500,
         )

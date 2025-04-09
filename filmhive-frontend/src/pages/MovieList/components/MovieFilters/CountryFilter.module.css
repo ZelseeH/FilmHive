@@ -1,0 +1,62 @@
+.filterSection {
+    margin-bottom: 20px;
+}
+
+.filterSection h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #fff;
+}
+
+.countrySearch {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.countrySearch:focus {
+    outline: none;
+    border-color: #ffcc00;
+}
+
+.countryList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.countryItem {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.countryItem:hover {
+    background-color: #444;
+}
+
+.countryItem.selected {
+    background-color: #ffcc00;
+    color: #000;
+    border-color: #ffcc00;
+}
+
+.loading {
+    color: #888;
+    font-style: italic;
+    padding: 8px 0;
+}

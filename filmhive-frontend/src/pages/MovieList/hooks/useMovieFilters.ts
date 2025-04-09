@@ -1,32 +1,67 @@
-// hooks/useMovieFilters.ts
 import { useState, useEffect } from 'react';
 
-interface Filters {
+interface MovieFilters {
     title?: string;
-    genres?: string;
+    countries?: string;
     years?: string;
-    rating?: string;
+    genres?: string;
+    rating_count_min?: number;
+    average_rating?: number;
 }
 
-export const useMovieFilters = (initialFilters: Filters, setLocalFilters: (filters: Filters) => void) => {
-    const [inputValue, setInputValue] = useState<string>(initialFilters.title || '');
-    const [selectedGenres, setSelectedGenres] = useState<string[]>(
-        initialFilters.genres ? initialFilters.genres.split(',') : []
+export const useMovieFilters = (initialValue: MovieFilters, onChange: (filters: MovieFilters) => void) => {
+    const [inputValue, setInputValue] = useState<string>(initialValue.title || '');
+    const [selectedCountries, setSelectedCountries] = useState<string[]>(
+        initialValue.countries ? initialValue.countries.split(',') : []
     );
     const [selectedYears, setSelectedYears] = useState<string[]>(
-        initialFilters.years ? initialFilters.years.split(',') : []
+        initialValue.years ? initialValue.years.split(',') : []
     );
-    const [selectedRating, setSelectedRating] = useState<string>(initialFilters.rating || '');
+    const [selectedGenres, setSelectedGenres] = useState<string[]>(
+        initialValue.genres ? initialValue.genres.split(',') : []
+    );
+    const [ratingCountMin, setRatingCountMin] = useState<number>(initialValue.rating_count_min || 0);
+    const [averageRating, setAverageRating] = useState<number>(initialValue.average_rating || 0);
+    const setYearsDirectly = (years: string[]) => {
+        setSelectedYears(years);
+    };
 
+
+    // Update states when initialValue changes
     useEffect(() => {
-        const newFilters: Filters = {};
-        if (inputValue) newFilters.title = inputValue;
-        if (selectedGenres.length > 0) newFilters.genres = selectedGenres.join(',');
-        if (selectedYears.length > 0) newFilters.years = selectedYears.join(',');
-        if (selectedRating) newFilters.rating = selectedRating;
+        setInputValue(initialValue.title || '');
+        setSelectedCountries(initialValue.countries ? initialValue.countries.split(',') : []);
+        setSelectedYears(initialValue.years ? initialValue.years.split(',') : []);
+        setSelectedGenres(initialValue.genres ? initialValue.genres.split(',') : []);
+        setRatingCountMin(initialValue.rating_count_min || 0);
+        setAverageRating(initialValue.average_rating || 0);
+    }, [initialValue]);
 
-        setLocalFilters(newFilters);
-    }, [inputValue, selectedGenres, selectedYears, selectedRating, setLocalFilters]);
+    // Update local filter state after each change
+    useEffect(() => {
+        const newFilters: MovieFilters = {};
+
+        if (inputValue) {
+            newFilters.title = inputValue;
+        }
+        if (selectedCountries.length > 0) {
+            newFilters.countries = selectedCountries.join(',');
+        }
+        if (selectedYears.length > 0) {
+            newFilters.years = selectedYears.join(',');
+        }
+        if (selectedGenres.length > 0) {
+            newFilters.genres = selectedGenres.join(',');
+        }
+        if (ratingCountMin > 0) {
+            newFilters.rating_count_min = ratingCountMin;
+        }
+        if (averageRating > 0) {
+            newFilters.average_rating = averageRating;
+        }
+
+        onChange(newFilters);
+    }, [inputValue, selectedCountries, selectedYears, selectedGenres, ratingCountMin, averageRating, onChange]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value);
@@ -34,6 +69,23 @@ export const useMovieFilters = (initialFilters: Filters, setLocalFilters: (filte
 
     const handleClear = () => {
         setInputValue('');
+    };
+
+    const toggleCountry = (country: string) => {
+        setSelectedCountries(prev =>
+            prev.includes(country)
+                ? prev.filter(c => c !== country)
+                : [...prev, country]
+        );
+    };
+
+    const toggleYears = (year: string) => {
+        setSelectedYears(prev => {
+            const isSelected = prev.includes(year);
+            return isSelected
+                ? prev.filter(y => y !== year)
+                : [...prev, year];
+        });
     };
 
     const toggleGenre = (genre: string) => {
@@ -44,40 +96,38 @@ export const useMovieFilters = (initialFilters: Filters, setLocalFilters: (filte
         );
     };
 
-    const toggleYears = (year: string) => {
-        setSelectedYears(prev =>
-            prev.includes(year)
-                ? prev.filter(y => y !== year)
-                : [...prev, year]
-        );
+    const handleRatingCountMinChange = (value: number) => {
+        setRatingCountMin(value);
     };
 
-    const setYearsDirectly = (years: string[]) => {
-        setSelectedYears(years);
+    const handleAverageRatingChange = (value: number) => {
+        setAverageRating(value);
     };
 
-    const handleRatingChange = (rating: string) => {
-        setSelectedRating(prev => prev === rating ? '' : rating);
-    };
-
-    const setFiltersDirectly = (filters: Filters) => {
+    const setFiltersDirectly = (filters: MovieFilters) => {
         setInputValue(filters.title || '');
-        setSelectedGenres(filters.genres ? filters.genres.split(',') : []);
+        setSelectedCountries(filters.countries ? filters.countries.split(',') : []);
         setSelectedYears(filters.years ? filters.years.split(',') : []);
-        setSelectedRating(filters.rating || '');
+        setSelectedGenres(filters.genres ? filters.genres.split(',') : []);
+        setRatingCountMin(filters.rating_count_min || 0);
+        setAverageRating(filters.average_rating || 0);
     };
 
     return {
         inputValue,
-        selectedGenres,
+        selectedCountries,
         selectedYears,
-        selectedRating,
+        selectedGenres,
+        ratingCountMin,
+        averageRating,
         handleInputChange,
         handleClear,
-        toggleGenre,
+        toggleCountry,
         toggleYears,
+        toggleGenre,
         setYearsDirectly,
-        handleRatingChange,
+        handleRatingCountMinChange,
+        handleAverageRatingChange,
         setFiltersDirectly
     };
 };

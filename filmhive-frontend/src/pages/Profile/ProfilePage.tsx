@@ -1,8 +1,8 @@
 // src/pages/Profile/ProfilePage.tsx
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import ProfileHeader from '../../components/ProfileHeader/ProfileHeader';
-import { useProfileData } from '../../hooks/useProfileData';
+import ProfileHeader from './components/ProfileHeader/ProfileHeader';
+import { useProfileData } from './hooks/useProfileData';
 import styles from './ProfilePage.module.css';
 
 const ProfilePage: React.FC = () => {

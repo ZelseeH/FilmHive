@@ -56,9 +56,7 @@ def create_app():
         return jsonify({"error": "Błąd serwera"}), 500
 
     from app.routes.movie_routes import movies_bp
-    from app.routes.genre_routes import (
-        genres_bp,
-    )
+    from app.routes.genre_routes import genres_bp
     from app.routes.auth_routes import auth_bp
     from app.routes.user_routes import user_bp
     from app.routes.rating_routes import ratings_bp

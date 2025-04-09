@@ -1,0 +1,282 @@
+.featured-movie {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.featured-movie-container {
+    position: relative;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.featured-movie-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.5);
+    z-index: 1;
+}
+
+.featured-movie-backdrop::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.featured-movie-content {
+    position: absolute;
+    bottom: 30%;
+    left: 0;
+    width: 70%;
+    max-width: 600px;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 30px 30px 0px 30px;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.featured-movie-title {
+    font-size: 32px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #ddd;
+    text-decoration: none;
+}
+
+.featured-movie-info {
+    display: flex;
+    gap: 5px;
+    font-size: 16px;
+
+}
+
+.featured-movie-info span {
+    padding: 3px 6px;
+    background-color: transparent;
+}
+
+.featured-movie-ratings {
+    display: flex;
+    gap: 5px;
+    font-size: 16px;
+    align-items: center;
+}
+
+.rating-item {
+    display: flex;
+    align-items: center;
+    padding: 3px 6px;
+    background-color: transparent;
+}
+
+.rating-star {
+    color: #ffcc00;
+    margin-right: 3px;
+    font-size: 50px;
+    padding-bottom: 5px;
+}
+
+.rating-value {
+    color: #fff;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.rating-label {
+    color: #fff;
+    margin-right: 3px;
+    font-size: 20px;
+}
+
+.rating-count {
+    color: #fff;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.featured-movie-description {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #ddd;
+    max-height: 4.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
+.popular-movies-title {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: bold;
+    z-index: 4;
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: #fff;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .featured-movie {
+        height: 400px;
+        margin-top: 20px;
+    }
+
+    .featured-movie-content {
+        width: 90%;
+        max-width: none;
+        padding: 0px 0px 0px 15px;
+        bottom: 25%;
+    }
+
+    .featured-movie-title {
+        font-size: 24px;
+        margin-bottom: 0px;
+    }
+
+    .featured-movie-info,
+    .featured-movie-ratings {
+        font-size: 14px;
+        gap: 5px;
+        margin-bottom: 0px;
+    }
+
+    .rating-star {
+        font-size: 40px;
+    }
+
+    .rating-value {
+        font-size: 25px;
+    }
+
+    .rating-label {
+        font-size: 18px;
+    }
+
+    .rating-count {
+        font-size: 25px;
+    }
+
+    .featured-movie-description {
+        font-size: 14px;
+        max-height: 4.2em;
+    }
+
+    .popular-movies-title {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .featured-movie {
+        height: 300px;
+        margin-top: 10px;
+    }
+
+    .featured-movie-content {
+        padding: 0px 0px 0px 15px;
+        bottom: 25%;
+    }
+
+    .featured-movie-title {
+        font-size: 18px;
+    }
+
+    .featured-movie-info,
+    .featured-movie-ratings {
+        font-size: 12px;
+        gap: 5px;
+    }
+
+    .rating-star {
+        font-size: 30px;
+    }
+
+    .rating-value {
+        font-size: 20px;
+    }
+
+    .rating-label {
+        font-size: 15px;
+    }
+
+    .rating-count {
+        font-size: 20px;
+    }
+
+    .featured-movie-description {
+        font-size: 12px;
+        max-height: 2.8em;
+    }
+
+    .popular-movies-title {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 360px) {
+    .featured-movie {
+        height: 250px;
+        margin-top: 6px;
+    }
+
+    .featured-movie-content {
+        padding: 10px;
+        bottom: 25%;
+    }
+
+    .featured-movie-title {
+        font-size: 14px;
+    }
+
+    .featured-movie-info,
+    .featured-movie-ratings {
+        font-size: 10px;
+        gap: 4px;
+    }
+
+    .rating-star {
+        font-size: 25px;
+    }
+
+    .rating-value {
+        font-size: 18px;
+    }
+
+    .rating-label {
+        font-size: 15px;
+    }
+
+    .rating-count {
+        font-size: 20px;
+    }
+
+    .featured-movie-description {
+        font-size: 10px;
+        max-height: 1.5em;
+    }
+
+    .popular-movies-title {
+        font-size: 15px;
+    }
+}

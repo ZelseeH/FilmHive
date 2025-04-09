@@ -1,0 +1,59 @@
+.filterSection {
+    margin-bottom: 20px;
+}
+
+.filterSection h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #fff;
+}
+
+.sliderContainer {
+    padding: 0 10px;
+    margin-bottom: 15px;
+}
+
+.sliderValue {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #fff;
+    text-align: center;
+}
+
+.sliderLabels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #888;
+}
+
+/* Dodatkowe style dla biblioteki react-rangeslider */
+:global .rangeslider {
+    background: #333;
+    height: 8px;
+    border-radius: 4px;
+}
+
+:global .rangeslider__fill {
+    background: #ffcc00;
+    border-radius: 4px;
+}
+
+:global .rangeslider__handle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffcc00;
+    border: 1px solid #e6b800;
+    cursor: pointer;
+}
+
+:global .rangeslider__handle:focus {
+    outline: none;
+}
+
+:global .rangeslider-horizontal .rangeslider__handle {
+    top: -6px;
+}
