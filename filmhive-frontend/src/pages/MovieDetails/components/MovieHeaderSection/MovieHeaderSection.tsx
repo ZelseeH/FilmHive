@@ -1,5 +1,5 @@
-// src/components/MovieHeaderSection/MovieHeaderSection.tsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Movie } from '../../services/movieService';
 import { handleImageError, formatReleaseYear, formatDirectorNames } from '../../utils/movieUtils';
 import styles from './MovieHeaderSection.module.css';
@@ -10,6 +10,12 @@ interface MovieHeaderSectionProps {
 }
 
 const MovieHeaderSection: React.FC<MovieHeaderSectionProps> = ({ movie, onShowFullDescription }) => {
+    const navigate = useNavigate();
+
+    const handleGenreClick = (genreName: string) => {
+        navigate(`/movies?genre=${encodeURIComponent(genreName)}`);
+    };
+
     return (
         <div className={styles['movie-header-section']}>
             <div className={styles['movie-poster-small']}>
@@ -49,7 +55,13 @@ const MovieHeaderSection: React.FC<MovieHeaderSectionProps> = ({ movie, onShowFu
 
                 <div className={styles['movie-genre-tags']}>
                     {movie.genres && movie.genres.map((genre, index) => (
-                        <span key={index} className={styles['movie-genre-tag']}>{genre.name}</span>
+                        <span
+                            key={index}
+                            className={styles['movie-genre-tag']}
+                            onClick={() => handleGenreClick(genre.name)}
+                        >
+                            {genre.name}
+                        </span>
                     ))}
                 </div>
 
