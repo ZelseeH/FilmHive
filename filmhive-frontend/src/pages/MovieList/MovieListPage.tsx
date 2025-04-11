@@ -119,16 +119,14 @@ const MovieListPage: React.FC = () => {
         <SortingComponent value={sortOption} onChange={handleSortChange} />
       </div>
 
-      {/* Przyciski mobilne */}
+      {/* Przyciski mobilne - zmienione nazewnictwo */}
       <div className={styles.mobileControlsContainer}>
-        <div className={styles.mobileButtons}>
-          <button onClick={toggleFilter} className={styles.filterToggleButton}>
-            <FaFilter /> Filtruj
-          </button>
-          <button onClick={toggleSorting} className={styles.sortToggleButton}>
-            Sortuj
-          </button>
-        </div>
+        <button onClick={toggleFilter} className={styles.controlButton}>
+          <FaFilter /> Filtruj
+        </button>
+        <button onClick={toggleSorting} className={styles.controlButton}>
+          Sortuj
+        </button>
       </div>
 
       {/* Główna zawartość */}
@@ -151,6 +149,7 @@ const MovieListPage: React.FC = () => {
               ) : (
                 <div className={styles.noMovies}>Nie znaleziono filmów</div>
               )}
+
 
               {totalPages > 1 && (
                 <Pagination

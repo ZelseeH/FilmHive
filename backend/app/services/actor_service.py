@@ -104,15 +104,33 @@ class ActorService:
             current_app.logger.error(f"Error uploading actor photo: {str(e)}")
             raise Exception("Failed to upload actor photo")
 
-    def filter_actors(self, filters, page=1, per_page=10):
-        """Filtruje aktorów na podstawie różnych kryteriów."""
-        result = self.actor_repository.filter_actors(filters, page, per_page)
-        actors = result["actors"]
-        pagination = result["pagination"]
+    def filter_actors(
+        self, filters, page=1, per_page=10, sort_by="name", sort_order="asc"
+    ):
+        """Filtruje i sortuje aktorów na podstawie różnych kryteriów."""
+        try:
+            result = self.actor_repository.filter_actors(
+                filters,
+                page=page,
+                per_page=per_page,
+                sort_by=sort_by,
+                sort_order=sort_order,
+            )
+            actors = result["actors"]
+            pagination = result["pagination"]
 
-        serialized_actors = [actor.serialize() for actor in actors]
+            serialized_actors = [actor.serialize() for actor in actors]
 
-        return {"actors": serialized_actors, "pagination": pagination}
+            return {
+                "actors": serialized_actors,
+                "pagination": pagination,
+                "sort_by": sort_by,
+                "sort_order": sort_order,
+            }
+        except Exception as e:
+            # Log the error for debugging
+            current_app.logger.error(f"Error in filter_actors: {str(e)}")
+            raise Exception(f"Błąd podczas filtrowania aktorów: {str(e)}")
 
     def get_unique_birthplaces(self):
         """Pobiera unikalne miejsca urodzenia aktorów."""

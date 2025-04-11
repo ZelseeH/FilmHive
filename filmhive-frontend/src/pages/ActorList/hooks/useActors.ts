@@ -21,7 +21,16 @@ interface Filters {
     gender?: string;
 }
 
-export const useActors = (filters: Filters, page: number) => {
+interface SortOption {
+    field: string;
+    order: 'asc' | 'desc';
+}
+
+export const useActors = (
+    filters: Filters,
+    page: number,
+    sortOption: SortOption = { field: 'name', order: 'asc' }
+) => {
     const [actors, setActors] = useState<Actor[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -30,11 +39,21 @@ export const useActors = (filters: Filters, page: number) => {
     const fetchActors = useCallback(async () => {
         try {
             setLoading(true);
-            const queryParams = new URLSearchParams({
-                page: page.toString(),
-                per_page: '10',
-                ...filters
-            });
+            const queryParams = new URLSearchParams();
+
+            // Dodaj parametry paginacji
+            queryParams.append('page', page.toString());
+            queryParams.append('per_page', '10');
+
+            // Dodaj parametry filtrowania
+            if (filters.name) queryParams.append('name', filters.name);
+            if (filters.countries) queryParams.append('countries', filters.countries);
+            if (filters.years) queryParams.append('years', filters.years);
+            if (filters.gender) queryParams.append('gender', filters.gender);
+
+            // Dodaj parametry sortowania
+            queryParams.append('sort_by', sortOption.field);
+            queryParams.append('sort_order', sortOption.order);
 
             const response = await fetch(`http://localhost:5000/api/actors/filter?${queryParams}`);
 
@@ -52,7 +71,7 @@ export const useActors = (filters: Filters, page: number) => {
         } finally {
             setLoading(false);
         }
-    }, [filters, page]);
+    }, [filters, page, sortOption]);
 
     useEffect(() => {
         fetchActors();

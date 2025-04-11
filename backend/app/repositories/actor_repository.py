@@ -151,9 +151,9 @@ class ActorRepository:
             },
         }
 
-    def filter_actors(self, filters, page=1, per_page=10):
-        """Filtruje aktorów na podstawie różnych kryteriów."""
-        query = self.session.query(Actor)
+    def _apply_filters(self, query, filters):
+        """Aplikuje filtry do zapytania."""
+        from sqlalchemy import or_, and_, extract, func
 
         # Filtrowanie po nazwie aktora
         if "name" in filters and filters["name"]:
@@ -165,7 +165,9 @@ class ActorRepository:
             countries = filters["countries"].split(",")
             country_conditions = []
             for country in countries:
-                country_conditions.append(Actor.birth_place.ilike(f"%{country}%"))
+                country_conditions.append(
+                    Actor.birth_place.ilike(f"%{country.strip()}%")
+                )
             if country_conditions:
                 query = query.filter(or_(*country_conditions))
 
@@ -174,10 +176,13 @@ class ActorRepository:
             years = filters["years"].split(",")
             year_conditions = []
             for year in years:
-                # Zakładamy, że data urodzenia jest w formacie YYYY-MM-DD
-                start_date = f"{year}-01-01"
-                end_date = f"{year}-12-31"
-                year_conditions.append(Actor.birth_date.between(start_date, end_date))
+                try:
+                    # Używamy extract zamiast between dla większej precyzji
+                    year_conditions.append(
+                        extract("year", Actor.birth_date) == int(year)
+                    )
+                except ValueError:
+                    print(f"Invalid year: {year}")
             if year_conditions:
                 query = query.filter(or_(*year_conditions))
 
@@ -191,16 +196,116 @@ class ActorRepository:
             elif gender_value == "K":
                 query = query.filter(Actor.gender == Gender.K)
 
+        # Filtrowanie po liczbie filmów
+        if "movie_count_min" in filters and filters["movie_count_min"]:
+            from app.models.movie_actor import MovieActor
+            from sqlalchemy import func
+
+            min_count = int(filters["movie_count_min"])
+
+            # Tworzymy podzapytanie do zliczania filmów
+            movie_count_subquery = (
+                self.session.query(
+                    MovieActor.actor_id, func.count(MovieActor.movie_id).label("count")
+                )
+                .group_by(MovieActor.actor_id)
+                .subquery()
+            )
+
+            query = query.join(
+                movie_count_subquery,
+                Actor.actor_id == movie_count_subquery.c.actor_id,
+            )
+
+            query = query.filter(movie_count_subquery.c.count >= min_count)
+
+        # Filtrowanie po popularności (możesz dostosować to do swojego modelu)
+        if "popularity" in filters and filters["popularity"]:
+            popularity = float(filters["popularity"])
+            query = query.filter(Actor.popularity >= popularity)
+
+        return query
+
+    def _apply_sorting(self, query, sort_by="name", sort_order="asc"):
+        """Aplikuje sortowanie do zapytania."""
+        from sqlalchemy import func, extract, desc
+
+        if sort_by == "name":
+            # Sortowanie po nazwie aktora
+            if sort_order.lower() == "asc":
+                query = query.order_by(Actor.actor_name)
+            else:
+                query = query.order_by(Actor.actor_name.desc())
+
+        elif sort_by == "birth_date":
+            # Sortowanie po dacie urodzenia
+            if sort_order.lower() == "asc":
+                query = query.order_by(Actor.birth_date)
+            else:
+                query = query.order_by(Actor.birth_date.desc())
+
+        elif sort_by == "movie_count":
+            # Sortowanie po liczbie filmów
+            from app.models.movie_actor import MovieActor
+
+            movie_count_subquery = (
+                self.session.query(
+                    MovieActor.actor_id, func.count(MovieActor.movie_id).label("count")
+                )
+                .group_by(MovieActor.actor_id)
+                .subquery()
+            )
+
+            query = query.outerjoin(
+                movie_count_subquery, Actor.actor_id == movie_count_subquery.c.actor_id
+            )
+
+            if sort_order.lower() == "asc":
+                query = query.order_by(func.coalesce(movie_count_subquery.c.count, 0))
+            else:
+                query = query.order_by(
+                    func.coalesce(movie_count_subquery.c.count, 0).desc()
+                )
+
+        elif sort_by == "popularity":
+            # Sortowanie po popularności (dostosuj do swojego modelu)
+            if sort_order.lower() == "asc":
+                query = query.order_by(Actor.popularity)
+            else:
+                query = query.order_by(Actor.popularity.desc())
+
+        else:
+            # Domyślne sortowanie po nazwie
+            if sort_order.lower() == "asc":
+                query = query.order_by(Actor.actor_name)
+            else:
+                query = query.order_by(Actor.actor_name.desc())
+
+        return query
+
+    def filter_actors(
+        self, filters, page=1, per_page=10, sort_by="name", sort_order="asc"
+    ):
+        """Filtruje aktorów na podstawie różnych kryteriów i sortuje wyniki."""
+        # Budowanie podstawowego zapytania
+        query = self.session.query(Actor)
+
+        # Zastosowanie filtrów
+        query = self._apply_filters(query, filters)
+
+        # Zastosowanie sortowania
+        query = self._apply_sorting(query, sort_by, sort_order)
+
         # Obliczanie całkowitej liczby wyników
         total = query.count()
+        print(f"Total actors matching filters: {total}")
 
         # Dodanie paginacji
-        actors = (
-            query.order_by(Actor.actor_name)
-            .offset((page - 1) * per_page)
-            .limit(per_page)
-            .all()
-        )
+        actors = query.offset((page - 1) * per_page).limit(per_page).all()
+
+        print(f"Returned actors: {len(actors)}")
+        if actors:
+            print(f"First actor: {actors[0].actor_name}")
 
         total_pages = (total + per_page - 1) // per_page
 

@@ -1,26 +1,21 @@
 .pageWrapper {
   width: 100%;
   position: relative;
-  padding-top: 120px;
-  /* Navbar (60px) + SortingBar (60px) */
+  padding-top: 110px;
 }
 
 .sortingBar {
   background-color: white;
   position: fixed;
-  /* Przyklejony pod Navbar */
   top: 60px;
-  /* Przyklejony tuż pod Navbar */
   left: 0;
   right: 0;
   height: 60px;
   z-index: 900;
-  /* Mniejszy niż Navbar (1000), ale większy niż reszta */
   max-width: 1100px;
   margin: 0 auto;
   box-sizing: border-box;
   transition: transform 0.3s ease-in-out;
-  /* Płynne chowanie/pokazywanie */
 }
 
 .sortingBar.visible {
@@ -74,32 +69,32 @@
   padding-bottom: 10px;
 }
 
-.mobileFilterButton {
-  display: none;
+/* Przyciski kontrolne dla widoku mobilnego */
+.mobileControlsContainer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
 }
 
-.filterToggleButton {
+.controlButton {
+  flex: 1;
   background-color: #ffcc00;
   color: #000;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
+  padding: 15px 15px;
   font-weight: bold;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
   justify-content: center;
+  gap: 8px;
   font-size: 16px;
-  margin-top: 0;
+  margin: 10px;
 }
 
-.filterToggleButton:hover {
+.controlButton:hover {
   background-color: #e6b800;
-}
-
-.mobileControlsContainer {
-  width: 100%;
 }
 
 .desktopSorting {
@@ -164,32 +159,6 @@
   transform: translateX(0);
 }
 
-.mobileButtons {
-  display: none;
-  height: 3em;
-  margin: 10px;
-}
-
-.sortToggleButton {
-  background-color: #ffcc00;
-  color: #000;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  justify-content: center;
-  font-size: 16px;
-  margin-top: 0;
-}
-
-.sortToggleButton:hover {
-  background-color: #e6b800;
-}
-
 .mobileFilter {
   position: fixed;
   top: 0;
@@ -229,7 +198,6 @@
 }
 
 .closeFilterButtonLarge {
-  display: none;
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -243,7 +211,7 @@
   cursor: pointer;
   z-index: 1000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
 }
@@ -329,20 +297,21 @@
 }
 
 .loading,
-.error,
 .noMovies {
-  color: #fff;
   text-align: center;
-  padding: 20px;
+  padding: 30px;
+  font-size: 16px;
+  color: #aaa;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
 }
+
 
 @media (min-width: 1100px) {
   .sortingBar {
     display: block;
     position: fixed;
-    /* Zamiast sticky, aby zawsze był przyklejony i mógł się chować */
     top: 60px;
-    /* Przyklejony pod Navbar */
     z-index: 900;
   }
 
@@ -365,6 +334,10 @@
 }
 
 @media (max-width: 1100px) {
+  .pageWrapper {
+    padding-top: 60px;
+  }
+
   .pageContainer {
     flex-direction: column;
     width: 100%;
@@ -373,15 +346,16 @@
   .movieListPage {
     width: 100%;
     padding-top: 0;
+    margin-top: -10px;
   }
 
   .desktopFilter {
     display: none;
   }
 
-  .mobileFilterButton {
-    display: block;
-    width: 100%;
+  .mobileControlsContainer {
+    display: flex;
+    margin-top: 0;
   }
 
   .mobileFilter {
@@ -399,17 +373,6 @@
 
   .desktopSorting {
     display: none;
-  }
-
-  .mobileButtons {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  .filterToggleButton,
-  .sortToggleButton {
-    flex: 1;
   }
 
   .mobileSorting {

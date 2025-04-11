@@ -64,24 +64,61 @@ def get_actor_movies(actor_id):
     return jsonify({"error": "Actor not found"}), 404
 
 
+actors_bp = Blueprint("actors", __name__)
+
+
 @actors_bp.route("/filter", methods=["GET"])
 def filter_actors():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)
+    try:
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 10, type=int)
 
-    # Zbieramy wszystkie filtry z parametrów zapytania
-    filters = {}
-    if "name" in request.args:
-        filters["name"] = request.args.get("name")
-    if "countries" in request.args:
-        filters["countries"] = request.args.get("countries")
-    if "years" in request.args:
-        filters["years"] = request.args.get("years")
-    if "gender" in request.args:
-        filters["gender"] = request.args.get("gender")
+        # Limit per_page to prevent overloading
+        per_page = min(per_page, 100)
 
-    result = actor_service.filter_actors(filters, page, per_page)
-    return jsonify(result)
+        # Zbieramy wszystkie filtry z parametrów zapytania
+        filters = {}
+        if "name" in request.args:
+            filters["name"] = request.args.get("name")
+        if "countries" in request.args:
+            filters["countries"] = request.args.get("countries")
+        if "years" in request.args:
+            filters["years"] = request.args.get("years")
+        if "gender" in request.args:
+            filters["gender"] = request.args.get("gender")
+
+        # Parametry sortowania
+        sort_by = request.args.get("sort_by", "name")
+        sort_order = request.args.get("sort_order", "asc")
+
+        # Walidacja parametrów sortowania
+        valid_sort_fields = ["name", "birth_date"]
+        valid_sort_orders = ["asc", "desc"]
+
+        if sort_by not in valid_sort_fields:
+            sort_by = "name"
+        if sort_order.lower() not in valid_sort_orders:
+            sort_order = "asc"
+
+        result = actor_service.filter_actors(
+            filters,
+            page=page,
+            per_page=per_page,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
+        return jsonify(result), 200
+    except Exception as e:
+        current_app.logger.error(f"Error in filter_actors route: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas filtrowania aktorów",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )
 
 
 @actors_bp.route("/birthplaces", methods=["GET"])
