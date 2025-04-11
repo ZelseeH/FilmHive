@@ -1,4 +1,3 @@
-// src/pages/services/ActorFilterService.ts
 const ActorFilterService = {
     async getBirthplaces(): Promise<string[]> {
         try {

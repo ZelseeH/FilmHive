@@ -56,7 +56,6 @@ const HomePage = () => {
         />
       </div>
 
-      {/* Test buttons */}
       <div className={styles['test-buttons']}>
         <div className={styles['user-avatar']} onClick={toggleUserMenu}>
           <div className={styles['user-initial']}>{user ? user.username[0].toUpperCase() : 'G'}</div>

@@ -33,7 +33,6 @@ def get_user_by_username(username):
 def update_user_profile(user_id, data):
     """Aktualizuje profil użytkownika."""
     try:
-        # Walidacja danych
         if "email" in data and not data["email"]:
             raise ValueError("Email nie może być pusty")
 
@@ -101,13 +100,11 @@ def upload_background_image(user_id, file, position=None):
 
         print(f"Przesyłanie zdjęcia w tle dla użytkownika {user.username}")
 
-        # Domyślna pozycja, jeśli nie podano
         if position is None:
             position = {"x": 50, "y": 50}
 
         print(f"Pozycja zdjęcia: {position}")
 
-        # Zapisz plik i pozycję
         file_path = save_user_image(file, user.username, "background_image", position)
         print(f"Zapisana ścieżka do pliku: {file_path}")
 

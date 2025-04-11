@@ -1,4 +1,3 @@
-// components/FeaturedMovie/FeaturedMovie.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -27,7 +26,6 @@ const FeaturedMovie: React.FC<FeaturedMovieProps> = ({ movie }) => {
                 className={styles['popular-movies-title']}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-            // Nie dodajemy exit animation, aby nagłówek nie znikał
             >
                 FILMY <br /> Najpopularniejsze
             </motion.h2>

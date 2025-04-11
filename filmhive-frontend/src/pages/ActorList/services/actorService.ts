@@ -1,5 +1,4 @@
-// src/services/actorService.ts
-// services/actorService.ts
+
 export interface Actor {
     id: number;
     name: string;

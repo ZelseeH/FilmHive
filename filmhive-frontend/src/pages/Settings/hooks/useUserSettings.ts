@@ -13,7 +13,7 @@ interface EditModeState {
     bio: boolean;
     email: boolean;
     password: boolean;
-    name: boolean; // Adding name property that was missing
+    name: boolean;
 }
 
 interface FormValues {
@@ -36,7 +36,7 @@ interface ModalErrors {
     bio: string;
     email: string;
     password: string;
-    name: string; // Adding name property that was missing
+    name: string;
 }
 
 export const useUserSettings = () => {
@@ -52,7 +52,7 @@ export const useUserSettings = () => {
         bio: false,
         email: false,
         password: false,
-        name: false // Adding name property
+        name: false
     });
 
     const [formValues, setFormValues] = useState<FormValues>({
@@ -71,7 +71,7 @@ export const useUserSettings = () => {
         bio: '',
         email: '',
         password: '',
-        name: '' // Adding name property
+        name: ''
     });
     const [loading, setLoading] = useState(false);
 
@@ -102,7 +102,6 @@ export const useUserSettings = () => {
             [field]: userData[field as keyof UserData] || ''
         });
 
-        // Create a new object with all fields set to false
         const resetEditMode: EditModeState = {
             username: false,
             bio: false,
@@ -111,7 +110,6 @@ export const useUserSettings = () => {
             name: false
         };
 
-        // Set the specified field to true
         setEditMode({
             ...resetEditMode,
             [field]: true
@@ -128,7 +126,7 @@ export const useUserSettings = () => {
     };
 
     const handleCancel = () => {
-        // Create a new object with all fields set to false
+
         const resetEditMode: EditModeState = {
             username: false,
             bio: false,

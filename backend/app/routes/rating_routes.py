@@ -21,9 +21,7 @@ def get_ratings_for_movie(movie_id):
     """Pobiera oceny dla danego filmu."""
     try:
         page = request.args.get("page", 1, type=int)
-        per_page = min(
-            request.args.get("per_page", 10, type=int), 50
-        )  # Maksymalnie 50 na stronę
+        per_page = min(request.args.get("per_page", 10, type=int), 50)
 
         result = get_movie_ratings(movie_id, page, per_page)
         return jsonify(result), 200
@@ -112,7 +110,6 @@ def rate_movie(movie_id):
         user_id = int(get_jwt_identity())
         result = create_rating(user_id, movie_id, rating_value)
 
-        # Pobierz zaktualizowane statystyki ocen
         stats = get_movie_rating_stats(movie_id)
         result.update(stats)
 
@@ -147,7 +144,6 @@ def update_movie_rating(rating_id):
                 403,
             )
 
-        # Pobierz zaktualizowane statystyki ocen dla filmu
         movie_id = result.get("movie_id")
         if movie_id:
             stats = get_movie_rating_stats(movie_id)
@@ -160,13 +156,20 @@ def update_movie_rating(rating_id):
         return jsonify({"error": f"Błąd aktualizacji oceny: {str(e)}"}), 500
 
 
-@ratings_bp.route("/ratings/<int:rating_id>", methods=["DELETE"])
+@ratings_bp.route("/movies/<int:movie_id>/user-rating", methods=["DELETE"])
 @jwt_required()
-def delete_movie_rating(rating_id):
-    """Usuwa ocenę filmu."""
+def delete_movie_rating(movie_id):
+    """Usuwa ocenę danego filmu dla aktualnie zalogowanego użytkownika."""
     try:
         user_id = int(get_jwt_identity())
-        result = delete_rating(rating_id, user_id)
+        print(f"Deleting rating for user {user_id} and movie {movie_id}")
+
+        rating_value = get_user_rating_for_movie(user_id, movie_id)
+
+        if not rating_value:
+            return jsonify({"error": "Ocena nie istnieje"}), 404
+
+        result = delete_rating(user_id, movie_id)
 
         if result is None:
             return (
@@ -174,14 +177,9 @@ def delete_movie_rating(rating_id):
                 403,
             )
 
-        # Pobierz zaktualizowane statystyki ocen dla filmu
-        movie_id = result.get("movie_id")
-        if movie_id:
-            stats = get_movie_rating_stats(movie_id)
-            result.update(stats)
-
         return jsonify({"message": "Ocena usunięta", **result}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
+        print(f"Error in delete_movie_rating: {str(e)}")
         return jsonify({"error": f"Błąd usuwania oceny: {str(e)}"}), 500

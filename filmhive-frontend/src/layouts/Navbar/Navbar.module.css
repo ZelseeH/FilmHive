@@ -1,10 +1,7 @@
-/* Navbar.module.css */
 :global(html.menu-open),
 :global(body.menu-open) {
   overflow: hidden !important;
-  /* Usuwamy position: fixed i height, aby uniknąć skoku */
-  /* height: 100vh !important; */
-  /* position: fixed !important; */
+
   width: 100vw !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
@@ -190,7 +187,7 @@
   pointer-events: auto;
 }
 
-/* Nadpisz domyślne style react-burger-menu */
+
 .bm-menu-wrap {
   height: calc(100vh - 60px) !important;
   top: 60px !important;
@@ -356,114 +353,85 @@
   }
 }
 
-/* Zmniejszenie o 25% poniżej 600px */
+
 @media (max-height: 600px) {
   .mobileMenuContent {
     padding: 15px;
-    /* 20px * 0.75 */
   }
 
   .mobile-menu-link {
     font-size: 13.5px;
-    /* 18px * 0.75 */
     padding: 11.25px 0;
-    /* 15px * 0.75 */
   }
 
   .mobileUserSection {
     padding: 11.25px;
-    /* 15px * 0.75 */
   }
 
   .mobileUserAvatar {
     width: 60px;
-    /* 80px * 0.75 */
     height: 60px;
-    /* 80px * 0.75 */
     margin-bottom: 7.5px;
-    /* 10px * 0.75 */
   }
 
   .mobileUsername {
     font-size: 12px;
-    /* 16px * 0.75 */
   }
 
   .mobile-logout-btn {
     font-size: 12px;
-    /* 16px * 0.75 */
     padding: 11.25px 0;
-    /* 15px * 0.75 */
   }
 
   .mobile-logout-btn svg {
     margin-right: 7.5px;
-    /* 10px * 0.75 */
     width: 12px;
-    /* Zakładam domyślny rozmiar ikony ~16px */
     height: 12px;
   }
 
   .mobileLoginBtn {
     padding: 9px 11.25px;
-    /* 12px * 0.75 i 15px * 0.75 */
     font-size: 12px;
-    /* 16px * 0.75 */
   }
 }
 
-/* Zmniejszenie o 50% poniżej 400px */
 @media (max-height: 400px) {
   .mobileMenuContent {
     padding: 10px;
-    /* 20px * 0.5 */
   }
 
   .mobile-menu-link {
     font-size: 9px;
-    /* 18px * 0.5 */
     padding: 7.5px 0;
-    /* 15px * 0.5 */
   }
 
   .mobileUserSection {
     padding: 7.5px;
-    /* 15px * 0.5 */
   }
 
   .mobileUserAvatar {
     width: 40px;
-    /* 80px * 0.5 */
     height: 40px;
-    /* 80px * 0.5 */
     margin-bottom: 5px;
-    /* 10px * 0.5 */
   }
 
   .mobileUsername {
     font-size: 8px;
-    /* 16px * 0.5 */
   }
 
   .mobile-logout-btn {
     font-size: 8px;
-    /* 16px * 0.5 */
     padding: 7.5px 0;
-    /* 15px * 0.5 */
   }
 
   .mobile-logout-btn svg {
     margin-right: 5px;
-    /* 10px * 0.5 */
     width: 8px;
-    /* Zakładam domyślny rozmiar ikony ~16px */
     height: 8px;
   }
 
   .mobileLoginBtn {
     padding: 6px 7.5px;
-    /* 12px * 0.5 i 15px * 0.5 */
     font-size: 8px;
-    /* 16px * 0.5 */
   }
 }

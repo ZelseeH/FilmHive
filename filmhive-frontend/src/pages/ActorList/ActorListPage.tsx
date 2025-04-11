@@ -32,16 +32,13 @@ const ActorListPage: React.FC = () => {
     const [lastScrollY, setLastScrollY] = useState<number>(0);
     const { actors, loading, error, totalPages } = useActors(filters, currentPage, sortOption);
 
-    // Logika przewijania dla sortingBar
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
 
             if (currentScrollY > lastScrollY && currentScrollY > 60) {
-                // Przewijanie w dół – chowaj pasek
                 setIsSortingBarVisible(false);
             } else if (currentScrollY < lastScrollY) {
-                // Przewijanie w górę – pokazuj pasek
                 setIsSortingBarVisible(true);
             }
 
@@ -85,7 +82,6 @@ const ActorListPage: React.FC = () => {
         document.body.style.overflow = 'auto';
     };
 
-    // Efekt kliknięcia poza filtrem lub sortowaniem
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (filterRef.current && !filterRef.current.contains(event.target as Node) && isFilterOpen) {
@@ -100,7 +96,6 @@ const ActorListPage: React.FC = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isFilterOpen, isSortingOpen]);
 
-    // Obsługa klawisza Escape
     useEffect(() => {
         const handleEscKey = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -114,12 +109,10 @@ const ActorListPage: React.FC = () => {
 
     return (
         <div className={styles.pageWrapper}>
-            {/* Pasek sortowania na górze */}
             <div className={`${styles.sortingBar} ${isSortingBarVisible ? styles.visible : styles.hidden}`}>
                 <ActorSorting value={sortOption} onChange={handleSortChange} isDesktop={true} />
             </div>
 
-            {/* Przyciski mobilne */}
             <div className={styles.mobileControlsContainer}>
                 <button onClick={toggleFilter} className={styles.controlButton}>
                     <FaFilter /> Filtruj
@@ -129,7 +122,6 @@ const ActorListPage: React.FC = () => {
                 </button>
             </div>
 
-            {/* Główna zawartość */}
             <div className={styles.pageContainer}>
                 <div className={styles.actorListPage}>
                     {loading ? (
@@ -168,7 +160,6 @@ const ActorListPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Mobilny filtr */}
             <div
                 ref={filterRef}
                 className={`${styles.mobileFilter} ${isFilterOpen ? styles.open : ''}`}
@@ -186,7 +177,6 @@ const ActorListPage: React.FC = () => {
                 />
             </div>
 
-            {/* Mobilne sortowanie */}
             <div
                 ref={sortingRef}
                 className={`${styles.mobileSorting} ${isSortingOpen ? styles.open : ''}`}
@@ -205,7 +195,6 @@ const ActorListPage: React.FC = () => {
                 />
             </div>
 
-            {/* Overlay */}
             <div
                 className={`${styles.overlay} ${(isFilterOpen || isSortingOpen) ? styles.open : ''}`}
                 onClick={closeAllPanels}

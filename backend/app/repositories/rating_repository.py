@@ -121,7 +121,6 @@ class RatingRepository:
             .all()
         )
 
-        # Tworzymy słownik {movie_id: rating_value}
         return {rating.movie_id: rating.rating for rating in ratings}
 
     def add(self, rating):
@@ -149,22 +148,7 @@ class RatingRepository:
             print(f"Błąd podczas aktualizacji oceny: {e}")
             return None
 
-    def delete(self, rating_id):
-        """Usuwa ocenę na podstawie ID."""
-        try:
-            rating = self.get_by_id(rating_id)
-            if rating:
-                self.session.delete(rating)
-                self.session.commit()
-                return True
-            return False
-        except SQLAlchemyError as e:
-            self.session.rollback()
-            print(f"Błąd podczas usuwania oceny: {e}")
-            return False
-
-    def delete_by_user_and_movie(self, user_id, movie_id):
-        """Usuwa ocenę danego użytkownika dla danego filmu."""
+    def delete_movie_rating(self, user_id, movie_id):
         try:
             rating = self.get_by_user_and_movie(user_id, movie_id)
             if rating:

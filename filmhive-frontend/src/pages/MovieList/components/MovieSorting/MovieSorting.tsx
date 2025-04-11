@@ -115,7 +115,6 @@ const MovieSorting: React.FC<MovieSortingProps> = ({ value, onChange, onClose })
                     </div>
                 </div>
 
-                {/* Przycisk zamykania w widoku mobilnym na dole */}
                 {onClose && (
                     <div className={styles.closeButtonContainer}>
                         <button onClick={onClose} className={styles.closeButtonLarge}>

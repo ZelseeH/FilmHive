@@ -27,4 +27,18 @@ export class RatingService {
 
         if (!response.ok) throw new Error('Wystąpił błąd podczas oceniania filmu');
     }
+
+    static async deleteRating(movieId: number, token: string): Promise<void> {
+        if (!token) throw new Error('Musisz być zalogowany, aby usunąć ocenę');
+
+        const response = await fetch(`http://localhost:5000/api/ratings/movies/${movieId}/user-rating`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': 'no-cache'
+            }
+        });
+
+        if (!response.ok) throw new Error(`Nie udało się usunąć oceny: ${response.status}`);
+    }
 }

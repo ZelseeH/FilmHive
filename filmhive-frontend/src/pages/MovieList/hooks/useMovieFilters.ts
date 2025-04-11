@@ -27,7 +27,6 @@ export const useMovieFilters = (initialValue: MovieFilters, onChange: (filters: 
     };
 
 
-    // Update states when initialValue changes
     useEffect(() => {
         setInputValue(initialValue.title || '');
         setSelectedCountries(initialValue.countries ? initialValue.countries.split(',') : []);
@@ -37,7 +36,6 @@ export const useMovieFilters = (initialValue: MovieFilters, onChange: (filters: 
         setAverageRating(initialValue.average_rating || 0);
     }, [initialValue]);
 
-    // Update local filter state after each change
     useEffect(() => {
         const newFilters: MovieFilters = {};
 

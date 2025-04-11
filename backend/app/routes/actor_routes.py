@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from app.services.actor_service import ActorService
 
 actors_bp = Blueprint("actors", __name__)
@@ -73,10 +73,8 @@ def filter_actors():
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 10, type=int)
 
-        # Limit per_page to prevent overloading
         per_page = min(per_page, 100)
 
-        # Zbieramy wszystkie filtry z parametrów zapytania
         filters = {}
         if "name" in request.args:
             filters["name"] = request.args.get("name")
@@ -87,11 +85,9 @@ def filter_actors():
         if "gender" in request.args:
             filters["gender"] = request.args.get("gender")
 
-        # Parametry sortowania
         sort_by = request.args.get("sort_by", "name")
         sort_order = request.args.get("sort_order", "asc")
 
-        # Walidacja parametrów sortowania
         valid_sort_fields = ["name", "birth_date"]
         valid_sort_orders = ["asc", "desc"]
 

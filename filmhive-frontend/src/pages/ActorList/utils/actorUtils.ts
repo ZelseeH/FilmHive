@@ -1,4 +1,3 @@
-// src/utils/actorUtils.ts
 import { createSlug } from '../../../utils/formatters';
 
 export const formatActorName = (firstName?: string, lastName?: string): string => {

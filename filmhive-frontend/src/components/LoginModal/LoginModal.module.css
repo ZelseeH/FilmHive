@@ -121,39 +121,29 @@
   text-decoration: underline;
 }
 
-/* Poniżej 450px szerokości: szerokość 100%, zero marginesów po bokach */
 @media (max-width: 450px) {
   .login-modal {
     width: 100%;
     max-width: none;
-    /* Usuwamy ograniczenie max-width */
     margin-left: 0;
     margin-right: 0;
     border-radius: 8px;
-    /* Zachowujemy radius, bo nie zmieniamy go tutaj */
   }
 
   .modal-overlay {
     padding: 0;
-    /* Usuwamy ewentualne paddingi overlay, jeśli istnieją */
   }
 }
 
-/* Poniżej 400px wysokości: wysokość 100%, zero marginesów, zero radiusów */
 @media (max-height: 400px) {
   .login-modal {
     height: 100%;
     width: 100%;
-    /* Dla spójności, jeśli szerokość też ma być pełna */
     max-width: none;
     margin: 0;
-    /* Zero marginesów ze wszystkich stron */
     padding: 30px;
-    /* Zachowujemy padding, ale można go usunąć, jeśli chcesz */
     border-radius: 0;
-    /* Zero radiusów */
     box-shadow: none;
-    /* Opcjonalnie usuwamy cień, bo przyklejony modal go nie potrzebuje */
   }
 
   .modal-overlay {

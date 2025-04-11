@@ -8,7 +8,7 @@ import SettingsPage from './pages/Settings/SettingsPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import MovieListPage from './pages/MovieList/MovieListPage';
 import MovieDetail from './pages/MovieDetails/MovieDetailsPage';
-import ActorListPage from './pages/ActorList/ActorListPage'; // Dodaj import
+import ActorListPage from './pages/ActorList/ActorListPage';
 
 const AppRoutes: React.FC = () => {
     const { user } = useAuth();
@@ -29,8 +29,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/movies" element={<MovieListPage />} />
             <Route path="/movie/details/:movieTitle" element={<MovieDetail />} />
-            <Route path="/actors" element={<ActorListPage />} /> {/* Dodaj ścieżkę dla aktorów */}
-            <Route path="/kolorowy" element={<HomePage />} /> {/* Dodaj ścieżkę dla "kolorowy" */}
+            <Route path="/actors" element={<ActorListPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );

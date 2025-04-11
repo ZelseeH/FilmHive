@@ -9,7 +9,7 @@ interface UseUserRatingProps {
 }
 
 export const useUserRating = ({ movieId, user, getToken }: UseUserRatingProps) => {
-    const [rating, setRating] = useState<number>(0); // Dodano setter do stanu rating
+    const [rating, setRating] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const fetchingRef = useRef<boolean>(false);
 
@@ -25,7 +25,7 @@ export const useUserRating = ({ movieId, user, getToken }: UseUserRatingProps) =
                 if (!token) return;
 
                 const userRating = await RatingService.fetchUserRating(movieId, token);
-                setRating(userRating); // Ustawienie oceny
+                setRating(userRating);
             } catch (error) {
                 console.error('Błąd podczas pobierania oceny użytkownika:', error);
             } finally {
@@ -41,5 +41,5 @@ export const useUserRating = ({ movieId, user, getToken }: UseUserRatingProps) =
         };
     }, [movieId, user, getToken]);
 
-    return { rating, isLoading, setRating }; // Zwracamy również setter dla rating
+    return { rating, isLoading, setRating };
 };

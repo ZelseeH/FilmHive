@@ -84,7 +84,7 @@ def get_movie_rating_stats(movie_id):
 
 
 def create_rating(user_id, movie_id, rating_value):
-    """Tworzy nową ocenę lub aktualizuje istniejącą."""
+    """Tworzy nową ocenę lub aktualizuje istniejącą i usuwa film z watchlisty."""
     try:
         if not (1 <= rating_value <= 10):
             raise ValueError("Ocena musi być w zakresie od 1 do 10")
@@ -92,6 +92,20 @@ def create_rating(user_id, movie_id, rating_value):
         user, movie = db.session.get(User, user_id), db.session.get(Movie, movie_id)
         if not user or not movie:
             raise ValueError("Użytkownik lub film nie istnieje")
+
+        # Usuń film z watchlisty, jeśli był na niej
+        try:
+            from app.repositories.watchlist_repository import WatchlistRepository
+
+            watchlist_repo = WatchlistRepository(db.session)
+            if watchlist_repo.is_in_watchlist(user_id, movie_id):
+                watchlist_repo.remove_from_watchlist(user_id, movie_id)
+                print(
+                    f"Film {movie_id} został automatycznie usunięty z listy do obejrzenia użytkownika {user_id} po ocenieniu"
+                )
+        except Exception as e:
+            print(f"Błąd podczas usuwania z watchlisty: {str(e)}")
+            # Nie przerywamy procesu oceniania, jeśli usunięcie z watchlisty się nie powiedzie
 
         existing_rating = rating_repo.get_by_user_and_movie(user_id, movie_id)
         if existing_rating:
@@ -119,7 +133,7 @@ def create_rating(user_id, movie_id, rating_value):
 
 
 def update_rating(rating_id, new_rating_value, user_id):
-    """Aktualizuje ocenę użytkownika."""
+    """Aktualizuje ocenę użytkownika i usuwa film z watchlisty."""
     try:
         if not (1 <= new_rating_value <= 10):
             raise ValueError("Ocena musi być w zakresie od 1 do 10")
@@ -130,6 +144,18 @@ def update_rating(rating_id, new_rating_value, user_id):
 
         if rating.user_id != user_id:
             raise ValueError("Nie masz uprawnień do edycji tej oceny")
+
+        try:
+            from app.repositories.watchlist_repository import WatchlistRepository
+
+            watchlist_repo = WatchlistRepository(db.session)
+            if watchlist_repo.is_in_watchlist(user_id, rating.movie_id):
+                watchlist_repo.remove_from_watchlist(user_id, rating.movie_id)
+                print(
+                    f"Film {rating.movie_id} został automatycznie usunięty z listy do obejrzenia użytkownika {user_id} po aktualizacji oceny"
+                )
+        except Exception as e:
+            print(f"Błąd podczas usuwania z watchlisty: {str(e)}")
 
         updated_rating = rating_repo.update(rating_id, new_rating_value)
         result = updated_rating.serialize()
@@ -142,22 +168,28 @@ def update_rating(rating_id, new_rating_value, user_id):
         raise Exception(f"Błąd podczas aktualizacji oceny: {str(e)}")
 
 
-def delete_rating(rating_id, user_id):
-    """Usuwa ocenę, jeśli użytkownik jest właścicielem."""
+def delete_rating(user_id, movie_id):
+    """Usuwa ocenę użytkownika dla danego filmu."""
     try:
-        rating = rating_repo.get_by_id(rating_id)
-        if not rating:
-            raise ValueError("Ocena nie istnieje")
+        # Pobierz ocenę użytkownika dla danego filmu
+        rating = rating_repo.get_by_user_and_movie(user_id, movie_id)
 
+        if not rating:
+            return None
+
+        # Sprawdź uprawnienia
         if rating.user_id != user_id:
             raise ValueError("Nie masz uprawnień do usunięcia tej oceny")
 
-        movie_id = rating.movie_id
-        success = rating_repo.delete(rating_id)
-        result = {"success": success}
+        # Usuń ocenę
+        success = rating_repo.delete_movie_rating(user_id, movie_id)
+
+        result = {"success": success, "movie_id": movie_id}
+
         if success:
             stats = get_movie_rating_stats(movie_id)
             result.update(stats)
+
         return result
     except ValueError as e:
         raise e

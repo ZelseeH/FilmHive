@@ -14,7 +14,6 @@ import os
 user_bp = Blueprint("user", __name__)
 
 
-# Use current_app.root_path to ensure the correct directory path
 @user_bp.before_app_request
 def setup_upload_directory():
     os.makedirs(
@@ -45,15 +44,13 @@ def get_user_profile(username):
         if not user:
             return jsonify({"error": "Użytkownik nie znaleziony"}), 404
 
-        # Return only public information
-        # Return only public information
         public_data = {
             "username": user.get("username"),
             "name": user.get("name"),
             "bio": user.get("bio"),
             "profile_picture": user.get("profile_picture"),
             "background_image": user.get("background_image"),
-            "background_position": user.get("background_position"),  # Dodaj tę linię
+            "background_position": user.get("background_position"),
             "registration_date": user.get("registration_date"),
         }
 
@@ -143,7 +140,6 @@ def upload_user_profile_picture():
         return jsonify({"error": str(e)}), 500
 
 
-# routes/user_routes.py
 @user_bp.route("/background-image", methods=["POST"])
 @jwt_required()
 def upload_user_background_image():
@@ -157,11 +153,9 @@ def upload_user_background_image():
         if file.filename == "":
             return jsonify({"error": "Nie wybrano pliku"}), 400
 
-        # Pobierz pozycję tła
         position_x = request.form.get("position_x", "50")
         position_y = request.form.get("position_y", "50")
 
-        # Przekaż pozycję do serwisu
         updated_user = upload_background_image(
             user_id, file, {"x": float(position_x), "y": float(position_y)}
         )
@@ -173,9 +167,7 @@ def upload_user_background_image():
                 {
                     "message": "Tło profilu zaktualizowane",
                     "background_image": updated_user.get("background_image"),
-                    "background_position": updated_user.get(
-                        "background_position"
-                    ),  # Dodaj tę linię
+                    "background_position": updated_user.get("background_position"),
                 }
             ),
             200,

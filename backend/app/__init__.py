@@ -61,6 +61,8 @@ def create_app():
     from app.routes.user_routes import user_bp
     from app.routes.rating_routes import ratings_bp
     from app.routes.actor_routes import actors_bp
+    from app.routes.favorite_movie_routes import favorites_bp
+    from app.routes.watchlist_routes import watchlist_bp
 
     app.register_blueprint(movies_bp, url_prefix="/api/movies")
     app.register_blueprint(genres_bp, url_prefix="/api/genres")
@@ -68,6 +70,8 @@ def create_app():
     app.register_blueprint(user_bp, url_prefix="/api/user")
     app.register_blueprint(ratings_bp, url_prefix="/api/ratings")
     app.register_blueprint(actors_bp, url_prefix="/api/actors")
+    app.register_blueprint(favorites_bp, url_prefix="/api/favorites")
+    app.register_blueprint(watchlist_bp, url_prefix="/api/watchlist")
 
     @app.after_request
     def add_charset(response):

@@ -1,7 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Interfejs użytkownika
 export interface User {
   id: string;
   username: string;
@@ -12,7 +11,6 @@ export interface User {
   registration_date?: string;
 }
 
-// Typy dla kontekstu autoryzacji
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -24,7 +22,6 @@ interface AuthContextType {
   getToken: () => string | null;
 }
 
-// Tworzymy kontekst autoryzacji
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
@@ -41,7 +38,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  // Synchronizujemy stan użytkownika z localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
@@ -50,7 +46,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [user]);
 
-  // Weryfikujemy token w tle podczas inicjalizacji aplikacji
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
@@ -96,7 +91,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => controller.abort();
   }, []);
 
-  // Funkcja logowania
   const login = (userData: User, token: string): void => {
     console.log("Login function called with:", { userData, tokenExists: !!token });
     localStorage.setItem('token', token);
@@ -107,7 +101,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     navigate('/');
   };
 
-  // Funkcja wylogowania
   const logout = (): void => {
     console.log("Logout function called");
     localStorage.removeItem('token');
@@ -119,7 +112,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Funkcje do zarządzania modalem logowania
   const openLoginModal = (): void => {
     setIsLoginModalOpen(true);
   };
@@ -128,7 +120,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoginModalOpen(false);
   };
 
-  // Pobieranie tokenu z localStorage
   const getToken = (): string | null => {
     return localStorage.getItem('token');
   };
@@ -151,7 +142,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 };
 
-// Hook do korzystania z kontekstu autoryzacji
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {

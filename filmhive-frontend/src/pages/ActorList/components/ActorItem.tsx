@@ -9,7 +9,6 @@ interface ActorItemProps {
 }
 
 const ActorItem: React.FC<ActorItemProps> = ({ actor }) => {
-    // Obliczanie wieku aktora
     const calculateAge = () => {
         if (!actor.birth_date) return null;
 
