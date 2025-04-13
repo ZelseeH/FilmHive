@@ -165,3 +165,19 @@ class CommentRepository:
         except SQLAlchemyError as e:
             print(f"Błąd podczas liczenia komentarzy: {e}")
             raise
+
+    def get_user_comment_for_movie(self, user_id, movie_id):
+        try:
+            comment = (
+                self.session.query(Comment)
+                .filter_by(user_id=user_id, movie_id=movie_id)
+                .first()
+            )
+
+            print(
+                f"Pobrano komentarz użytkownika {user_id} dla filmu {movie_id}: {comment is not None}"
+            )
+            return comment
+        except SQLAlchemyError as e:
+            print(f"Błąd podczas pobierania komentarza użytkownika dla filmu: {e}")
+            raise

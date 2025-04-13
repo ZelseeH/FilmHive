@@ -223,3 +223,38 @@ class CommentService:
                 f"Unexpected error counting movie comments: {str(e)}"
             )
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
+
+    def get_user_comment_for_movie(self, user_id, movie_id):
+        try:
+            user = db.session.get(User, user_id)
+            movie = db.session.get(Movie, movie_id)
+
+            if not user:
+                raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
+
+            if not movie:
+                raise ValueError(f"Film o ID {movie_id} nie istnieje")
+
+            comment = self.comment_repository.get_user_comment_for_movie(
+                user_id, movie_id
+            )
+
+            if not comment:
+                current_app.logger.info(
+                    f"Użytkownik {user_id} nie ma komentarza dla filmu {movie_id}"
+                )
+                return None
+
+            current_app.logger.info(
+                f"Pobrano komentarz użytkownika {user_id} dla filmu {movie_id}"
+            )
+            return comment.serialize(include_user=True)
+        except ValueError as e:
+            current_app.logger.error(f"ValueError getting user comment: {str(e)}")
+            raise
+        except SQLAlchemyError as e:
+            current_app.logger.error(f"SQLAlchemyError getting user comment: {str(e)}")
+            raise Exception(f"Nie udało się pobrać komentarza użytkownika: {str(e)}")
+        except Exception as e:
+            current_app.logger.error(f"Unexpected error getting user comment: {str(e)}")
+            raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")

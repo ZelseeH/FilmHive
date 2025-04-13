@@ -164,3 +164,27 @@ def get_comment_by_id(comment_id):
     except Exception as e:
         current_app.logger.error(f"Error in get_comment_by_id: {str(e)}")
         return jsonify({"error": "Wystąpił błąd podczas pobierania komentarza"}), 500
+
+
+@comments_bp.route("/user/<int:movie_id>", methods=["GET"])
+@jwt_required()
+def get_user_comment_for_movie(movie_id):
+    try:
+        user_id = int(get_jwt_identity())
+        comment = comment_service.get_user_comment_for_movie(user_id, movie_id)
+
+        if comment:
+            current_app.logger.info(
+                f"Retrieved user {user_id} comment for movie {movie_id}"
+            )
+            return jsonify(comment), 200
+        else:
+            return jsonify({"message": "Komentarz nie istnieje"}), 404
+    except Exception as e:
+        current_app.logger.error(f"Error in get_user_comment_for_movie: {str(e)}")
+        return (
+            jsonify(
+                {"error": "Wystąpił błąd podczas pobierania komentarza użytkownika"}
+            ),
+            500,
+        )

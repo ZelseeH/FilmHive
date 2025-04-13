@@ -1,0 +1,214 @@
+.commentSection {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.error {
+    color: #e74c3c;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background-color: #fadbd8;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.loginPrompt {
+    text-align: center;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    color: #6c757d;
+    font-style: italic;
+    margin: 0;
+}
+
+.loading {
+    text-align: center;
+    color: #7f8c8d;
+    padding: 10px;
+    font-style: italic;
+    margin: 0;
+}
+
+.commentForm {
+    width: 100%;
+    margin: 0;
+}
+
+.textareaContainer {
+    position: relative;
+    width: 100%;
+}
+
+.commentInput {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.commentInput:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.wordCounter {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    font-weight: bold;
+    border: 1px solid #ddd;
+}
+
+.wordLimitReached {
+    color: #e74c3c;
+    background-color: rgba(250, 219, 216, 0.8);
+    border-color: #e74c3c;
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.submitButton,
+.cancelButton {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.submitButton {
+    background-color: #3498db;
+    color: white;
+}
+
+.submitButton:hover {
+    background-color: #2980b9;
+}
+
+.submitButton:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.cancelButton {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.cancelButton:hover {
+    background-color: #7f8c8d;
+}
+
+.commentDisplay {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 0;
+    border: 1px solid #eaeaea;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.commentDisplay:hover {
+    background-color: #f1f1f1;
+}
+
+.commentText {
+    margin: 0 0 10px 0;
+    line-height: 1.4;
+    font-size: 0.95rem;
+    color: #333;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.commentInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    position: sticky;
+    bottom: 0;
+    background-color: inherit;
+    padding-top: 5px;
+    border-top: 1px solid #eaeaea;
+}
+
+.editHint {
+    font-style: italic;
+}
+
+.deleteButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #e74c3c;
+    padding: 0;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.deleteButton:hover {
+    opacity: 1;
+}
+
+.deleteIcon {
+    font-size: 1rem;
+}
+
+/* Stylizacja paska przewijania */
+.commentDisplay::-webkit-scrollbar {
+    width: 6px;
+}
+
+.commentDisplay::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.commentDisplay::-webkit-scrollbar-thumb {
+    background: #bdc3c7;
+    border-radius: 3px;
+}
+
+.commentDisplay::-webkit-scrollbar-thumb:hover {
+    background: #95a5a6;
+}
+
+@media (max-width: 768px) {
+    .formActions {
+        flex-direction: column;
+    }
+
+    .submitButton,
+    .cancelButton {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}

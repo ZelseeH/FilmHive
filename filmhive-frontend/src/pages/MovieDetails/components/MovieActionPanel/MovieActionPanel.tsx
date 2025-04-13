@@ -7,6 +7,7 @@ import { useAuth } from '../../../../contexts/AuthContext';
 import { FavoriteMovieService } from '../../services/favoriteMovieService';
 import { useUserRating } from '../../hooks/useUserRating';
 import { watchlistService } from '../../services/watchlistService';
+import CommentSection from '../../components/CommentSection/CommentSection';
 
 interface MovieActionPanelProps {
     movieId: number;
@@ -161,19 +162,21 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
                 {(isFavoriteLoading || isWatchlistLoading || isRatingLoading) &&
                     <div className={styles['loading-message']}>Ładowanie danych...</div>}
 
-                {!user && <div className={styles['login-prompt']}>Zaloguj się, aby dodać do ulubionych lub listy do obejrzenia</div>}
+                {!user && <div className={styles['login-prompt']}>Zaloguj się, aby ocenić film</div>}
 
                 <div className={styles['rating-section']}>
                     <StarRating movieId={movieId} onRatingChange={handleRatingChange} />
                 </div>
             </div>
 
-            <div className={styles['divider']}></div>
-
-            <div className={styles['comment-section']}>
-                <h3 className={styles['comment-title']}>Dodaj komentarz</h3>
-                <p className={styles['coming-soon']}>Funkcja komentarzy będzie dostępna wkrótce!</p>
-            </div>
+            {userRating > 0 && (
+                <>
+                    <div className={styles['divider']}></div>
+                    <div className={styles['comment-section']}>
+                        <CommentSection movieId={movieId} />
+                    </div>
+                </>
+            )}
         </div>
     );
 };
