@@ -82,7 +82,6 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userRating }) => {
                     </p>
                 </div>
 
-                {/* Zachowujemy oryginalny kontener dla większych ekranów */}
                 <div className={styles.futureRatings}>
                     <div className={styles.averageRating}>
                         <div className={styles.ratingDisplay}>

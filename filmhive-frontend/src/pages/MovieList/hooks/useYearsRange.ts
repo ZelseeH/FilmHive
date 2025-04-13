@@ -1,4 +1,3 @@
-// hooks/useYearsRange.ts
 import { useState, useEffect, useCallback } from 'react';
 
 export const useYearsRange = () => {

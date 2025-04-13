@@ -50,12 +50,10 @@ export const useMovies = (
             setLoading(true);
             const queryParams = new URLSearchParams();
 
-            // Dodaj parametry paginacji
             queryParams.append('page', page.toString());
             queryParams.append('per_page', '10');
             queryParams.append('include_actors', 'true');
 
-            // Dodaj parametry filtrowania
             if (filters.title) queryParams.append('title', filters.title);
             if (filters.countries) queryParams.append('countries', filters.countries);
             if (filters.years) queryParams.append('years', filters.years);
@@ -65,7 +63,6 @@ export const useMovies = (
             if (filters.average_rating !== undefined)
                 queryParams.append('average_rating', filters.average_rating.toString());
 
-            // Dodaj parametry sortowania
             queryParams.append('sort_by', sortOption.field);
             queryParams.append('sort_order', sortOption.order);
 
