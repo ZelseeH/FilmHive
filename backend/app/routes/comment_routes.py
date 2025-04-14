@@ -98,15 +98,17 @@ def get_movie_comments(movie_id):
         per_page = min(request.args.get("per_page", 10, type=int), 50)
         sort_by = request.args.get("sort_by", "created_at")
         sort_order = request.args.get("sort_order", "desc")
+        include_ratings = request.args.get("include_ratings", "true").lower() == "true"
 
         # Walidacja parametrów sortowania
-        if sort_by not in ["created_at"]:
+        valid_sort_fields = ["created_at", "rating"]
+        if sort_by not in valid_sort_fields:
             sort_by = "created_at"
         if sort_order not in ["asc", "desc"]:
             sort_order = "desc"
 
         result = comment_service.get_movie_comments(
-            movie_id, page, per_page, sort_by, sort_order
+            movie_id, page, per_page, sort_by, sort_order, include_ratings
         )
         current_app.logger.info(f"Retrieved comments for movie {movie_id}, page {page}")
         return jsonify(result), 200
@@ -122,8 +124,11 @@ def get_user_comments():
         user_id = int(get_jwt_identity())
         page = request.args.get("page", 1, type=int)
         per_page = min(request.args.get("per_page", 10, type=int), 50)
+        include_ratings = request.args.get("include_ratings", "true").lower() == "true"
 
-        result = comment_service.get_user_comments(user_id, page, per_page)
+        result = comment_service.get_user_comments(
+            user_id, page, per_page, include_ratings
+        )
         current_app.logger.info(f"Retrieved comments for user {user_id}, page {page}")
         return jsonify(result), 200
     except Exception as e:
@@ -155,7 +160,8 @@ def get_movie_comment_count(movie_id):
 @comments_bp.route("/<int:comment_id>", methods=["GET"])
 def get_comment_by_id(comment_id):
     try:
-        comment = comment_service.get_comment_by_id(comment_id)
+        include_rating = request.args.get("include_rating", "true").lower() == "true"
+        comment = comment_service.get_comment_by_id(comment_id, include_rating)
         if comment:
             current_app.logger.info(f"Retrieved comment {comment_id}")
             return jsonify(comment), 200
@@ -171,7 +177,10 @@ def get_comment_by_id(comment_id):
 def get_user_comment_for_movie(movie_id):
     try:
         user_id = int(get_jwt_identity())
-        comment = comment_service.get_user_comment_for_movie(user_id, movie_id)
+        include_rating = request.args.get("include_rating", "true").lower() == "true"
+        comment = comment_service.get_user_comment_for_movie(
+            user_id, movie_id, include_rating
+        )
 
         if comment:
             current_app.logger.info(
@@ -186,5 +195,34 @@ def get_user_comment_for_movie(movie_id):
             jsonify(
                 {"error": "Wystąpił błąd podczas pobierania komentarza użytkownika"}
             ),
+            500,
+        )
+
+
+@comments_bp.route("/movie/<int:movie_id>/with-ratings", methods=["GET"])
+def get_movie_comments_with_ratings(movie_id):
+    try:
+        page = request.args.get("page", 1, type=int)
+        per_page = min(request.args.get("per_page", 10, type=int), 50)
+        sort_by = request.args.get("sort_by", "created_at")
+        sort_order = request.args.get("sort_order", "desc")
+
+        valid_sort_fields = ["created_at", "rating"]
+        if sort_by not in valid_sort_fields:
+            sort_by = "created_at"
+        if sort_order not in ["asc", "desc"]:
+            sort_order = "desc"
+
+        result = comment_service.get_movie_comments_with_ratings(
+            movie_id, page, per_page, sort_by, sort_order
+        )
+        current_app.logger.info(
+            f"Retrieved comments with ratings for movie {movie_id}, page {page}"
+        )
+        return jsonify(result), 200
+    except Exception as e:
+        current_app.logger.error(f"Error in get_movie_comments_with_ratings: {str(e)}")
+        return (
+            jsonify({"error": "Wystąpił błąd podczas pobierania komentarzy z ocenami"}),
             500,
         )

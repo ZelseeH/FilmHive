@@ -162,7 +162,6 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
                 {(isFavoriteLoading || isWatchlistLoading || isRatingLoading) &&
                     <div className={styles['loading-message']}>Ładowanie danych...</div>}
 
-                {!user && <div className={styles['login-prompt']}>Zaloguj się, aby ocenić film</div>}
 
                 <div className={styles['rating-section']}>
                     <StarRating movieId={movieId} onRatingChange={handleRatingChange} />

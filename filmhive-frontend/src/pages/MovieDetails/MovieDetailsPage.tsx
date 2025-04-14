@@ -6,6 +6,7 @@ import YouTubeTrailer from './components/YouTubeTrailer/YouTubeTrailer';
 import MovieHeaderSection from './components/MovieHeaderSection/MovieHeaderSection';
 import MovieCastSection from './components/MovieCastSection/MovieCastSection';
 import MovieActionPanel from './components/MovieActionPanel/MovieActionPanel';
+import AllMovieComments from './components/AllMovieComments/AllMovieComments';
 
 interface LocationState {
     movieId?: number;
@@ -13,8 +14,9 @@ interface LocationState {
 
 const MovieDetail: React.FC = () => {
     const { movieTitle } = useParams<{ movieTitle: string }>();
-    const location = useLocation();
-    const { movieId } = (location.state as LocationState) || {};
+    const { state } = useLocation();
+    const locationState = state as LocationState | undefined;
+    const movieId = locationState?.movieId;
 
     const [showFullDescription, setShowFullDescription] = useState<boolean>(false);
     const [userRating, setUserRating] = useState<number>(0);
@@ -25,6 +27,10 @@ const MovieDetail: React.FC = () => {
         setUserRating(newRating);
     };
 
+    const toggleDescriptionModal = () => {
+        setShowFullDescription((prev) => !prev);
+    };
+
     if (loading) return <div className={styles['loading']}>Ładowanie szczegółów filmu...</div>;
     if (error) return <div className={styles['error']}>Błąd: {error}</div>;
     if (!movie) return <div className={styles['not-found']}>Film nie został znaleziony</div>;
@@ -32,15 +38,9 @@ const MovieDetail: React.FC = () => {
     return (
         <div className={styles['movie-detail-container']}>
             <div className={styles['header-panel-container']}>
-                <MovieHeaderSection
-                    movie={movie}
-                    onShowFullDescription={() => setShowFullDescription(true)}
-                />
+                <MovieHeaderSection movie={movie} onShowFullDescription={toggleDescriptionModal} />
                 <div className={styles['side-panel']}>
-                    <MovieActionPanel
-                        movieId={movie.id}
-                        onRatingChange={handleRatingChange}
-                    />
+                    <MovieActionPanel movieId={movie.id} onRatingChange={handleRatingChange} />
                 </div>
             </div>
 
@@ -52,21 +52,29 @@ const MovieDetail: React.FC = () => {
                     </section>
                 )}
 
-                {movie.actors && movie.actors.length > 0 && (
-                    <MovieCastSection actors={movie.actors} />
-                )}
+                {movie.actors?.length > 0 && <MovieCastSection actors={movie.actors} />}
+
+                <section className={styles['comments-section']}>
+                    <AllMovieComments movieId={movie.id} />
+                </section>
             </div>
 
             {showFullDescription && (
-                <div className={styles['modal-backdrop']} onClick={() => setShowFullDescription(false)}>
-                    <div className={styles['modal-content']} onClick={e => e.stopPropagation()}>
+                <div
+                    className={styles['modal-backdrop']}
+                    onClick={toggleDescriptionModal}
+                    role="dialog"
+                    aria-labelledby="modal-title"
+                >
+                    <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
                         <button
                             className={styles['modal-close-btn']}
-                            onClick={() => setShowFullDescription(false)}
+                            onClick={toggleDescriptionModal}
+                            aria-label="Zamknij opis"
                         >
                             ×
                         </button>
-                        <h2>{movie.title} - Pełny opis</h2>
+                        <h2 id="modal-title">{movie.title} - Pełny opis</h2>
                         <p>{movie.description}</p>
                     </div>
                 </div>

@@ -4,9 +4,11 @@ export interface Comment {
     movie_id: number;
     text: string;
     created_at: string;
+    user_rating?: number;
     user?: {
         id: number;
         username: string;
+        profile_picture?: string;
     };
 }
 
@@ -32,6 +34,31 @@ export class CommentService {
             const errorText = await response.text();
             console.error('Error response:', errorText);
             throw new Error(`Nie udało się pobrać komentarzy: ${response.status}`);
+        }
+
+        return await response.json();
+    }
+
+    static async getMovieCommentsWithRatings(
+        movieId: number,
+        page: number = 1,
+        perPage: number = 10,
+        sortBy: string = 'created_at',
+        sortOrder: string = 'desc'
+    ): Promise<CommentResponse> {
+        const response = await fetch(
+            `http://localhost:5000/api/comments/movie/${movieId}/with-ratings?page=${page}&per_page=${perPage}&sort_by=${sortBy}&sort_order=${sortOrder}`,
+            {
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            }
+        );
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`Nie udało się pobrać komentarzy z ocenami: ${response.status}`);
         }
 
         return await response.json();
@@ -121,7 +148,6 @@ export class CommentService {
         return await response.json();
     }
 
-
     static async getUserComment(movieId: number, token: string): Promise<Comment | null> {
         const response = await fetch(`http://localhost:5000/api/comments/user/${movieId}`, {
             headers: {
@@ -131,7 +157,7 @@ export class CommentService {
         });
 
         if (response.status === 404) {
-            return null; // Użytkownik nie ma jeszcze komentarza
+            return null;
         }
 
         if (!response.ok) {
@@ -142,6 +168,4 @@ export class CommentService {
 
         return await response.json();
     }
-
-
 }
