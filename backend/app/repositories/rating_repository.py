@@ -9,11 +9,9 @@ class RatingRepository:
         self.session = session
 
     def get_by_id(self, rating_id):
-        """Pobiera ocenę na podstawie ID."""
         return self.session.get(Rating, rating_id)
 
     def get_by_user_and_movie(self, user_id, movie_id):
-        """Pobiera ocenę danego użytkownika dla danego filmu."""
         return (
             self.session.query(Rating)
             .filter(Rating.user_id == user_id, Rating.movie_id == movie_id)
@@ -21,7 +19,6 @@ class RatingRepository:
         )
 
     def get_movie_ratings(self, movie_id, page=1, per_page=10):
-        """Pobiera oceny dla danego filmu z paginacją."""
         query = self.session.query(Rating).filter(Rating.movie_id == movie_id)
 
         total = (
@@ -50,7 +47,6 @@ class RatingRepository:
         }
 
     def get_user_ratings(self, user_id, page=1, per_page=10):
-        """Pobiera oceny danego użytkownika z paginacją."""
         query = self.session.query(Rating).filter(Rating.user_id == user_id)
 
         total = (
@@ -77,7 +73,6 @@ class RatingRepository:
         }
 
     def get_movie_average_rating(self, movie_id):
-        """Pobiera średnią ocenę dla danego filmu."""
         return (
             self.session.query(func.avg(Rating.rating))
             .filter(Rating.movie_id == movie_id)
@@ -85,7 +80,6 @@ class RatingRepository:
         ) or None
 
     def get_movie_rating_count(self, movie_id):
-        """Pobiera liczbę ocen dla danego filmu."""
         return (
             self.session.query(func.count(Rating.rating_id))
             .filter(Rating.movie_id == movie_id)
@@ -93,7 +87,6 @@ class RatingRepository:
         ) or 0
 
     def get_movie_rating_stats(self, movie_id):
-        """Pobiera statystyki ocen dla danego filmu (średnia i liczba ocen)."""
         result = (
             self.session.query(
                 func.avg(Rating.rating).label("average"),
@@ -111,7 +104,6 @@ class RatingRepository:
         }
 
     def get_user_ratings_for_movies(self, user_id, movie_ids):
-        """Pobiera oceny użytkownika dla listy filmów."""
         if not movie_ids:
             return {}
 
@@ -124,7 +116,6 @@ class RatingRepository:
         return {rating.movie_id: rating.rating for rating in ratings}
 
     def add(self, rating):
-        """Dodaje nową ocenę."""
         try:
             self.session.add(rating)
             self.session.commit()
@@ -135,7 +126,6 @@ class RatingRepository:
             return None
 
     def update(self, rating_id, new_rating_value):
-        """Aktualizuje wartość oceny."""
         try:
             rating = self.get_by_id(rating_id)
             if rating:

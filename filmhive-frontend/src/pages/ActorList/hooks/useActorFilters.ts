@@ -17,7 +17,6 @@ export const useActorFilters = (initialValue: Filters, onChange: (filters: Filte
     );
     const [selectedGender, setSelectedGender] = useState<string>(initialValue.gender || '');
 
-    // Aktualizuj stany, gdy zmienia się initialValue
     useEffect(() => {
         setInputValue(initialValue.name || '');
         setSelectedCountries(initialValue.countries ? initialValue.countries.split(',') : []);
@@ -25,7 +24,6 @@ export const useActorFilters = (initialValue: Filters, onChange: (filters: Filte
         setSelectedGender(initialValue.gender || '');
     }, [initialValue]);
 
-    // Aktualizuj lokalny stan filtrów po każdej zmianie
     useEffect(() => {
         const newFilters: Filters = {};
 

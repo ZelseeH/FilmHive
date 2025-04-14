@@ -1,4 +1,3 @@
-// hooks/useUserMenu.ts
 import { useState, useRef, useEffect } from 'react';
 import { calculateMenuPosition, isClickInsideElement } from '../utils/menuPositionCalculator';
 

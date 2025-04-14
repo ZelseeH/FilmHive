@@ -8,7 +8,6 @@ user_repo = UserRepository(db.session)
 
 
 def get_current_user():
-    """Pobiera aktualnie zalogowanego użytkownika na podstawie tokenu JWT."""
     try:
         verify_jwt_in_request()
         user_id = int(get_jwt_identity())
@@ -19,8 +18,6 @@ def get_current_user():
 
 
 def login_required(f):
-    """Dekorator sprawdzający, czy użytkownik jest zalogowany."""
-
     @wraps(f)
     def decorated_function(*args, **kwargs):
         try:
@@ -39,8 +36,6 @@ def login_required(f):
 
 
 def admin_required(f):
-    """Dekorator sprawdzający, czy użytkownik jest administratorem."""
-
     @wraps(f)
     def decorated_function(*args, **kwargs):
         try:

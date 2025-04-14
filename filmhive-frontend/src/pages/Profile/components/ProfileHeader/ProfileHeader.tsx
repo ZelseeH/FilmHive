@@ -1,4 +1,3 @@
-// components/ProfileHeader/ProfileHeader.tsx
 import React, { useEffect } from 'react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { BackgroundImage } from '../BackgroundImage/BackgroundImage';
@@ -72,7 +71,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     handleCancelBackground
   } = useBackgroundImage(onImageUpdate);
 
-  // Aktualizuj bio, gdy zmienia się profileData
   useEffect(() => {
     setBio(profileData?.bio || '');
   }, [profileData, setBio]);

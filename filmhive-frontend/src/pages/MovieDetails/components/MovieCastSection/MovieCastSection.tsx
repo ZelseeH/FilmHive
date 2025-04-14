@@ -1,4 +1,3 @@
-// src/components/MovieCastSection/MovieCastSection.tsx
 import React from 'react';
 import { Actor } from '../../services/movieService';
 import { handleImageError } from '../../utils/movieUtils';

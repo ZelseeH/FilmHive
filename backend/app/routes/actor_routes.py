@@ -119,6 +119,5 @@ def filter_actors():
 
 @actors_bp.route("/birthplaces", methods=["GET"])
 def get_birthplaces():
-    """Pobiera unikalne miejsca urodzenia aktorów."""
     birthplaces = actor_service.get_unique_birthplaces()
     return jsonify({"birthplaces": birthplaces})

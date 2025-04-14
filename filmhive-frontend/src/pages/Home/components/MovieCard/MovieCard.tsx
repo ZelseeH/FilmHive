@@ -1,4 +1,3 @@
-// components/MovieCard/MovieCard.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import styles from './MovieCard.module.css';

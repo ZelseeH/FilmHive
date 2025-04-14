@@ -1,4 +1,3 @@
-// src/hooks/useMovies.ts
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Movie, getAllMovies, getUserRating } from '../services/movieService';
@@ -16,7 +15,6 @@ export const useMovies = (currentPage: number = 1) => {
     const [error, setError] = useState<string | null>(null);
     const [totalPages, setTotalPages] = useState<number>(1);
 
-    // Stała określająca liczbę filmów na stronę
     const moviesPerPage = 10;
 
     const fetchMovies = useCallback(async () => {
@@ -25,7 +23,6 @@ export const useMovies = (currentPage: number = 1) => {
             const data = await getAllMovies();
             setMovies(data);
 
-            // Oblicz całkowitą liczbę stron
             const calculatedTotalPages = Math.ceil(data.length / moviesPerPage);
             setTotalPages(calculatedTotalPages);
 

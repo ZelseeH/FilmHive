@@ -1,4 +1,3 @@
-// src/components/Navbar/UserMenu/UserMenu.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './UserMenu.module.css';

@@ -10,7 +10,6 @@ class ActorService:
         self.actor_repository = ActorRepository(db.session)
 
     def get_all_actors(self, page=1, per_page=10):
-        """Pobiera wszystkich aktorów z paginacją."""
         result = self.actor_repository.get_all(page, per_page)
         actors = result["actors"]
         pagination = result["pagination"]
@@ -20,11 +19,9 @@ class ActorService:
         return {"actors": serialized_actors, "pagination": pagination}
 
     def get_actor_by_id(self, actor_id):
-        """Pobiera aktora na podstawie ID."""
         return self.actor_repository.get_by_id(actor_id)
 
     def search_actors(self, query, page=1, per_page=10):
-        """Wyszukuje aktorów na podstawie zapytania."""
         result = self.actor_repository.search(query, page, per_page)
         actors = result["actors"]
         pagination = result["pagination"]
@@ -34,7 +31,6 @@ class ActorService:
         return {"actors": serialized_actors, "pagination": pagination}
 
     def add_actor(self, actor_data):
-        """Dodaje nowego aktora."""
         try:
             return self.actor_repository.add(actor_data)
         except SQLAlchemyError as e:
@@ -42,7 +38,6 @@ class ActorService:
             raise Exception("Failed to add actor")
 
     def update_actor(self, actor_id, actor_data):
-        """Aktualizuje dane aktora."""
         try:
             return self.actor_repository.update(actor_id, actor_data)
         except SQLAlchemyError as e:
@@ -50,7 +45,6 @@ class ActorService:
             raise Exception("Failed to update actor")
 
     def delete_actor(self, actor_id):
-        """Usuwa aktora."""
         try:
             actor = self.actor_repository.get_by_id(actor_id)
             if actor and actor.photo_url:
@@ -66,7 +60,6 @@ class ActorService:
             raise Exception("Failed to delete actor")
 
     def get_actor_movies(self, actor_id, page=1, per_page=10):
-        """Pobiera filmy, w których wystąpił aktor."""
         result = self.actor_repository.get_actor_movies(actor_id, page, per_page)
         if not result:
             return None
@@ -79,7 +72,6 @@ class ActorService:
         return {"movies": serialized_movies, "pagination": pagination}
 
     def upload_actor_photo(self, actor_id, photo_file):
-        """Zapisuje zdjęcie aktora."""
         try:
             actor = self.actor_repository.get_by_id(actor_id)
             if not actor:
@@ -107,7 +99,6 @@ class ActorService:
     def filter_actors(
         self, filters, page=1, per_page=10, sort_by="name", sort_order="asc"
     ):
-        """Filtruje i sortuje aktorów na podstawie różnych kryteriów."""
         try:
             result = self.actor_repository.filter_actors(
                 filters,
@@ -128,11 +119,9 @@ class ActorService:
                 "sort_order": sort_order,
             }
         except Exception as e:
-            # Log the error for debugging
             current_app.logger.error(f"Error in filter_actors: {str(e)}")
             raise Exception(f"Błąd podczas filtrowania aktorów: {str(e)}")
 
     def get_unique_birthplaces(self):
-        """Pobiera unikalne miejsca urodzenia aktorów."""
         result = self.actor_repository.get_unique_birthplaces()
         return result

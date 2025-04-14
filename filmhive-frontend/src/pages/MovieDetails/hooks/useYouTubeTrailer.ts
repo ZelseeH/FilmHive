@@ -1,4 +1,3 @@
-// src/hooks/useYouTubeTrailer.ts
 import { useState, useEffect } from 'react';
 import { getEmbedUrl } from '../services/youtubeService';
 

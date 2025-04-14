@@ -22,7 +22,6 @@ export const useMovieDetails = (movieId?: number, movieSlug?: string): UseMovieD
                     const movieData = await getMovieDetailsWithRoles(movieId);
                     setMovie(movieData);
                 } else if (movieSlug) {
-                    // Pobierz wszystkie filmy i znajdź ten o odpowiednim slugu
                     const allMovies = await getAllMovies();
                     const foundMovie = allMovies.find(m => createSlug(m.title) === movieSlug);
 

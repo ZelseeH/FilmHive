@@ -1,4 +1,3 @@
-// src/hooks/useSlider.ts
 import { useRef, useCallback } from 'react';
 
 export const useSlider = (scrollAmount: number = 200) => {

@@ -6,11 +6,9 @@ class UserRepository:
         self.session = session
 
     def get_by_id(self, user_id):
-        """Pobiera użytkownika na podstawie ID."""
         return self.session.get(User, user_id)
 
     def get_by_username_or_email(self, identifier):
-        """Pobiera użytkownika na podstawie nazwy użytkownika lub emaila."""
         return (
             self.session.query(User)
             .filter((User.username == identifier) | (User.email == identifier))
@@ -18,22 +16,18 @@ class UserRepository:
         )
 
     def get_by_username(self, username):
-        """Pobiera użytkownika na podstawie nazwy użytkownika."""
         return self.session.query(User).filter(User.username == username).first()
 
     def add(self, user):
-        """Dodaje nowego użytkownika do bazy danych."""
         self.session.add(user)
         self.session.commit()
         return user
 
     def update(self, user):
-        """Aktualizuje dane użytkownika."""
         self.session.commit()
         return user
 
     def update_profile(self, user_id, data):
-        """Aktualizuje profil użytkownika."""
         user = self.get_by_id(user_id)
         if not user:
             return None
@@ -66,7 +60,6 @@ class UserRepository:
         return user
 
     def change_password(self, user_id, new_password):
-        """Zmienia hasło użytkownika."""
         user = self.get_by_id(user_id)
         if not user:
             return False
@@ -75,7 +68,6 @@ class UserRepository:
         return True
 
     def update_profile_picture(self, user_id, profile_picture_path):
-        """Aktualizuje zdjęcie profilowe użytkownika."""
         user = self.get_by_id(user_id)
         if not user:
             return None
@@ -84,7 +76,6 @@ class UserRepository:
         return user
 
     def update_background_image(self, user_id, background_image_path):
-        """Aktualizuje zdjęcie w tle użytkownika."""
         user = self.get_by_id(user_id)
         if not user:
             return None

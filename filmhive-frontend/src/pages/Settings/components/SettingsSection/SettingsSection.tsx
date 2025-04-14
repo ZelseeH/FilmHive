@@ -1,7 +1,6 @@
 import React from 'react';
 import styles from '../UserSettings/UserSettings.module.css';
 
-// Define the interfaces needed
 interface UserData {
     username: string;
     name: string;

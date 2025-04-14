@@ -11,9 +11,7 @@ class FavoriteMovieService:
         self.favorite_repository = FavoriteMovieRepository(db.session)
 
     def add_to_favorites(self, user_id, movie_id):
-        """Dodaje film do ulubionych użytkownika."""
         try:
-            # Sprawdź, czy użytkownik i film istnieją
             user = db.session.get(User, user_id)
             movie = db.session.get(Movie, movie_id)
 
@@ -23,7 +21,6 @@ class FavoriteMovieService:
             if not movie:
                 raise ValueError(f"Film o ID {movie_id} nie istnieje")
 
-            # Sprawdź, czy film już jest w ulubionych
             if self.favorite_repository.is_favorite(user_id, movie_id):
                 current_app.logger.info(
                     f"Film {movie_id} już jest w ulubionych użytkownika {user_id}"
@@ -49,9 +46,7 @@ class FavoriteMovieService:
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
 
     def remove_from_favorites(self, user_id, movie_id):
-        """Usuwa film z ulubionych użytkownika."""
         try:
-            # Sprawdź, czy użytkownik istnieje
             user = db.session.get(User, user_id)
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
@@ -84,9 +79,7 @@ class FavoriteMovieService:
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
 
     def check_if_favorite(self, user_id, movie_id):
-        """Sprawdza, czy film jest w ulubionych użytkownika."""
         try:
-            # Sprawdź, czy użytkownik istnieje
             user = db.session.get(User, user_id)
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
@@ -111,9 +104,7 @@ class FavoriteMovieService:
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
 
     def get_user_favorites(self, user_id):
-        """Pobiera wszystkie ulubione filmy użytkownika."""
         try:
-            # Sprawdź, czy użytkownik istnieje
             user = db.session.get(User, user_id)
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
@@ -138,14 +129,11 @@ class FavoriteMovieService:
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
 
     def get_user_favorite_movies(self, user_id, page=1, per_page=10):
-        """Pobiera ulubione filmy użytkownika z paginacją."""
         try:
-            # Sprawdź, czy użytkownik istnieje
             user = db.session.get(User, user_id)
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
 
-            # Walidacja parametrów paginacji
             if page < 1:
                 page = 1
             if per_page < 1:
@@ -177,9 +165,7 @@ class FavoriteMovieService:
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
 
     def get_movie_favorite_count(self, movie_id):
-        """Pobiera liczbę użytkowników, którzy dodali film do ulubionych."""
         try:
-            # Sprawdź, czy film istnieje
             movie = db.session.get(Movie, movie_id)
             if not movie:
                 raise ValueError(f"Film o ID {movie_id} nie istnieje")

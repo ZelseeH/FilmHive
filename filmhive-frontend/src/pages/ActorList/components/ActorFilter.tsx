@@ -70,7 +70,6 @@ const ActorFilter: React.FC<ActorFilterProps> = ({ value, onChange, onClose }) =
 
     const handleClearFilters = () => {
         setFiltersDirectly({});
-        // Nie wywołujemy onChange, aby nie przeładowywać strony
     };
 
     return (

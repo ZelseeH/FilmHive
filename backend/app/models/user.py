@@ -90,7 +90,6 @@ class User(Base):
         include_watchlist=False,
     ):
         """Serializuje obiekt użytkownika do formatu JSON"""
-        # Sprawdź, czy istnieje plik z pozycją dla zdjęcia w tle
         background_position = {"x": 50, "y": 50}  # Domyślna pozycja
         if self.background_image:
             bg_path = self.background_image.lstrip("/static/")

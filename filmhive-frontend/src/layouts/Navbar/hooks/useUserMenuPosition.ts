@@ -1,4 +1,3 @@
-// src/hooks/useUserMenuPosition.ts
 
 import { useState, useRef } from 'react';
 import { calculateMenuPosition } from '../utils/menuPositionCalculator';
@@ -17,7 +16,7 @@ export const useUserMenuPosition = () => {
 
     return {
         isUserMenuOpen,
-        setIsUserMenuOpen,  // Dodaj tę linię
+        setIsUserMenuOpen, 
         toggleUserMenu,
         closeUserMenu,
         userMenuRef,

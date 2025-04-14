@@ -3,12 +3,10 @@ from app.services.database import db
 from app.models.movie import Movie
 
 
-# Inicjalizacja repozytorium
 movie_repo = MovieRepository(db.session)
 
 
 def get_all_movies():
-    """Pobiera wszystkie filmy i serializuje je."""
     try:
         movies = movie_repo.get_all()
         return [
@@ -20,11 +18,9 @@ def get_all_movies():
 
 
 def get_movies_paginated(page=1, per_page=10, genre_id=None):
-    """Pobiera filmy z paginacją i serializuje je."""
     try:
         result = movie_repo.get_paginated(page, per_page, genre_id)
 
-        # Serializacja filmów z dołączonymi gatunkami i aktorami
         serialized_movies = [
             movie.serialize(include_genres=True, include_actors=True)
             for movie in result["movies"]
@@ -36,12 +32,10 @@ def get_movies_paginated(page=1, per_page=10, genre_id=None):
 
 
 def get_movie_by_id(movie_id, include_actors_roles=False):
-    """Pobiera film na podstawie ID i serializuje go."""
     try:
         movie = movie_repo.get_by_id(movie_id)
         if not movie:
             return None
-        # Dołączamy gatunki, aktorów i reżyserów do szczegółów filmu
         return movie.serialize(
             include_genres=True,
             include_actors=True,
@@ -53,7 +47,6 @@ def get_movie_by_id(movie_id, include_actors_roles=False):
 
 
 def create_movie(data):
-    """Tworzy nowy film na podstawie danych wejściowych."""
     try:
         new_movie = Movie(
             title=data.get("title"),
@@ -71,7 +64,6 @@ def create_movie(data):
 
 
 def delete_movie(movie_id):
-    """Usuwa film na podstawie ID."""
     try:
         success = movie_repo.delete(movie_id)
         return success
@@ -107,7 +99,6 @@ def filter_movies(
 
 
 def get_movie_filter_options():
-    """Pobiera dostępne opcje filtrów dla filmów."""
     try:
         return movie_repo.get_filter_options()
     except Exception as e:

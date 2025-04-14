@@ -1,4 +1,3 @@
-// hooks/useBackgroundImage.ts
 import { useState, useRef, useEffect } from 'react';
 import { profileService } from '../services/profileService';
 

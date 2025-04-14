@@ -2,11 +2,9 @@ from app.repositories.genre_repository import GenreRepository
 from app.services.database import db
 from app.models.genre import Genre
 
-# Inicjalizacja repozytorium
 genre_repo = GenreRepository(db.session)
 
 def get_all_genres():
-    """Pobiera wszystkie gatunki i serializuje je."""
     try:
         genres = genre_repo.get_all()
         return [genre.serialize() for genre in genres]
@@ -14,7 +12,6 @@ def get_all_genres():
         raise Exception(f"Błąd podczas pobierania gatunków: {str(e)}")
 
 def get_genre_by_id(genre_id):
-    """Pobiera gatunek na podstawie ID i serializuje go."""
     try:
         genre = genre_repo.get_by_id(genre_id)
         if not genre:
@@ -24,7 +21,6 @@ def get_genre_by_id(genre_id):
         raise Exception(f"Błąd podczas pobierania gatunku o ID {genre_id}: {str(e)}")
 
 def create_genre(data):
-    """Tworzy nowy gatunek na podstawie danych wejściowych."""
     try:
         genre_name = data.get('name')
         if not genre_name:
@@ -37,7 +33,6 @@ def create_genre(data):
         raise Exception(f"Błąd podczas tworzenia gatunku: {str(e)}")
 
 def delete_genre(genre_id):
-    """Usuwa gatunek na podstawie ID."""
     try:
         success = genre_repo.delete(genre_id)
         return success
@@ -45,7 +40,6 @@ def delete_genre(genre_id):
         raise Exception(f"Błąd podczas usuwania gatunku o ID {genre_id}: {str(e)}")
 
 def update_genre(genre_id, data):
-    """Aktualizuje nazwę gatunku na podstawie ID."""
     try:
         genre_name = data.get('name')
         if not genre_name:

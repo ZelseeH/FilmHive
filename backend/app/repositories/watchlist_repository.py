@@ -9,7 +9,6 @@ class WatchlistRepository:
         self.session = session
 
     def add_to_watchlist(self, user_id, movie_id):
-        """Dodaje film do listy do obejrzenia użytkownika."""
         try:
             existing = (
                 self.session.query(Watchlist)
@@ -36,7 +35,6 @@ class WatchlistRepository:
             raise
 
     def remove_from_watchlist(self, user_id, movie_id):
-        """Usuwa film z listy do obejrzenia użytkownika."""
         try:
             watchlist_entry = (
                 self.session.query(Watchlist)
@@ -61,7 +59,6 @@ class WatchlistRepository:
             raise
 
     def is_in_watchlist(self, user_id, movie_id):
-        """Sprawdza, czy film jest na liście do obejrzenia użytkownika."""
         try:
             result = (
                 self.session.query(Watchlist)
@@ -78,7 +75,6 @@ class WatchlistRepository:
             raise
 
     def get_user_watchlist(self, user_id):
-        """Pobiera wszystkie filmy z listy do obejrzenia użytkownika (jako obiekty Watchlist)."""
         try:
             watchlist = self.session.query(Watchlist).filter_by(user_id=user_id).all()
             print(
@@ -90,7 +86,6 @@ class WatchlistRepository:
             raise
 
     def get_user_watchlist_movies(self, user_id, page=1, per_page=10):
-        """Pobiera filmy z listy do obejrzenia użytkownika z paginacją."""
         try:
             query = (
                 self.session.query(Movie)

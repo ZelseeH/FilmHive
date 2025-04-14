@@ -1,5 +1,4 @@
 
-// components/ProfileHeader/BackgroundImage.tsx
 import React from 'react';
 import styles from '../ProfileHeader/ProfileHeader.module.css';
 

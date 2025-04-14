@@ -41,17 +41,14 @@ export const useActors = (
             setLoading(true);
             const queryParams = new URLSearchParams();
 
-            // Dodaj parametry paginacji
             queryParams.append('page', page.toString());
             queryParams.append('per_page', '10');
 
-            // Dodaj parametry filtrowania
             if (filters.name) queryParams.append('name', filters.name);
             if (filters.countries) queryParams.append('countries', filters.countries);
             if (filters.years) queryParams.append('years', filters.years);
             if (filters.gender) queryParams.append('gender', filters.gender);
 
-            // Dodaj parametry sortowania
             queryParams.append('sort_by', sortOption.field);
             queryParams.append('sort_order', sortOption.order);
 

@@ -1,4 +1,3 @@
-// src/pages/ActorList/hooks/useBirthplaces.ts
 import { useState, useEffect } from 'react';
 import ActorFilterService from '../services/ActorFilterService';
 
@@ -14,7 +13,6 @@ export const useBirthplaces = () => {
                 setCountries(birthplaces);
             } catch (error) {
                 console.error('Error fetching birthplaces:', error);
-                // Fallback do statycznej listy w przypadku błędu
                 setCountries(['Chiny', 'Francja', 'Japonia', 'Korea Południowa', 'Niemcy', 'Nowa Zelandia', 'Polska', 'USA', 'Wielka Brytania', 'Włochy']);
             } finally {
                 setIsLoadingCountries(false);

@@ -1,4 +1,3 @@
-// src/components/Navbar/SearchBar/SearchBar.tsx
 import React from 'react';
 import styles from './SearchBar.module.css';
 

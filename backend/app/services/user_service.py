@@ -7,7 +7,6 @@ user_repo = UserRepository(db.session)
 
 
 def get_user_by_id(user_id):
-    """Pobiera użytkownika na podstawie ID."""
     try:
         user = user_repo.get_by_id(user_id)
         if not user:
@@ -18,7 +17,6 @@ def get_user_by_id(user_id):
 
 
 def get_user_by_username(username):
-    """Pobiera użytkownika na podstawie nazwy użytkownika."""
     try:
         user = user_repo.get_by_username(username)
         if not user:
@@ -31,7 +29,6 @@ def get_user_by_username(username):
 
 
 def update_user_profile(user_id, data):
-    """Aktualizuje profil użytkownika."""
     try:
         if "email" in data and not data["email"]:
             raise ValueError("Email nie może być pusty")
@@ -53,7 +50,6 @@ def update_user_profile(user_id, data):
 
 
 def change_user_password(user_id, current_password, new_password):
-    """Zmienia hasło użytkownika po weryfikacji obecnego hasła."""
     try:
         user = user_repo.get_by_id(user_id)
         if not user:
@@ -73,7 +69,6 @@ def change_user_password(user_id, current_password, new_password):
 
 
 def upload_profile_picture(user_id, file):
-    """Przesyła i aktualizuje zdjęcie profilowe użytkownika."""
     try:
         user = user_repo.get_by_id(user_id)
         if not user:
@@ -92,7 +87,6 @@ def upload_profile_picture(user_id, file):
 
 
 def upload_background_image(user_id, file, position=None):
-    """Przesyła i aktualizuje zdjęcie w tle użytkownika."""
     try:
         user = user_repo.get_by_id(user_id)
         if not user:

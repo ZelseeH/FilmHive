@@ -12,7 +12,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   useEffect(() => {
     if (!loading) {
-      // Dodajemy małe opóźnienie, aby upewnić się, że stan autoryzacji jest w pełni zaktualizowany
       const timer = setTimeout(() => {
         setIsReady(true);
       }, 0);
@@ -21,12 +20,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
   }, [loading]);
 
-  // Pokazujemy komunikat ładowania dopóki nie jesteśmy gotowi do podjęcia decyzji
   if (loading || !isReady) {
     return <div>Loading...</div>;
   }
 
-  // Przekierowujemy tylko gdy na pewno wiemy, że użytkownik nie jest zalogowany
   if (!user) {
     return <Navigate to="/" replace />;
   }

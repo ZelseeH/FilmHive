@@ -1,4 +1,3 @@
-// components/MovieSlider/MovieSlider.tsx
 import React, { useRef } from 'react';
 import styles from './MovieSlider.module.css';
 import MovieCard from '../MovieCard/MovieCard';

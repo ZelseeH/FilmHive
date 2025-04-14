@@ -10,7 +10,6 @@ class MovieRepository:
         return self.session.query(Movie).all()
 
     def get_paginated(self, page=1, per_page=10, genre_id=None):
-        """Pobiera filmy z paginacją, opcjonalnie filtrując po gatunku."""
         query = self.session.query(Movie)
 
         if genre_id:
@@ -53,13 +52,10 @@ class MovieRepository:
         return False
 
     def get_filter_options(self):
-        """Pobiera dostępne opcje filtrów dla filmów."""
         from app.models.genre import Genre
 
-        # Pobierz wszystkie gatunki
         genres = self.session.query(Genre).order_by(Genre.genre_name).all()
 
-        # Pobierz wszystkie kraje
         countries = (
             self.session.query(Movie.country).distinct().order_by(Movie.country).all()
         )
@@ -71,21 +67,17 @@ class MovieRepository:
         }
 
     def _apply_filters(self, query, filters):
-        """Aplikuje filtry do zapytania."""
         from sqlalchemy import func, and_, or_, extract
         from app.models.rating import Rating
 
-        # Filtrowanie po tytule filmu
         if "title" in filters and filters["title"]:
             search_title = f"%{filters['title']}%"
             query = query.filter(Movie.title.ilike(search_title))
 
-        # Filtrowanie po krajach produkcji
         if "countries" in filters and filters["countries"]:
             countries = filters["countries"].split(",")
             query = query.filter(Movie.country.in_(countries))
 
-        # Filtrowanie po latach produkcji
         if "years" in filters and filters["years"]:
             years = filters["years"].split(",")
             year_conditions = []
@@ -94,7 +86,6 @@ class MovieRepository:
             if year_conditions:
                 query = query.filter(or_(*year_conditions))
 
-        # Filtrowanie po gatunkach
         if "genres" in filters and filters["genres"]:
             from app.models.genre import Genre
 
@@ -124,7 +115,6 @@ class MovieRepository:
 
                 print(f"SQL Query: {query}")
 
-        # Filtrowanie po minimalnej liczbie ocen
         if "rating_count_min" in filters and filters["rating_count_min"]:
             min_count = int(filters["rating_count_min"])
             print(f"Filtering by minimum rating count: {min_count}")
@@ -144,7 +134,6 @@ class MovieRepository:
 
             query = query.filter(rating_count_subquery.c.count >= min_count)
 
-        # Filtrowanie po średniej ocenie
         if "average_rating" in filters and filters["average_rating"]:
             avg_rating = float(filters["average_rating"])
             print(f"Filtering by minimum average rating: {avg_rating}")
@@ -166,14 +155,12 @@ class MovieRepository:
         return query
 
     def _apply_sorting(self, query, sort_by="title", sort_order="asc"):
-        """Aplikuje sortowanie do zapytania."""
         from sqlalchemy import func, extract
         from app.models.rating import Rating
 
         print(f"Sorting by: {sort_by}, order: {sort_order}")
 
         if sort_by == "average_rating":
-            # Sortowanie po średniej ocenie
             avg_rating_subquery = (
                 self.session.query(
                     Rating.movie_id, func.avg(Rating.rating).label("avg_rating")
@@ -194,7 +181,6 @@ class MovieRepository:
                 )
 
         elif sort_by == "rating_count":
-            # Sortowanie po liczbie ocen
             rating_count_subquery = (
                 self.session.query(
                     Rating.movie_id, func.count(Rating.rating_id).label("count")
@@ -214,14 +200,12 @@ class MovieRepository:
                 )
 
         elif sort_by == "year":
-            # Sortowanie po roku produkcji
             if sort_order.lower() == "asc":
                 query = query.order_by(extract("year", Movie.release_date))
             else:
                 query = query.order_by(extract("year", Movie.release_date).desc())
 
         else:
-            # Domyślne sortowanie po tytule
             if sort_order.lower() == "asc":
                 query = query.order_by(Movie.title)
             else:
@@ -232,7 +216,6 @@ class MovieRepository:
     def filter_movies(
         self, filters, page=1, per_page=10, sort_by="title", sort_order="asc"
     ):
-        """Filtruje filmy na podstawie różnych kryteriów i sortuje wyniki."""
         from sqlalchemy import func, and_, or_, extract
         from app.models.rating import Rating
 

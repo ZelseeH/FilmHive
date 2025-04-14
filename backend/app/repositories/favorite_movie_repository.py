@@ -9,7 +9,6 @@ class FavoriteMovieRepository:
         self.session = session
 
     def add_favorite(self, user_id, movie_id):
-        """Dodaje film do ulubionych użytkownika."""
         try:
             existing = (
                 self.session.query(FavoriteMovie)
@@ -32,7 +31,6 @@ class FavoriteMovieRepository:
             raise
 
     def remove_favorite(self, user_id, movie_id):
-        """Usuwa film z ulubionych użytkownika."""
         try:
             favorite = (
                 self.session.query(FavoriteMovie)
@@ -53,7 +51,6 @@ class FavoriteMovieRepository:
             raise
 
     def is_favorite(self, user_id, movie_id):
-        """Sprawdza, czy film jest w ulubionych użytkownika."""
         try:
             result = (
                 self.session.query(FavoriteMovie)
@@ -70,7 +67,6 @@ class FavoriteMovieRepository:
             raise
 
     def get_user_favorites(self, user_id):
-        """Pobiera wszystkie ulubione filmy użytkownika (jako obiekty FavoriteMovie)."""
         try:
             favorites = (
                 self.session.query(FavoriteMovie).filter_by(user_id=user_id).all()
@@ -82,7 +78,6 @@ class FavoriteMovieRepository:
             raise
 
     def get_user_favorite_movies(self, user_id, page=1, per_page=10):
-        """Pobiera ulubione filmy użytkownika z paginacją."""
         try:
             query = (
                 self.session.query(Movie)
@@ -119,7 +114,6 @@ class FavoriteMovieRepository:
             raise
 
     def get_movie_favorite_count(self, movie_id):
-        """Pobiera liczbę użytkowników, którzy dodali film do ulubionych."""
         try:
             count = (
                 self.session.query(FavoriteMovie).filter_by(movie_id=movie_id).count()

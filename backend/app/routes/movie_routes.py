@@ -16,7 +16,6 @@ movies_bp = Blueprint("movies", __name__)
 
 @movies_bp.route("/", methods=["GET"])
 def get_movies_list():
-    """Zwraca listę filmów z paginacją."""
     try:
 
         page = request.args.get("page", 1, type=int)
@@ -39,7 +38,6 @@ def get_movies_list():
 
 @movies_bp.route("/all", methods=["GET"])
 def get_all_movies_list():
-    """Zwraca listę wszystkich filmów (bez paginacji)."""
     try:
         movies = get_all_movies()
         return jsonify(movies), 200
@@ -54,9 +52,7 @@ def get_all_movies_list():
 
 @movies_bp.route("/<int:id>", methods=["GET"])
 def get_movie(id):
-    """Zwraca szczegóły filmu na podstawie ID."""
     try:
-        # Sprawdzamy, czy żądanie zawiera parametr include_roles
         include_roles = request.args.get("include_roles", "false").lower() == "true"
 
         movie = get_movie_by_id(id, include_actors_roles=include_roles)
@@ -74,10 +70,8 @@ def get_movie(id):
 
 @movies_bp.route("/", methods=["POST"])
 def add_movie():
-    """Dodaje nowy film."""
     data = request.get_json()
 
-    # Walidacja danych wejściowych
     if not data or "title" not in data or "release_date" not in data:
         return jsonify({"error": "Brak wymaganych pól: title i release_date"}), 400
 
@@ -95,7 +89,6 @@ def add_movie():
 
 @movies_bp.route("/<int:id>", methods=["DELETE"])
 def remove_movie(id):
-    """Usuwa film na podstawie ID."""
     try:
         success = delete_movie(id)
         if success:
@@ -114,7 +107,6 @@ def remove_movie(id):
 @movies_bp.route("/filter", methods=["GET"])
 def filter_movies_route():
     try:
-        # Zbieramy wszystkie filtry z parametrów zapytania
         filters = {}
         if "title" in request.args:
             filters["title"] = request.args.get("title")
@@ -129,11 +121,9 @@ def filter_movies_route():
         if "average_rating" in request.args:
             filters["average_rating"] = float(request.args.get("average_rating"))
 
-        # Dodaj parametry sortowania
         sort_by = request.args.get("sort_by", "title")
         sort_order = request.args.get("sort_order", "asc")
 
-        # Walidacja parametrów sortowania
         valid_sort_fields = ["title", "average_rating", "rating_count", "year"]
         valid_sort_orders = ["asc", "desc"]
 
@@ -142,7 +132,6 @@ def filter_movies_route():
         if sort_order.lower() not in valid_sort_orders:
             sort_order = "asc"
 
-        # Dodaj obsługę parametru include_actors
         include_actors = request.args.get("include_actors", "false").lower() == "true"
 
         page = request.args.get("page", 1, type=int)
@@ -171,7 +160,6 @@ def filter_movies_route():
 
 @movies_bp.route("/filter-options", methods=["GET"])
 def get_filter_options_route():
-    """Pobiera dostępne opcje filtrów dla filmów."""
     try:
         options = get_movie_filter_options()
         return jsonify(options), 200

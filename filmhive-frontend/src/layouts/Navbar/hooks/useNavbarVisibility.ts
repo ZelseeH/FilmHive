@@ -1,4 +1,3 @@
-// src/hooks/useNavbarVisibility.ts
 import { useState, useEffect } from 'react';
 
 export const useNavbarVisibility = () => {

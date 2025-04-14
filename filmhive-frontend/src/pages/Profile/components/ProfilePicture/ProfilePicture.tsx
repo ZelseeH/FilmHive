@@ -1,4 +1,3 @@
-// components/ProfileHeader/ProfilePicture.tsx
 import React from 'react';
 import { getInitial } from '../../utils/profileUtils';
 import styles from '../ProfileHeader/ProfileHeader.module.css';

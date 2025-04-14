@@ -1,4 +1,3 @@
-// src/components/YouTubeTrailer/YouTubeTrailer.tsx
 import React from 'react';
 import { useYouTubeTrailer } from '../../hooks/useYouTubeTrailer';
 import styles from './YouTubeTrailer.module.css';

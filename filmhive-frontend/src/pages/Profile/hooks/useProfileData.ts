@@ -1,4 +1,3 @@
-// src/hooks/useProfileData.ts
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { profileService, ProfileData } from '../services/profileService';

@@ -1,7 +1,5 @@
-// src/services/profileService.ts
 import { authUtils } from '../../../utils/authUtils';
 
-// Eksportujemy interfejs ProfileData
 export interface ProfileData {
     id: string;
     username: string;
@@ -71,7 +69,6 @@ export const profileService = {
         return data.profile_picture;
     },
 
-    // services/profileService.ts
     uploadBackgroundImage: async (file: File, position: { x: number, y: number }): Promise<string> => {
         const token = authUtils.getToken();
         if (!token) {

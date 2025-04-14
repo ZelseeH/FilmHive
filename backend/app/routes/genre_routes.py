@@ -11,7 +11,6 @@ genres_bp = Blueprint('genres', __name__)
 
 @genres_bp.route('/', methods=['GET'])
 def get_genres():
-    """Zwraca listę wszystkich gatunków."""
     try:
         genres = get_all_genres()
         return jsonify(genres), 200
@@ -20,7 +19,6 @@ def get_genres():
 
 @genres_bp.route('/<int:id>', methods=['GET'])
 def get_genre(id):
-    """Zwraca szczegóły gatunku na podstawie ID."""
     try:
         genre = get_genre_by_id(id)
         if not genre:
@@ -31,7 +29,6 @@ def get_genre(id):
 
 @genres_bp.route('/', methods=['POST'])
 def add_genre():
-    """Dodaje nowy gatunek."""
     data = request.get_json()
     
     try:
@@ -44,7 +41,6 @@ def add_genre():
 
 @genres_bp.route('/<int:id>', methods=['DELETE'])
 def remove_genre(id):
-    """Usuwa gatunek na podstawie ID."""
     try:
         success = delete_genre(id)
         if success:
@@ -56,7 +52,6 @@ def remove_genre(id):
 
 @genres_bp.route('/<int:id>', methods=['PUT'])
 def modify_genre(id):
-    """Aktualizuje nazwę gatunku na podstawie ID."""
     data = request.get_json()
     
     try:

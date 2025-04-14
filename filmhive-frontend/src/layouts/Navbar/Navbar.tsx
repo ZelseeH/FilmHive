@@ -23,7 +23,6 @@ const Navbar: React.FC = () => {
 
   const onLogout = () => handleLogout(logout, closeUserMenu, navigate);
 
-  // Blokada przewijania dla menu mobilnego z zachowaniem pozycji
   useEffect(() => {
     let scrollPosition = 0;
     const preventTouchMove = (e: TouchEvent) => {
@@ -31,7 +30,6 @@ const Navbar: React.FC = () => {
     };
 
     if (mobileMenuOpen) {
-      // Zapisz aktualną pozycję przewinięcia
       scrollPosition = window.scrollY;
       document.body.classList.add('menu-open');
       document.documentElement.classList.add('menu-open');
@@ -44,7 +42,6 @@ const Navbar: React.FC = () => {
       document.removeEventListener('touchmove', preventTouchMove);
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      // Przywróć pozycję przewinięcia po zamknięciu menu
       window.scrollTo(0, scrollPosition);
     }
 
@@ -58,7 +55,6 @@ const Navbar: React.FC = () => {
     };
   }, [mobileMenuOpen]);
 
-  // Blokada przewijania dla LoginModal z zachowaniem pozycji
   useEffect(() => {
     let scrollPosition = 0;
 

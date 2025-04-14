@@ -92,7 +92,6 @@
     background-color: #e6b800;
 }
 
-/* Styl dla navbaru powyżej 1100px */
 @media (min-width: 1100px) {
     .sortingWrapper {
         max-width: 1100px;

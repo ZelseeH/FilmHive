@@ -47,7 +47,6 @@ const YearFilter: React.FC<YearFilterProps> = ({
                 break;
 
             case 'range':
-                // Trzeci klik – nowy pojedynczy wybór, bez toggle
                 setLastSelectedYear(year);
                 setSelectionState('single');
                 onForceSelect([year]);

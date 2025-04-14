@@ -1,4 +1,3 @@
-// utils/profileUtils.ts
 export const getInitial = (username?: string): string => {
     return username?.[0]?.toUpperCase() || '?';
 };

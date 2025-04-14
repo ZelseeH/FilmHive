@@ -9,7 +9,6 @@ rating_repo = RatingRepository(db.session)
 
 
 def get_rating_by_id(rating_id):
-    """Pobiera ocenę na podstawie ID."""
     try:
         rating = rating_repo.get_by_id(rating_id)
         return (
@@ -20,7 +19,6 @@ def get_rating_by_id(rating_id):
 
 
 def get_user_rating_for_movie(user_id, movie_id):
-    """Pobiera ocenę użytkownika dla danego filmu."""
     try:
         rating = rating_repo.get_by_user_and_movie(user_id, movie_id)
         return rating.rating if rating else None
@@ -29,7 +27,6 @@ def get_user_rating_for_movie(user_id, movie_id):
 
 
 def get_movie_ratings(movie_id, page=1, per_page=10):
-    """Pobiera oceny dla danego filmu."""
     try:
         result = rating_repo.get_movie_ratings(movie_id, page, per_page)
         return {
@@ -43,7 +40,6 @@ def get_movie_ratings(movie_id, page=1, per_page=10):
 
 
 def get_user_ratings(user_id, page=1, per_page=10):
-    """Pobiera oceny danego użytkownika."""
     try:
         result = rating_repo.get_user_ratings(user_id, page, per_page)
         return {
@@ -57,7 +53,6 @@ def get_user_ratings(user_id, page=1, per_page=10):
 
 
 def get_movie_average_rating(movie_id):
-    """Pobiera średnią ocenę dla danego filmu."""
     try:
         avg_rating = rating_repo.get_movie_average_rating(movie_id)
         return {"average_rating": avg_rating if avg_rating is not None else 0.0}
@@ -66,7 +61,6 @@ def get_movie_average_rating(movie_id):
 
 
 def get_movie_rating_count(movie_id):
-    """Pobiera liczbę ocen dla danego filmu."""
     try:
         count = rating_repo.get_movie_rating_count(movie_id)
         return {"rating_count": count}
@@ -75,7 +69,6 @@ def get_movie_rating_count(movie_id):
 
 
 def get_movie_rating_stats(movie_id):
-    """Pobiera statystyki ocen dla danego filmu."""
     try:
         stats = rating_repo.get_movie_rating_stats(movie_id)
         return stats
@@ -84,7 +77,6 @@ def get_movie_rating_stats(movie_id):
 
 
 def create_rating(user_id, movie_id, rating_value):
-    """Tworzy nową ocenę lub aktualizuje istniejącą i usuwa film z watchlisty."""
     try:
         if not (1 <= rating_value <= 10):
             raise ValueError("Ocena musi być w zakresie od 1 do 10")
@@ -93,7 +85,6 @@ def create_rating(user_id, movie_id, rating_value):
         if not user or not movie:
             raise ValueError("Użytkownik lub film nie istnieje")
 
-        # Usuń film z watchlisty, jeśli był na niej
         try:
             from app.repositories.watchlist_repository import WatchlistRepository
 
@@ -105,7 +96,6 @@ def create_rating(user_id, movie_id, rating_value):
                 )
         except Exception as e:
             print(f"Błąd podczas usuwania z watchlisty: {str(e)}")
-            # Nie przerywamy procesu oceniania, jeśli usunięcie z watchlisty się nie powiedzie
 
         existing_rating = rating_repo.get_by_user_and_movie(user_id, movie_id)
         if existing_rating:
@@ -133,7 +123,6 @@ def create_rating(user_id, movie_id, rating_value):
 
 
 def update_rating(rating_id, new_rating_value, user_id):
-    """Aktualizuje ocenę użytkownika i usuwa film z watchlisty."""
     try:
         if not (1 <= new_rating_value <= 10):
             raise ValueError("Ocena musi być w zakresie od 1 do 10")
@@ -169,19 +158,15 @@ def update_rating(rating_id, new_rating_value, user_id):
 
 
 def delete_rating(user_id, movie_id):
-    """Usuwa ocenę użytkownika dla danego filmu."""
     try:
-        # Pobierz ocenę użytkownika dla danego filmu
         rating = rating_repo.get_by_user_and_movie(user_id, movie_id)
 
         if not rating:
             return None
 
-        # Sprawdź uprawnienia
         if rating.user_id != user_id:
             raise ValueError("Nie masz uprawnień do usunięcia tej oceny")
 
-        # Usuń ocenę
         success = rating_repo.delete_movie_rating(user_id, movie_id)
 
         result = {"success": success, "movie_id": movie_id}

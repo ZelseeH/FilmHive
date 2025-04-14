@@ -7,14 +7,13 @@ from .base import (
     Integer,
     Date,
     datetime,
-    Enum,  # Dodaj import Enum
+    Enum,  
 )
-import enum  # Dodaj import enum
+import enum  
 from .movie import Movie
 from flask import url_for
 
 
-# Dodaj klasę Enum dla płci
 class Gender(enum.Enum):
     M = "M"
     K = "K"
@@ -32,9 +31,8 @@ class Actor(Base):
     biography: Mapped[str] = mapped_column(String(2000))
     photo_url: Mapped[str] = mapped_column(
         String(255), nullable=True
-    )  # Dodane pole dla zdjęcia
+    )  
 
-    # Dodaj pole płci
     gender: Mapped[Gender] = mapped_column(Enum(Gender), nullable=True)
 
     movies: Mapped[list["Movie"]] = relationship(

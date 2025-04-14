@@ -1,4 +1,3 @@
-// src/utils/api.ts
 interface FetchOptions extends RequestInit {
   headers?: Record<string, string>;
 }
@@ -23,7 +22,6 @@ export const fetchWithAuth = async (url: string, options: FetchOptions = {}): Pr
   });
 
   if (response.status === 401) {
-    // Token expired or invalid
     localStorage.removeItem('token');
     window.location.reload();
     throw new Error('Session expired. Please log in again.');

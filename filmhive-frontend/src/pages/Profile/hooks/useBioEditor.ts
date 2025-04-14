@@ -1,5 +1,4 @@
 
-// hooks/useBioEditor.ts
 import { useState } from 'react';
 import { profileService } from '../services/profileService';
 

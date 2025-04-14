@@ -1,4 +1,3 @@
-// src/components/Navbar/UserAvatar/UserAvatar.tsx
 import React from 'react';
 import styles from './UserAvatar.module.css';
 
