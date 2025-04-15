@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface MovieFilters {
     title?: string;
@@ -10,6 +10,7 @@ interface MovieFilters {
 }
 
 export const useMovieFilters = (initialValue: MovieFilters, onChange: (filters: MovieFilters) => void) => {
+    // Inicjalizacja stanów z wartości początkowych
     const [inputValue, setInputValue] = useState<string>(initialValue.title || '');
     const [selectedCountries, setSelectedCountries] = useState<string[]>(
         initialValue.countries ? initialValue.countries.split(',') : []
@@ -22,21 +23,26 @@ export const useMovieFilters = (initialValue: MovieFilters, onChange: (filters: 
     );
     const [ratingCountMin, setRatingCountMin] = useState<number>(initialValue.rating_count_min || 0);
     const [averageRating, setAverageRating] = useState<number>(initialValue.average_rating || 0);
-    const setYearsDirectly = (years: string[]) => {
-        setSelectedYears(years);
-    };
 
+    // Flaga, która zapobiega wywołaniu onChange podczas aktualizacji stanów z initialValue
+    const [isInitializing, setIsInitializing] = useState<boolean>(true);
 
+    // Aktualizacja stanów, gdy zmienią się wartości początkowe (np. z parametrów URL)
     useEffect(() => {
+        setIsInitializing(true);
         setInputValue(initialValue.title || '');
         setSelectedCountries(initialValue.countries ? initialValue.countries.split(',') : []);
         setSelectedYears(initialValue.years ? initialValue.years.split(',') : []);
         setSelectedGenres(initialValue.genres ? initialValue.genres.split(',') : []);
         setRatingCountMin(initialValue.rating_count_min || 0);
         setAverageRating(initialValue.average_rating || 0);
+        setIsInitializing(false);
     }, [initialValue]);
 
-    useEffect(() => {
+    // Przygotowanie filtrów i wywołanie funkcji onChange
+    const updateFilters = useCallback(() => {
+        if (isInitializing) return;
+
         const newFilters: MovieFilters = {};
 
         if (inputValue) {
@@ -59,7 +65,12 @@ export const useMovieFilters = (initialValue: MovieFilters, onChange: (filters: 
         }
 
         onChange(newFilters);
-    }, [inputValue, selectedCountries, selectedYears, selectedGenres, ratingCountMin, averageRating, onChange]);
+    }, [inputValue, selectedCountries, selectedYears, selectedGenres, ratingCountMin, averageRating, onChange, isInitializing]);
+
+    // Wywołaj updateFilters, gdy zmienią się filtry
+    useEffect(() => {
+        updateFilters();
+    }, [updateFilters]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value);
@@ -94,6 +105,10 @@ export const useMovieFilters = (initialValue: MovieFilters, onChange: (filters: 
         );
     };
 
+    const setYearsDirectly = (years: string[]) => {
+        setSelectedYears(years);
+    };
+
     const handleRatingCountMinChange = (value: number) => {
         setRatingCountMin(value);
     };
@@ -103,12 +118,17 @@ export const useMovieFilters = (initialValue: MovieFilters, onChange: (filters: 
     };
 
     const setFiltersDirectly = (filters: MovieFilters) => {
+        setIsInitializing(true);
         setInputValue(filters.title || '');
         setSelectedCountries(filters.countries ? filters.countries.split(',') : []);
         setSelectedYears(filters.years ? filters.years.split(',') : []);
         setSelectedGenres(filters.genres ? filters.genres.split(',') : []);
         setRatingCountMin(filters.rating_count_min || 0);
         setAverageRating(filters.average_rating || 0);
+        setIsInitializing(false);
+
+        // Wywołaj onChange bezpośrednio po ustawieniu filtrów
+        onChange(filters);
     };
 
     return {

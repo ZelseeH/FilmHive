@@ -149,23 +149,28 @@ export class CommentService {
     }
 
     static async getUserComment(movieId: number, token: string): Promise<Comment | null> {
-        const response = await fetch(`http://localhost:5000/api/comments/user/${movieId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Cache-Control': 'no-cache'
-            }
-        });
+        try {
+            const response = await fetch(`http://localhost:5000/api/comments/user/${movieId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache'
+                }
+            });
 
-        if (response.status === 404) {
+            if (response.status === 404) {
+                return null;
+            }
+
+            if (!response.ok) {
+                console.warn(`Nieoczekiwany status odpowiedzi: ${response.status}`);
+                return null;
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('Błąd podczas pobierania komentarza użytkownika:', error);
             return null;
         }
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response:', errorText);
-            throw new Error(`Nie udało się pobrać komentarza użytkownika: ${response.status}`);
-        }
-
-        return await response.json();
     }
+
 }

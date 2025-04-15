@@ -9,11 +9,20 @@ interface MovieHeaderSectionProps {
     onShowFullDescription: () => void;
 }
 
+// Definiujemy interfejs dla gatunku, aby upewnić się, że TypeScript zna jego strukturę
+interface Genre {
+    id?: number;
+    name: string;
+}
+
 const MovieHeaderSection: React.FC<MovieHeaderSectionProps> = ({ movie, onShowFullDescription }) => {
     const navigate = useNavigate();
 
-    const handleGenreClick = (genreName: string) => {
-        navigate(`/movies?genre=${encodeURIComponent(genreName)}`);
+    const handleGenreClick = (genreIdOrName: number | string, event: React.MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        navigate(`/movies?genres=${genreIdOrName}`);
     };
 
     return (
@@ -54,11 +63,11 @@ const MovieHeaderSection: React.FC<MovieHeaderSectionProps> = ({ movie, onShowFu
                 </div>
 
                 <div className={styles['movie-genre-tags']}>
-                    {movie.genres && movie.genres.map((genre, index) => (
+                    {movie.genres && movie.genres.map((genre) => (
                         <span
-                            key={index}
+                            key={genre.name}
                             className={styles['movie-genre-tag']}
-                            onClick={() => handleGenreClick(genre.name)}
+                            onClick={(e) => handleGenreClick(genre.id || genre.name, e)}
                         >
                             {genre.name}
                         </span>

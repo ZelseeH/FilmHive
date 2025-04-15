@@ -9,7 +9,7 @@ export interface Movie {
     release_date?: string;
     description?: string;
     duration_minutes?: number;
-    genres?: { name: string }[];
+    genres?: { id: number; name: string }[];
     directors?: { name: string }[];
     country?: string;
     [key: string]: any;
