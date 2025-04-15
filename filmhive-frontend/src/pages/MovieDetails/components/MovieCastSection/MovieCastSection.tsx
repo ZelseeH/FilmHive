@@ -1,8 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Actor } from '../../services/movieService';
 import { handleImageError } from '../../utils/movieUtils';
 import styles from './MovieCastSection.module.css';
 import { useSlider } from '../../hooks/useSlider';
+import { createSlug } from '../../../../utils/formatters'; // Dodaj import funkcji createSlug
 
 interface MovieCastSectionProps {
     actors: Actor[];
@@ -23,7 +25,12 @@ const MovieCastSection: React.FC<MovieCastSectionProps> = ({ actors, title }) =>
                 <div className={styles['cast-slider-wrapper']}>
                     <div className={styles['cast-slider']} ref={sliderRef}>
                         {actors.map(actor => (
-                            <div key={actor.id} className={styles['cast-member']}>
+                            <Link
+                                to={`/actor/details/${createSlug(actor.name)}`}
+                                state={{ actorId: actor.id }}
+                                className={styles['cast-member']}
+                                key={actor.id}
+                            >
                                 <div className={styles['actor-photo']}>
                                     {actor.photo_url ? (
                                         <img
@@ -37,14 +44,14 @@ const MovieCastSection: React.FC<MovieCastSectionProps> = ({ actors, title }) =>
                                 </div>
                                 <div className={styles['actor-name']}>{actor.name}</div>
                                 {actor.role && <div className={styles['actor-role']}>{actor.role}</div>}
-                            </div>
+                            </Link>
                         ))}
                     </div>
                     <div className={`${styles['slider-arrow']} ${styles['left-arrow']}`} onClick={scrollLeft}>❮</div>
                     <div className={`${styles['slider-arrow']} ${styles['right-arrow']}`} onClick={scrollRight}>❯</div>
                 </div>
             </div>
-        </section >
+        </section>
     );
 };
 

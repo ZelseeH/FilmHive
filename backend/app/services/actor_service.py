@@ -67,7 +67,22 @@ class ActorService:
         movies = result["movies"]
         pagination = result["pagination"]
 
-        serialized_movies = [movie.serialize() for movie in movies]
+        serialized_movies = [
+            movie.serialize(include_actors=True, include_actors_roles=True)
+            for movie in movies
+        ]
+
+        for movie_data in serialized_movies:
+            if "actors" in movie_data:
+                movie_data["actor_role"] = next(
+                    (
+                        actor["role"]
+                        for actor in movie_data["actors"]
+                        if actor["id"] == actor_id
+                    ),
+                    None,
+                )
+                del movie_data["actors"]
 
         return {"movies": serialized_movies, "pagination": pagination}
 
