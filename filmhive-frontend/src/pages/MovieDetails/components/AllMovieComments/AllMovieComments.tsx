@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAllMovieComments } from '../../hooks/useAllMovieComments';
 import styles from './AllMovieComments.module.css';
 
@@ -78,14 +79,18 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                             <div key={comment.id} className={styles['comment-item']}>
                                 <div className={styles['comment-header']}>
                                     <div className={styles['user-info']}>
-                                        {comment.user?.profile_picture && (
-                                            <img
-                                                src={comment.user.profile_picture}
-                                                alt={comment.user?.username}
-                                                className={styles['user-avatar']}
-                                            />
-                                        )}
+                                        {comment.user?.profile_picture ? (
+                                            <Link to={`/profile/${comment.user.username}`}>
+                                                <img
+                                                    src={comment.user.profile_picture}
+                                                    alt={comment.user?.username}
+                                                    className={styles['user-avatar']}
+                                                    style={{ cursor: 'pointer' }}
+                                                />
+                                            </Link>
+                                        ) : null}
                                         <span className={styles['username']}>{comment.user?.username || 'Użytkownik'}</span>
+
                                     </div>
                                     <div className={styles['comment-meta']}>
                                         <div className={styles['rating-date-group']}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { RatingService } from '../../services/ratingService';
 import { useUserRating } from '../../hooks/useUserRating';
+import { CommentService } from '../../services/commentService';
 import styles from './StarRating.module.css';
 
 interface StarRatingProps {
@@ -19,7 +20,6 @@ const StarRating: React.FC<StarRatingProps> = ({ movieId, onRatingChange }) => {
     const [ratingToRemove, setRatingToRemove] = useState<number | null>(null);
     const previousRatingRef = useRef<number>(0);
 
-    // Śledzimy poprzednią ocenę
     useEffect(() => {
         if (rating > 0) {
             previousRatingRef.current = rating;
@@ -34,7 +34,6 @@ const StarRating: React.FC<StarRatingProps> = ({ movieId, onRatingChange }) => {
 
         if (isSubmitting) return;
 
-        // Sprawdź, czy kliknięto na tę samą ocenę, którą użytkownik już ma
         if (rating > 0 && rating === selectedRating) {
             setRatingToRemove(selectedRating);
             setShowConfirmation(true);
@@ -53,9 +52,7 @@ const StarRating: React.FC<StarRatingProps> = ({ movieId, onRatingChange }) => {
             await RatingService.submitRating(movieId, selectedRating, token);
             setRating(selectedRating);
             onRatingChange?.(selectedRating);
-            console.log('Ocena została pomyślnie wysłana');
         } catch (err) {
-            console.error('Błąd podczas wysyłania oceny:', err);
             setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
         } finally {
             setIsSubmitting(false);
@@ -75,11 +72,15 @@ const StarRating: React.FC<StarRatingProps> = ({ movieId, onRatingChange }) => {
             }
 
             await RatingService.deleteRating(movieId, token);
+
+            const userComment = await CommentService.getUserComment(movieId, token);
+            if (userComment && userComment.id) {
+                await CommentService.deleteComment(userComment.id, token);
+            }
+
             setRating(0);
             onRatingChange?.(0);
-            console.log('Ocena została pomyślnie usunięta');
         } catch (err) {
-            console.error('Błąd podczas usuwania oceny:', err);
             setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
         } finally {
             setIsSubmitting(false);

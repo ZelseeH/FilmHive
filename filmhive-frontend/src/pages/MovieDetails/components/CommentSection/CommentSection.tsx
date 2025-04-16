@@ -14,6 +14,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
     const [commentText, setCommentText] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [wordsLeft, setWordsLeft] = useState(MAX_WORDS);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const {
         comments,
@@ -61,7 +62,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
 
         if (!commentText.trim()) return;
 
-        // Sprawdź, czy nie przekroczono limitu słów
         const wordCount = commentText.trim().split(/\s+/).length;
         if (wordCount > MAX_WORDS) {
             return;
@@ -83,13 +83,22 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
         }
     };
 
-    const handleDelete = async () => {
-        if (userComment && window.confirm('Czy na pewno chcesz usunąć ten komentarz?')) {
+    const handleDelete = () => {
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = async () => {
+        if (userComment) {
             await deleteComment(userComment.id);
             setUserComment(null);
             setCommentText('');
             setWordsLeft(MAX_WORDS);
+            setShowDeleteConfirm(false);
         }
+    };
+
+    const cancelDelete = () => {
+        setShowDeleteConfirm(false);
     };
 
     const handleEdit = () => {
@@ -160,6 +169,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
                     </div>
                 </form>
             )}
+
+            {showDeleteConfirm && (
+                <div className={styles.deleteConfirmBox}>
+                    <p>Czy na pewno chcesz usunąć ten komentarz?</p>
+                    <div className={styles.deleteConfirmActions}>
+                        <button onClick={confirmDelete} className={styles.confirmDeleteButton}>Tak, usuń</button>
+                        <button onClick={cancelDelete} className={styles.cancelDeleteButton}>Anuluj</button>
+                    </div>
+                </div>
+            )}
+
+
         </div>
     );
 };

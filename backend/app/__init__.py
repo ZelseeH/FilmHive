@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
@@ -11,7 +11,7 @@ def create_app():
 
     CORS(
         app,
-        resources={r"/*": {"origins": "*", "supports_credentials": True}},
+        resources={r"/api/*": {"origins": "*", "supports_credentials": True}},
         expose_headers=["Authorization"],
     )
 
@@ -19,7 +19,6 @@ def create_app():
         "postgresql+psycopg2://postgres:ZAQ!2wsx@localhost:5432/filmhive"
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
     app.config["JWT_SECRET_KEY"] = (
         "7d946d165f6b4c0c3290fa659403bd2d6db51bc95d64328a8d874aed8c481ec8"
     )
@@ -28,9 +27,6 @@ def create_app():
     jwt = JWTManager(app)
     db.init_app(app)
     migrate = Migrate(app, db)
-
-    # Usuń podwójną konfigurację dla plików statycznych
-    # Flask automatycznie obsługuje pliki statyczne z static_folder
 
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
@@ -75,11 +71,23 @@ def create_app():
     app.register_blueprint(watchlist_bp, url_prefix="/api/watchlist")
     app.register_blueprint(comments_bp, url_prefix="/api/comments")
 
+    @app.before_request
+    def handle_options():
+        if request.method == "OPTIONS":
+            return "", 200
+
     @app.after_request
     def add_charset(response):
-        # Ustaw Content-Type tylko dla odpowiedzi JSON, nie dla plików statycznych
         if response.mimetype == "application/json":
             response.headers["Content-Type"] = "application/json; charset=utf-8"
         return response
+
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def serve_react_app(path):
+        if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+            return send_from_directory(app.static_folder, path)
+        else:
+            return send_from_directory(app.static_folder, "index.html")
 
     return app
