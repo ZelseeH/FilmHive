@@ -17,7 +17,6 @@ class FavoriteMovieService:
 
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
-
             if not movie:
                 raise ValueError(f"Film o ID {movie_id} nie istnieje")
 
@@ -51,6 +50,10 @@ class FavoriteMovieService:
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
 
+            movie = db.session.get(Movie, movie_id)
+            if not movie:
+                raise ValueError(f"Film o ID {movie_id} nie istnieje")
+
             success = self.favorite_repository.remove_favorite(user_id, movie_id)
             if success:
                 current_app.logger.info(
@@ -60,7 +63,6 @@ class FavoriteMovieService:
                 current_app.logger.info(
                     f"Film {movie_id} nie był w ulubionych użytkownika {user_id}"
                 )
-
             return {"success": success}
         except ValueError as e:
             current_app.logger.error(f"ValueError removing from favorites: {str(e)}")
@@ -186,5 +188,33 @@ class FavoriteMovieService:
         except Exception as e:
             current_app.logger.error(
                 f"Unexpected error getting movie favorite count: {str(e)}"
+            )
+            raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
+
+    def get_recent_favorite_movies(self, user_id, limit=6):
+        try:
+            user = db.session.get(User, user_id)
+            if not user:
+                raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
+            movies = self.favorite_repository.get_recent_favorite_movies(user_id, limit)
+            current_app.logger.info(
+                f"Pobrano ostatnie {len(movies)} ulubione filmy użytkownika {user_id}"
+            )
+            return movies
+        except ValueError as e:
+            current_app.logger.error(
+                f"ValueError getting recent favorite movies: {str(e)}"
+            )
+            raise
+        except SQLAlchemyError as e:
+            current_app.logger.error(
+                f"SQLAlchemyError getting recent favorite movies: {str(e)}"
+            )
+            raise Exception(
+                f"Nie udało się pobrać ostatnich ulubionych filmów: {str(e)}"
+            )
+        except Exception as e:
+            current_app.logger.error(
+                f"Unexpected error getting recent favorite movies: {str(e)}"
             )
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")

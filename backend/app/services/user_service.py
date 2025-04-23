@@ -116,3 +116,25 @@ def upload_background_image(user_id, file, position=None):
     except Exception as e:
         print(f"Błąd podczas przesyłania zdjęcia w tle: {str(e)}")
         raise
+
+
+def get_recent_rated_movies(user_id, limit=5):
+    try:
+        recent_movies = user_repo.get_recent_rated_movies(user_id, limit)
+        return recent_movies
+    except Exception as e:
+        raise Exception(
+            f"Błąd podczas pobierania ostatnich ocenionych filmów: {str(e)}"
+        )
+
+
+def get_recent_favorite_movies(user_id, limit=6):
+    try:
+        from app.services.favorite_movie_service import FavoriteMovieService
+
+        favorite_service = FavoriteMovieService()
+        return favorite_service.get_recent_favorite_movies(user_id, limit)
+    except Exception as e:
+        raise Exception(
+            f"Błąd podczas pobierania ostatnich polubionych filmów: {str(e)}"
+        )

@@ -1,0 +1,217 @@
+.container {
+    margin-top: 24px;
+    padding: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.container h3 {
+    color: #000;
+    margin-bottom: 16px;
+    font-size: 1.4em;
+    font-weight: 600;
+    text-align: center;
+}
+
+.moviesList {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: flex-start;
+    padding: 0;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.movieCard {
+    width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+
+.posterWrapper {
+    position: relative;
+    width: 120px;
+    height: 180px;
+    padding: 0;
+    margin: 0;
+}
+
+.poster {
+    width: 120px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 0;
+    box-shadow: none;
+    background: #ddd;
+    user-select: none;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.ratingBadge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgba(40, 40, 40, 0.88);
+    color: white;
+    font-weight: bold;
+    border-radius: 0 0 6px 0;
+    min-width: 36px;
+    min-height: 25px;
+    padding: 3px 5px 2px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 1.2em;
+    z-index: 2;
+    box-shadow: none;
+    border: none;
+    margin: 0;
+}
+
+.ratingValue {
+    color: white;
+    font-weight: bold;
+    font-size: 1.15em;
+    letter-spacing: 0.5px;
+}
+
+.star {
+    color: #ffcc00;
+    font-size: 1.1em;
+    margin-right: 3px;
+    display: inline-block;
+    margin-top: -5px;
+}
+
+.title {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.98em;
+    font-weight: 500;
+    color: #111;
+    word-break: break-word;
+    background: #fff;
+    width: 100%;
+    border-radius: 0;
+    padding: 3px 0 0 0;
+}
+
+@media (max-width: 700px) {
+    .movieCard {
+        width: 108px;
+    }
+
+    .posterWrapper,
+    .poster {
+        width: 108px;
+        height: 162px;
+    }
+
+    .moviesList {
+        gap: 20px;
+    }
+
+    .ratingBadge {
+        min-width: 32px;
+        min-height: 26px;
+        padding: 2px 9px 2px 5px;
+        font-size: 1.1em;
+    }
+
+    .ratingValue {
+        font-size: 1.05em;
+    }
+
+    .star {
+        font-size: 1em;
+        margin-right: 3px;
+    }
+}
+
+@media (max-width: 600px) {
+    .movieCard {
+        width: 96px;
+    }
+
+    .posterWrapper,
+    .poster {
+        width: 96px;
+        height: 144px;
+    }
+
+    .moviesList {
+        gap: 16px;
+    }
+
+    .title {
+        font-size: 0.9em;
+    }
+
+    .ratingBadge {
+        min-width: 30px;
+        min-height: 24px;
+        padding: 2px 8px 2px 4px;
+        font-size: 1em;
+    }
+
+    .ratingValue {
+        font-size: 1em;
+    }
+
+    .star {
+        font-size: 0.9em;
+        margin-right: 2px;
+    }
+}
+
+@media (max-width: 500px) {
+    .movieCard {
+        width: 84px;
+    }
+
+    .posterWrapper,
+    .poster {
+        width: 84px;
+        height: 126px;
+    }
+
+    .moviesList {
+        gap: 12px;
+    }
+
+    .title {
+        font-size: 0.85em;
+    }
+
+    .ratingBadge {
+        min-width: 26px;
+        min-height: 22px;
+        padding: 1px 7px 1px 4px;
+        font-size: 0.9em;
+    }
+
+    .ratingValue {
+        font-size: 0.9em;
+    }
+
+    .star {
+        font-size: 0.8em;
+        margin-right: 2px;
+    }
+}

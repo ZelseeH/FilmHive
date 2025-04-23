@@ -1,4 +1,3 @@
-
 import { fetchWithAuth } from '../../../services/api';
 
 export interface Movie {
@@ -22,9 +21,12 @@ export interface Actor {
     role?: string;
 }
 
-
 export const getAllMovies = async (): Promise<Movie[]> => {
     return fetchWithAuth('movies/all');
+};
+
+export const getTopRatedMovies = async (limit: number = 10): Promise<Movie[]> => {
+    return fetchWithAuth(`movies/top-rated?limit=${limit}`);
 };
 
 export const getMovieDetails = async (movieId: number): Promise<Movie> => {
@@ -46,6 +48,7 @@ export const rateMovie = async (movieId: number, rating: number): Promise<void> 
         body: JSON.stringify({ rating }),
     });
 };
+
 export const getMovieDetailsWithRoles = async (movieId: number): Promise<Movie> => {
     return fetchWithAuth(`movies/${movieId}?include_roles=true`);
 };

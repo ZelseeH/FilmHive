@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from sqlalchemy import desc
 
 from app.services.movie_service import (
     get_all_movies,
@@ -8,6 +9,7 @@ from app.services.movie_service import (
     delete_movie,
     filter_movies,
     get_movie_filter_options,
+    get_top_rated_movies,
 )
 
 
@@ -66,6 +68,16 @@ def get_movie(id):
             ),
             500,
         )
+
+
+@movies_bp.route("/top-rated", methods=["GET"])
+def get_top_rated_movies_route():
+    try:
+        limit = request.args.get("limit", 10, type=int)
+        movies = get_top_rated_movies(limit)
+        return jsonify(movies), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @movies_bp.route("/", methods=["POST"])

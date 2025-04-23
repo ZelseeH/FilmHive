@@ -1,0 +1,193 @@
+/* Lepsze style dla okna dialogowego potwierdzenia */
+.p-confirm-dialog {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.p-dialog {
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 0;
+    background-color: #fff;
+    max-width: 450px;
+    width: 90% !important;
+    margin: 0 auto;
+}
+
+.p-dialog-header {
+    padding: 1.25rem 1.5rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.p-dialog-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #343a40;
+    margin: 0;
+}
+
+.p-dialog-content {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.p-confirm-dialog-icon {
+    color: #f59e0b;
+    font-size: 1.75rem;
+}
+
+.p-confirm-dialog-message {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #4b5563;
+    margin: 0;
+}
+
+.p-dialog-footer {
+    padding: 1rem 1.5rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* Style dla przycisków */
+.p-button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 100px;
+}
+
+.p-button:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    outline: none;
+}
+
+.p-button-danger {
+    background-color: #e53935;
+    border-color: #e53935;
+    color: white;
+}
+
+.p-button-danger:hover {
+    background-color: #c62828;
+    border-color: #c62828;
+}
+
+.p-button-text {
+    background-color: transparent;
+    color: #6b7280;
+    border-color: transparent;
+}
+
+.p-button-text:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+/* Poprawione style dla Toast */
+.p-toast {
+    opacity: 1;
+    position: fixed;
+    z-index: 1000;
+}
+
+.p-toast .p-toast-message {
+    margin: 0 0 1rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+    border: none;
+}
+
+.p-toast .p-toast-message-content {
+    padding: 1rem 1.25rem;
+    border-width: 0 0 0 6px;
+    display: flex;
+    align-items: center;
+}
+
+.p-toast .p-toast-message-content .p-toast-message-text {
+    margin: 0 0 0 1rem;
+    flex: 1;
+}
+
+.p-toast .p-toast-message-content .p-toast-message-icon {
+    font-size: 1.5rem;
+}
+
+.p-toast .p-toast-message-content .p-toast-summary {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #374151;
+}
+
+.p-toast .p-toast-message-content .p-toast-detail {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.p-toast .p-toast-icon-close {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: transparent;
+    transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+}
+
+.p-toast .p-toast-icon-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #4b5563;
+}
+
+/* Style dla różnych typów powiadomień */
+.p-toast .p-toast-message.p-toast-message-success {
+    border-left-color: #10b981;
+}
+
+.p-toast .p-toast-message.p-toast-message-success .p-toast-message-icon {
+    color: #10b981;
+}
+
+.p-toast .p-toast-message.p-toast-message-error {
+    border-left-color: #ef4444;
+}
+
+.p-toast .p-toast-message.p-toast-message-error .p-toast-message-icon {
+    color: #ef4444;
+}
+
+.p-toast .p-toast-message.p-toast-message-warn {
+    border-left-color: #f59e0b;
+}
+
+.p-toast .p-toast-message.p-toast-message-warn .p-toast-message-icon {
+    color: #f59e0b;
+}
+
+.p-toast .p-toast-message.p-toast-message-info {
+    border-left-color: #3b82f6;
+}
+
+.p-toast .p-toast-message.p-toast-message-info .p-toast-message-icon {
+    color: #3b82f6;
+}

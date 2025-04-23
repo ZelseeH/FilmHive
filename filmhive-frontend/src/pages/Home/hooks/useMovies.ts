@@ -1,30 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { Movie, getAllMovies, getUserRating } from '../services/movieService';
+import { Movie, getTopRatedMovies, getUserRating } from '../services/movieService';
 
 interface UserRatings {
     [movieId: number]: number;
 }
 
-export const useMovies = (currentPage: number = 1) => {
+export const useMovies = () => {
     const { user, getToken } = useAuth();
     const [movies, setMovies] = useState<Movie[]>([]);
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [userRatings, setUserRatings] = useState<UserRatings>({});
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [totalPages, setTotalPages] = useState<number>(1);
-
-    const moviesPerPage = 10;
 
     const fetchMovies = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await getAllMovies();
+            const data = await getTopRatedMovies(); // <-- ZMIANA TUTAJ
             setMovies(data);
-
-            const calculatedTotalPages = Math.ceil(data.length / moviesPerPage);
-            setTotalPages(calculatedTotalPages);
 
             if (data.length > 0) {
                 setSelectedMovie(data[0]);
@@ -86,6 +80,6 @@ export const useMovies = (currentPage: number = 1) => {
         error,
         handleMovieSelect,
         refreshMovies,
-        totalPages
+        totalPages: 1 // już nie potrzebujesz paginacji, bo zawsze masz max 10 filmów
     };
 };

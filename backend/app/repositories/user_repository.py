@@ -1,4 +1,6 @@
 from app.models.user import User
+from app.models.rating import Rating
+from app.models.movie import Movie
 
 
 class UserRepository:
@@ -82,3 +84,64 @@ class UserRepository:
         user.background_image = background_image_path
         self.session.commit()
         return user
+
+    def get_recent_rated_movies(self, user_id, limit=6):
+        from app.models.rating import Rating
+        from app.models.movie import Movie
+        from flask import url_for
+
+        results = (
+            self.session.query(Rating, Movie)
+            .join(Movie, Rating.movie_id == Movie.movie_id)
+            .filter(Rating.user_id == user_id)
+            .order_by(Rating.rated_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        return [
+            {
+                "movie_id": movie.movie_id,
+                "title": movie.title,
+                "poster_url": (
+                    url_for(
+                        "static", filename=f"posters/{movie.poster_url}", _external=True
+                    )
+                    if movie.poster_url
+                    else None
+                ),
+                "rating": rating.rating,
+                "rated_at": rating.rated_at.isoformat() if rating.rated_at else None,
+            }
+            for rating, movie in results
+        ]
+
+    def get_recent_favorite_movies(self, user_id, limit=6):
+        from app.models.favorite_movie import FavoriteMovie
+        from app.models.movie import Movie
+        from flask import url_for
+
+        results = (
+            self.session.query(FavoriteMovie, Movie)
+            .join(Movie, FavoriteMovie.movie_id == Movie.movie_id)
+            .filter(FavoriteMovie.user_id == user_id)
+            .order_by(FavoriteMovie.added_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        return [
+            {
+                "movie_id": movie.movie_id,
+                "title": movie.title,
+                "poster_url": (
+                    url_for(
+                        "static", filename=f"posters/{movie.poster_url}", _external=True
+                    )
+                    if movie.poster_url
+                    else None
+                ),
+                "added_at": fav.added_at.isoformat() if fav.added_at else None,
+            }
+            for fav, movie in results
+        ]

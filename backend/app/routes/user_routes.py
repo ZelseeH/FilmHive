@@ -7,6 +7,8 @@ from app.services.user_service import (
     change_user_password,
     upload_profile_picture,
     upload_background_image,
+    get_recent_rated_movies,
+    get_recent_favorite_movies,
 )
 from werkzeug.exceptions import BadRequest
 import os
@@ -174,4 +176,35 @@ def upload_user_background_image():
         )
     except Exception as e:
         print(f"Błąd w endpoincie: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/profile/<username>/recent-ratings", methods=["GET"])
+def get_recent_rated_movies(username):
+    try:
+        from app.services.user_service import (
+            get_user_by_username,
+            get_recent_rated_movies,
+        )
+
+        user = get_user_by_username(username)
+        if not user:
+            return jsonify({"error": "Użytkownik nie znaleziony"}), 404
+
+        movies = get_recent_rated_movies(user.get("id"), limit=6)
+        return jsonify(movies), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/profile/<username>/recent-favorites", methods=["GET"])
+def get_recent_favorite_movies_route(username):
+    try:
+        user = get_user_by_username(username)
+        if not user:
+            return jsonify({"error": "Użytkownik nie znaleziony"}), 404
+
+        movies = get_recent_favorite_movies(user.get("id"), limit=6)
+        return jsonify(movies), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 500

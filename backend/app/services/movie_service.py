@@ -1,6 +1,7 @@
 from app.repositories.movie_repository import MovieRepository
 from app.services.database import db
 from app.models.movie import Movie
+from sqlalchemy import desc
 
 
 movie_repo = MovieRepository(db.session)
@@ -44,6 +45,17 @@ def get_movie_by_id(movie_id, include_actors_roles=False):
         )
     except Exception as e:
         raise Exception(f"Błąd podczas pobierania filmu o ID {movie_id}: {str(e)}")
+
+
+def get_top_rated_movies(limit=10):
+    try:
+        movies = movie_repo.get_top_rated(limit)
+        return [
+            movie.serialize(include_genres=True, include_actors=True)
+            for movie in movies
+        ]
+    except Exception as e:
+        raise Exception(f"Błąd podczas pobierania top filmów: {str(e)}")
 
 
 def create_movie(data):
