@@ -1,67 +1,64 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { Movie, getTopRatedMovies, getUserRating } from '../services/movieService';
+import { Movie, getTopRatedMovies } from '../services/movieService';
 
 interface UserRatings {
     [movieId: number]: number;
 }
 
 export const useMovies = () => {
-    const { user, getToken } = useAuth();
+    const { user } = useAuth();
     const [movies, setMovies] = useState<Movie[]>([]);
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [userRatings, setUserRatings] = useState<UserRatings>({});
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const isMounted = useRef(true);
 
     const fetchMovies = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await getTopRatedMovies(); // <-- ZMIANA TUTAJ
-            setMovies(data);
+            const data = await getTopRatedMovies();
 
-            if (data.length > 0) {
-                setSelectedMovie(data[0]);
+            if (isMounted.current) {
+                setMovies(data);
+
+                // Ekstrakcja ocen użytkownika z odpowiedzi API
+                const ratings: UserRatings = {};
+                data.forEach(movie => {
+                    if (movie.user_rating !== undefined) {
+                        ratings[movie.id] = movie.user_rating;
+                    }
+                });
+                setUserRatings(ratings);
+
+                if (data.length > 0) {
+                    setSelectedMovie(data[0]);
+                }
             }
         } catch (err: any) {
-            setError(err.message);
+            if (isMounted.current) {
+                setError(err.message);
+            }
         } finally {
-            setLoading(false);
+            if (isMounted.current) {
+                setLoading(false);
+            }
         }
     }, []);
 
-    const fetchUserRatings = useCallback(async () => {
-        if (!user || !movies.length) return;
+    // Efekt czyszczący, aby uniknąć aktualizacji stanu po odmontowaniu komponentu
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
-        try {
-            const ratingsPromises = movies.map(movie =>
-                getUserRating(movie.id)
-                    .then(rating => ({ movieId: movie.id, rating }))
-                    .catch(() => ({ movieId: movie.id, rating: undefined }))
-            );
-
-            const ratingsResults = await Promise.all(ratingsPromises);
-            const ratingsMap: UserRatings = {};
-
-            ratingsResults.forEach(result => {
-                if (result.rating !== undefined) {
-                    ratingsMap[result.movieId] = result.rating;
-                }
-            });
-
-            setUserRatings(ratingsMap);
-        } catch (error) {
-            console.error('Error fetching user ratings:', error);
-        }
-    }, [user, movies, getToken]);
-
+    // Pobierz filmy przy pierwszym renderowaniu
     useEffect(() => {
         fetchMovies();
     }, [fetchMovies]);
-
-    useEffect(() => {
-        fetchUserRatings();
-    }, [fetchUserRatings]);
 
     const handleMovieSelect = useCallback((movie: Movie) => {
         setSelectedMovie(movie);
@@ -80,6 +77,6 @@ export const useMovies = () => {
         error,
         handleMovieSelect,
         refreshMovies,
-        totalPages: 1 // już nie potrzebujesz paginacji, bo zawsze masz max 10 filmów
+        totalPages: 1
     };
 };

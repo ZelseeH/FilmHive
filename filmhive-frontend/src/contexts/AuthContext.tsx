@@ -98,7 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(userData);
     closeLoginModal();
 
-    navigate('/');
+    window.location.href = '/';
   };
 
   const logout = (): void => {
@@ -107,9 +107,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('user');
     setUser(null);
 
-    if (window.location.pathname !== '/') {
-      navigate('/');
-    }
+    window.location.href = '/';
   };
 
   const openLoginModal = (): void => {

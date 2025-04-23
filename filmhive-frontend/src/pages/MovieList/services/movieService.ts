@@ -16,6 +16,7 @@ export interface Movie {
     country?: string;
     average_rating?: number;
     rating_count?: number;
+    user_rating?: number; // Dodane pole user_rating
 }
 
 export interface Actor {
@@ -40,8 +41,18 @@ export const getMovies = async (
     perPage: number = 10
 ): Promise<MoviesResponse> => {
     try {
+        const token = localStorage.getItem('token');
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json'
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(
-            `http://localhost:5000/api/movies?title=${filter}&page=${page}&per_page=${perPage}`
+            `http://localhost:5000/api/movies?title=${filter}&page=${page}&per_page=${perPage}&include_user_rating=true`,
+            { headers }
         );
 
         if (!response.ok) {
@@ -57,7 +68,19 @@ export const getMovies = async (
 
 export const getMovieById = async (id: number): Promise<Movie> => {
     try {
-        const response = await fetch(`http://localhost:5000/api/movies/${id}`);
+        const token = localStorage.getItem('token');
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json'
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(
+            `http://localhost:5000/api/movies/${id}?include_user_rating=true`,
+            { headers }
+        );
 
         if (!response.ok) {
             throw new Error('Nie udało się pobrać danych filmu');
@@ -69,47 +92,44 @@ export const getMovieById = async (id: number): Promise<Movie> => {
         throw error;
     }
 };
+
 export const getFilteredMovies = async (
     filters: any = {},
     page: number = 1,
-    perPage: number = 10
+    perPage: number = 10,
+    sortBy: string = 'title',
+    sortOrder: string = 'asc'
 ): Promise<MoviesResponse> => {
     try {
         const queryParams = new URLSearchParams({
             page: page.toString(),
             per_page: perPage.toString(),
-            include_cast: 'true' // Dodaj ten parametr, jeśli backend go obsługuje
+            include_actors: 'true',
+            include_user_rating: 'true',
+            sort_by: sortBy,
+            sort_order: sortOrder
         });
 
         // Add filter parameters
         Object.entries(filters).forEach(([key, value]) => {
-            if (value) queryParams.append(key, String(value));
+            if (value !== undefined && value !== null && value !== '') {
+                queryParams.append(key, String(value));
+            }
         });
 
-        const response = await fetch(
-            `http://localhost:5000/api/movies/filter?${queryParams.toString()}`
-        );
-
-        if (!response.ok) {
-            throw new Error('Nie udało się pobrać filmów');
-        }
-
-        return await response.json();
+        return fetchWithAuth(`movies/filter?${queryParams.toString()}`);
     } catch (error) {
         console.error('Error fetching filtered movies:', error);
         throw error;
     }
 };
 
-
 export const getAllMovies = async (): Promise<Movie[]> => {
-    return fetchWithAuth('movies/all');
+    return fetchWithAuth('movies/all?include_user_rating=true');
 };
 
 export const getMovieDetails = async (movieId: number): Promise<Movie> => {
-    const movie = await fetchWithAuth(`movies/${movieId}`);
-    const ratingStats = await getMovieRatingStats(movieId).catch(() => ({ average_rating: null, rating_count: 0 }));
-    return { ...movie, ...ratingStats };
+    return fetchWithAuth(`movies/${movieId}?include_user_rating=true`);
 };
 
 export const getMovieCast = async (movieId: number): Promise<Actor[]> => {
@@ -129,7 +149,7 @@ export const rateMovie = async (movieId: number, rating: number): Promise<void> 
 };
 
 export const getMovieDetailsWithRoles = async (movieId: number): Promise<Movie> => {
-    return fetchWithAuth(`movies/${movieId}?include_roles=true`);
+    return fetchWithAuth(`movies/${movieId}?include_roles=true&include_user_rating=true`);
 };
 
 export const getMovieRatingStats = async (movieId: number): Promise<{ average_rating: number, rating_count: number }> => {

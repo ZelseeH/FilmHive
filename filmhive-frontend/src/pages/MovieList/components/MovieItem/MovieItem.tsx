@@ -1,4 +1,3 @@
-// src/components/MovieItem/MovieItem.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Movie } from '../../services/movieService';
@@ -34,12 +33,14 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userRating }) => {
                         }}
                     />
                 </Link>
-                <div className={styles.movieRating}>
-                    <span className={styles.star}>★</span>
-                    <span className={styles.ratingValue}>
-                        {userRating || '?'}
-                    </span>
-                </div>
+                {userRating !== undefined && (
+                    <div className={styles.movieRating}>
+                        <span className={styles.star}>★</span>
+                        <span className={styles.ratingValue}>
+                            {userRating}
+                        </span>
+                    </div>
+                )}
             </div>
             <div className={styles.movieInfo}>
                 <div className={styles.filmLabel}>FILM</div>
@@ -52,7 +53,6 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userRating }) => {
                     </p>
                 </div>
 
-                {/* Dodajemy nowy kontener dla ocen na małych ekranach */}
                 <div className={styles.mobileRatings}>
                     <div className={styles.ratingDisplay}>
                         <span className={styles.averageStar}>★</span>
@@ -96,7 +96,6 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userRating }) => {
                     </div>
                 </div>
             </div>
-
         </div>
     );
 };

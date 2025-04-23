@@ -1,6 +1,6 @@
 // hooks/useMovies.ts
 import { useState, useEffect, useCallback } from 'react';
-import { Movie, getUserRating } from '../services/movieService';
+import { Movie, getFilteredMovies } from '../services/movieService';
 import { useAuth } from '../../../contexts/AuthContext';
 
 interface PaginationData {
@@ -38,7 +38,7 @@ export const useMovies = (
     page: number,
     sortOption: SortOption = { field: 'title', order: 'asc' }
 ) => {
-    const { user, getToken } = useAuth();
+    const { user } = useAuth();
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -48,74 +48,42 @@ export const useMovies = (
     const fetchMovies = useCallback(async () => {
         try {
             setLoading(true);
-            const queryParams = new URLSearchParams();
 
-            queryParams.append('page', page.toString());
-            queryParams.append('per_page', '10');
-            queryParams.append('include_actors', 'true');
-
-            if (filters.title) queryParams.append('title', filters.title);
-            if (filters.countries) queryParams.append('countries', filters.countries);
-            if (filters.years) queryParams.append('years', filters.years);
-            if (filters.genres) queryParams.append('genres', filters.genres);
-            if (filters.rating_count_min !== undefined)
-                queryParams.append('rating_count_min', filters.rating_count_min.toString());
-            if (filters.average_rating !== undefined)
-                queryParams.append('average_rating', filters.average_rating.toString());
-
-            queryParams.append('sort_by', sortOption.field);
-            queryParams.append('sort_order', sortOption.order);
-
-            const response = await fetch(`http://localhost:5000/api/movies/filter?${queryParams}`);
-
-            if (!response.ok) {
-                throw new Error('Nie udało się pobrać filmów');
-            }
-
-            const data: MoviesResponse = await response.json();
-            console.log('API response:', data);
+            // Wywołanie funkcji getFilteredMovies z serwisu
+            const data = await getFilteredMovies(
+                filters,
+                page,
+                10,
+                sortOption.field,
+                sortOption.order
+            );
 
             setMovies(data.movies || []);
             setTotalPages(data.pagination?.total_pages || 1);
+
+            // Ekstrakcja ocen użytkownika z odpowiedzi API
+            if (user) {
+                const ratings: UserRatings = {};
+                data.movies.forEach(movie => {
+                    if (movie.user_rating !== undefined) {
+                        ratings[movie.id] = movie.user_rating;
+                    }
+                });
+                setUserRatings(ratings);
+            } else {
+                setUserRatings({});
+            }
+
         } catch (err: any) {
             setError(err.message || 'Wystąpił błąd podczas pobierania danych');
         } finally {
             setLoading(false);
         }
-    }, [filters, page, sortOption]);
-
-    const fetchUserRatings = useCallback(async () => {
-        if (!user || !movies.length) return;
-
-        try {
-            const ratingsPromises = movies.map(movie =>
-                getUserRating(movie.id)
-                    .then(rating => ({ movieId: movie.id, rating }))
-                    .catch(() => ({ movieId: movie.id, rating: undefined }))
-            );
-
-            const ratingsResults = await Promise.all(ratingsPromises);
-            const ratingsMap: UserRatings = {};
-
-            ratingsResults.forEach(result => {
-                if (result.rating !== undefined) {
-                    ratingsMap[result.movieId] = result.rating;
-                }
-            });
-
-            setUserRatings(ratingsMap);
-        } catch (error) {
-            console.error('Error fetching user ratings:', error);
-        }
-    }, [user, movies, getToken]);
+    }, [filters, page, sortOption, user]);
 
     useEffect(() => {
         fetchMovies();
     }, [fetchMovies]);
-
-    useEffect(() => {
-        fetchUserRatings();
-    }, [fetchUserRatings]);
 
     return { movies, loading, error, totalPages, userRatings };
 };

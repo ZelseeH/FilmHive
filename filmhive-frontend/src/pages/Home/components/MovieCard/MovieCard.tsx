@@ -30,7 +30,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, isActive, userRating, onCl
                 ) : (
                     <div className={styles['no-poster']}>Brak plakatu</div>
                 )}
-                {userRating && (
+                {(userRating !== undefined && userRating !== null) && (
                     <div className={styles['user-rating']}>
                         <span className={styles.star}>★</span>
                         <span className={styles['rating-value']}>{userRating}</span>

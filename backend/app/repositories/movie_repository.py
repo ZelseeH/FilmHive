@@ -16,9 +16,13 @@ class MovieRepository:
             .all()
         )
 
-    def get_paginated(self, page=1, per_page=10, genre_id=None):
+    def get_paginated(self, page=1, per_page=10, genre_id=None, user_id=None):
         movies, total = Movie.get_with_ratings(
-            self.session, page=page, per_page=per_page, genre_id=genre_id
+            self.session,
+            page=page,
+            per_page=per_page,
+            genre_id=genre_id,
+            user_id=user_id,
         )
         total_pages = (total + per_page - 1) // per_page
         return {
@@ -33,8 +37,8 @@ class MovieRepository:
             },
         }
 
-    def get_top_rated(self, limit=10):
-        movies_with_ratings = (
+    def get_top_rated(self, limit=10, user_id=None):
+        query = (
             self.session.query(
                 Movie,
                 func.avg(Rating.rating).label("avg_rating"),
@@ -42,20 +46,39 @@ class MovieRepository:
             )
             .outerjoin(Rating, Movie.movie_id == Rating.movie_id)
             .group_by(Movie.movie_id)
-            .order_by(desc("rating_count"))
+            .order_by(func.count(Rating.rating_id).desc())  # Sortowanie po liczbie ocen
             .options(joinedload(Movie.genres))
             .limit(limit)
-            .all()
         )
+
+        movies_with_ratings = query.all()
+
+        user_ratings = {}
+        if user_id:
+            user_ratings_query = (
+                self.session.query(Rating.movie_id, Rating.rating)
+                .filter(Rating.user_id == user_id)
+                .filter(
+                    Rating.movie_id.in_(
+                        [movie.movie_id for movie, _, _ in movies_with_ratings]
+                    )
+                )
+            )
+            user_ratings = {movie_id: rating for movie_id, rating in user_ratings_query}
+
         result = []
         for movie, avg_rating, rating_count in movies_with_ratings:
-            movie._average_rating = float(avg_rating) if avg_rating else None
+            movie._average_rating = (
+                float(avg_rating) if avg_rating is not None else None
+            )
             movie._rating_count = rating_count or 0
+            movie._user_rating = user_ratings.get(movie.movie_id)
             result.append(movie)
+
         return result
 
-    def get_by_id(self, movie_id):
-        return (
+    def get_by_id(self, movie_id, user_id=None):
+        movie = (
             self.session.query(Movie)
             .options(
                 joinedload(Movie.genres),
@@ -65,6 +88,16 @@ class MovieRepository:
             )
             .get(movie_id)
         )
+
+        if movie and user_id:
+            user_rating = (
+                self.session.query(Rating.rating)
+                .filter(Rating.user_id == user_id, Rating.movie_id == movie_id)
+                .scalar()
+            )
+            movie._user_rating = user_rating
+
+        return movie
 
     def add(self, movie):
         self.session.add(movie)
@@ -82,6 +115,7 @@ class MovieRepository:
     def get_filter_options(self):
         if hasattr(self, "_filter_options_cache"):
             return self._filter_options_cache
+
         genres = self.session.query(Genre).order_by(Genre.genre_name).all()
         countries = (
             self.session.query(Movie.country).distinct().order_by(Movie.country).all()
@@ -97,18 +131,22 @@ class MovieRepository:
     def _apply_filters(self, query, filters):
         if filters.get("title"):
             query = query.filter(Movie.title.ilike(f"%{filters['title']}%"))
+
         if filters.get("countries"):
             query = query.filter(Movie.country.in_(filters["countries"].split(",")))
+
         if filters.get("years"):
             years = [int(y) for y in filters["years"].split(",") if y]
             if years:
                 query = query.filter(
                     or_(*[extract("year", Movie.release_date) == y for y in years])
                 )
+
         if filters.get("genres"):
             genre_ids = [int(g) for g in filters["genres"].split(",") if g.isdigit()]
             if genre_ids:
                 query = query.join(Movie.genres).filter(Genre.genre_id.in_(genre_ids))
+
         if filters.get("rating_count_min") or filters.get("average_rating"):
             ratings_subquery = (
                 self.session.query(
@@ -122,14 +160,17 @@ class MovieRepository:
             query = query.outerjoin(
                 ratings_subquery, Movie.movie_id == ratings_subquery.c.movie_id
             )
+
             if filters.get("rating_count_min"):
                 query = query.filter(
                     ratings_subquery.c.count >= int(filters["rating_count_min"])
                 )
+
             if filters.get("average_rating"):
                 query = query.filter(
                     ratings_subquery.c.avg_rating >= float(filters["average_rating"])
                 )
+
         return query
 
     def _apply_sorting(self, query, sort_by="title", sort_order="asc"):
@@ -146,6 +187,7 @@ class MovieRepository:
             query = query.outerjoin(
                 ratings_subquery, Movie.movie_id == ratings_subquery.c.movie_id
             )
+
             if sort_by == "average_rating":
                 order = (
                     func.coalesce(ratings_subquery.c.avg_rating, 0).asc()
@@ -172,17 +214,39 @@ class MovieRepository:
                 Movie.title.asc() if sort_order.lower() == "asc" else Movie.title.desc()
             )
             query = query.order_by(order)
+
         return query
 
     def filter_movies(
-        self, filters, page=1, per_page=10, sort_by="title", sort_order="asc"
+        self,
+        filters,
+        page=1,
+        per_page=10,
+        sort_by="title",
+        sort_order="asc",
+        user_id=None,
     ):
         query = self.session.query(Movie)
         query = query.options(joinedload(Movie.genres), selectinload(Movie.ratings))
         query = self._apply_filters(query, filters)
         query = self._apply_sorting(query, sort_by, sort_order)
+
         total = query.count()
         movies = query.offset((page - 1) * per_page).limit(per_page).all()
+
+        if user_id:
+            movie_ids = [movie.movie_id for movie in movies]
+            user_ratings = (
+                self.session.query(Rating.movie_id, Rating.rating)
+                .filter(Rating.user_id == user_id)
+                .filter(Rating.movie_id.in_(movie_ids))
+                .all()
+            )
+
+            ratings_map = {movie_id: rating for movie_id, rating in user_ratings}
+            for movie in movies:
+                movie._user_rating = ratings_map.get(movie.movie_id)
+
         total_pages = (total + per_page - 1) // per_page
         return {
             "movies": movies,
