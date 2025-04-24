@@ -308,6 +308,7 @@
 @media (max-width: 768px) {
   .profile-header {
     padding: 20px;
+    width: 100%;
   }
 
   .profile-header-top {

@@ -9,6 +9,8 @@ from app.services.user_service import (
     upload_background_image,
     get_recent_rated_movies,
     get_recent_favorite_movies,
+    get_user_by_username,
+    get_recent_watchlist_movies,
 )
 from werkzeug.exceptions import BadRequest
 import os
@@ -207,4 +209,25 @@ def get_recent_favorite_movies_route(username):
         movies = get_recent_favorite_movies(user.get("id"), limit=6)
         return jsonify(movies), 200
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/profile/<username>/recent-watchlist", methods=["GET"])
+def get_recent_watchlist_movies_route(username):
+    try:
+        user = get_user_by_username(username)
+        if not user:
+            return jsonify({"error": "Użytkownik nie znaleziony"}), 404
+
+        current_app.logger.info(
+            f"Getting recent watchlist movies for user {user.get('id')}"
+        )
+        movies = get_recent_watchlist_movies(user.get("id"), limit=6)
+        current_app.logger.info(f"Got {len(movies) if movies else 0} watchlist movies")
+
+        return jsonify(movies), 200
+    except Exception as e:
+        current_app.logger.error(
+            f"Error in get_recent_watchlist_movies_route: {str(e)}"
+        )
         return jsonify({"error": str(e)}), 500

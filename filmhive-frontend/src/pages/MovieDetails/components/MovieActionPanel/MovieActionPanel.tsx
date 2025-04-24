@@ -33,6 +33,7 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
         isInWatchlist,
         isLoading: isWatchlistLoading,
         checkWatchlistStatus,
+        addToWatchlist,
         removeFromWatchlist
     } = useWatchlist({
         movieId,
@@ -43,18 +44,38 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
     const [isSubmittingFavorite, setIsSubmittingFavorite] = useState(false);
     const [isSubmittingWatchlist, setIsSubmittingWatchlist] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [ratingJustRemoved, setRatingJustRemoved] = useState(false);
 
+    // Efekt do automatycznego usuwania filmu z watchlisty po ocenieniu
     useEffect(() => {
         if (user && userRating > 0 && isInWatchlist) {
             removeFromWatchlist();
         }
     }, [userRating, isInWatchlist, user, removeFromWatchlist]);
 
+    // Efekt do sprawdzania statusu watchlisty po zmianie oceny
     useEffect(() => {
         if (user) {
-            checkWatchlistStatus();
+            // Dodaj opóźnienie, aby dać czas na zakończenie poprzednich operacji
+            const timer = setTimeout(() => {
+                checkWatchlistStatus();
+            }, 1000);
+
+            return () => clearTimeout(timer);
         }
     }, [userRating, user, checkWatchlistStatus]);
+
+    // Efekt do obsługi sytuacji, gdy ocena została właśnie usunięta
+    useEffect(() => {
+        if (ratingJustRemoved) {
+            // Resetuj flagę po 2 sekundach
+            const timer = setTimeout(() => {
+                setRatingJustRemoved(false);
+            }, 2000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [ratingJustRemoved]);
 
     const handleToggleFavorite = async () => {
         if (!user) {
@@ -98,7 +119,13 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
             return;
         }
 
-        if (isSubmittingWatchlist) return;
+        if (isSubmittingWatchlist || ratingJustRemoved) {
+            // Jeśli ocena została właśnie usunięta, poczekaj chwilę
+            if (ratingJustRemoved) {
+                setError('Poczekaj chwilę po usunięciu oceny przed dodaniem do listy "chcę obejrzeć"');
+            }
+            return;
+        }
 
         setIsSubmittingWatchlist(true);
         setError(null);
@@ -112,27 +139,44 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
             if (isInWatchlist) {
                 await watchlistService.removeFromWatchlist(movieId, token);
             } else {
+                // Dodaj opóźnienie przed dodaniem do watchlisty
+                await new Promise(resolve => setTimeout(resolve, 500));
                 await watchlistService.addToWatchlist(movieId, token);
             }
-            checkWatchlistStatus();
+
+            // Dodaj opóźnienie przed sprawdzeniem statusu
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await checkWatchlistStatus();
         } catch (err) {
             console.error('Błąd podczas zmiany statusu listy do obejrzenia:', err);
             setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
+
+            // Nawet jeśli wystąpił błąd, spróbuj sprawdzić status po chwili
+            setTimeout(() => {
+                checkWatchlistStatus();
+            }, 1000);
         } finally {
             setIsSubmittingWatchlist(false);
         }
     };
 
     const handleRatingChange = (newRating: number) => {
+        const oldRating = userRating;
         setRating(newRating);
         onRatingChange(newRating);
 
+        // Jeśli usunięto ocenę (zmieniono na 0), ustaw flagę
+        if (oldRating > 0 && newRating === 0) {
+            setRatingJustRemoved(true);
+        }
+
+        // Sprawdź status watchlisty po zmianie oceny
         setTimeout(() => {
             checkWatchlistStatus();
-        }, 500);
+        }, 1000);
     };
 
-    const isWatchlistDisabled = userRating > 0;
+    const isWatchlistDisabled = userRating > 0 || ratingJustRemoved;
 
     return (
         <div className={styles['action-panel']}>
@@ -150,7 +194,13 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
                         className={`${styles['action-button']} ${isInWatchlist ? styles['active'] : ''} ${isSubmittingWatchlist ? styles['loading'] : ''} ${isWatchlistDisabled ? styles['disabled'] : ''}`}
                         onClick={handleToggleWatchlist}
                         disabled={isSubmittingWatchlist || isWatchlistDisabled}
-                        title={isWatchlistDisabled ? 'Nie można dodać do listy "chcę obejrzeć" filmu, który już oceniłeś' : ''}
+                        title={
+                            isWatchlistDisabled
+                                ? userRating > 0
+                                    ? 'Nie można dodać do listy "chcę obejrzeć" filmu, który już oceniłeś'
+                                    : 'Poczekaj chwilę po usunięciu oceny przed dodaniem do listy "chcę obejrzeć"'
+                                : ''
+                        }
                     >
                         <span className={styles['watch-icon']}>👁</span>
                         <span>{isInWatchlist ? 'Chcę obejrzeć' : 'Dodaj do obejrzenia'}</span>
@@ -161,7 +211,6 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
 
                 {(isFavoriteLoading || isWatchlistLoading || isRatingLoading) &&
                     <div className={styles['loading-message']}>Ładowanie danych...</div>}
-
 
                 <div className={styles['rating-section']}>
                     <StarRating movieId={movieId} onRatingChange={handleRatingChange} />

@@ -33,9 +33,9 @@
 .profile-content {
   margin-top: 30px;
   width: 100%;
+  margin: 0px;
 }
 
-/* Dodane wyśrodkowanie sekcji z filmami */
 .profile-section {
   display: flex;
   flex-direction: column;
@@ -45,7 +45,6 @@
 
 @media (max-width: 1100px) {
   .profile-page {
-    width: calc(100% - 30px);
     margin: 0 auto;
     padding-left: 15px;
     padding-right: 15px;
@@ -62,5 +61,6 @@
     padding-top: 60px;
     padding-left: 0px;
     padding-right: 0px;
+    margin: 0;
   }
 }

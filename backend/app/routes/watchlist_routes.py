@@ -101,3 +101,72 @@ def get_user_watchlist():
             jsonify({"error": "Wystąpił błąd podczas pobierania listy do obejrzenia"}),
             500,
         )
+
+
+@watchlist_bp.route("/user/recent", methods=["GET"])
+@jwt_required()
+def get_recent_watchlist():
+    try:
+        user_id = int(get_jwt_identity())
+        limit = min(request.args.get("limit", 6, type=int), 20)
+
+        result = watchlist_service.get_recent_watchlist_movies(user_id, limit)
+        current_app.logger.info(f"Retrieved recent watchlist for user {user_id}")
+        return jsonify(result), 200
+    except Exception as e:
+        current_app.logger.error(f"Error in get_recent_watchlist: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas pobierania ostatnich filmów z listy do obejrzenia"
+                }
+            ),
+            500,
+        )
+
+
+@watchlist_bp.route("/user/<int:user_id>/recent", methods=["GET"])
+def get_user_recent_watchlist(user_id):
+    try:
+        limit = min(request.args.get("limit", 6, type=int), 20)
+
+        result = watchlist_service.get_recent_watchlist_movies(user_id, limit)
+        current_app.logger.info(f"Retrieved recent watchlist for user {user_id}")
+        return jsonify(result), 200
+    except Exception as e:
+        current_app.logger.error(f"Error in get_user_recent_watchlist: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas pobierania ostatnich filmów z listy do obejrzenia"
+                }
+            ),
+            500,
+        )
+
+
+@watchlist_bp.route("/user/recent/<int:movie_id>", methods=["DELETE"])
+@jwt_required()
+def remove_from_recent_watchlist(movie_id):
+    try:
+        user_id = int(get_jwt_identity())
+
+        result = watchlist_service.remove_from_watchlist(user_id, movie_id)
+        if result["success"]:
+            current_app.logger.info(
+                f"User {user_id} removed movie {movie_id} from watchlist via recent list"
+            )
+            return jsonify({"message": "Film usunięty z listy do obejrzenia"}), 200
+        else:
+            return jsonify({"error": "Film nie był na liście do obejrzenia"}), 404
+    except ValueError as e:
+        current_app.logger.error(
+            f"ValueError in remove_from_recent_watchlist: {str(e)}"
+        )
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Error in remove_from_recent_watchlist: {str(e)}")
+        return (
+            jsonify({"error": "Wystąpił błąd podczas usuwania z listy do obejrzenia"}),
+            500,
+        )

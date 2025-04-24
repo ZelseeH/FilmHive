@@ -25,10 +25,14 @@ class WatchlistService:
                 current_app.logger.info(
                     f"Film {movie_id} już jest na liście do obejrzenia użytkownika {user_id}"
                 )
-                watchlist_entry = self.watchlist_repository.get_user_watchlist(user_id)[
-                    0
-                ]
-                return watchlist_entry.serialize()
+                watchlist_entries = self.watchlist_repository.get_user_watchlist(
+                    user_id
+                )
+                if watchlist_entries and len(watchlist_entries) > 0:
+                    watchlist_entry = watchlist_entries[0]
+                    return watchlist_entry.serialize()
+                else:
+                    return {"message": "Film już jest na liście do obejrzenia"}
 
             watchlist_entry = self.watchlist_repository.add_to_watchlist(
                 user_id, movie_id
@@ -148,5 +152,36 @@ class WatchlistService:
         except Exception as e:
             current_app.logger.error(
                 f"Unexpected error getting user watchlist: {str(e)}"
+            )
+            raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
+
+    def get_recent_watchlist_movies(self, user_id, limit=6):
+        try:
+            user = db.session.get(User, user_id)
+            if not user:
+                raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
+
+            movies = self.watchlist_repository.get_recent_watchlist_movies(
+                user_id, limit
+            )
+            current_app.logger.info(
+                f"Pobrano ostatnie {len(movies)} filmy z listy do obejrzenia użytkownika {user_id}"
+            )
+            return {"movies": movies}
+        except ValueError as e:
+            current_app.logger.error(
+                f"ValueError getting recent watchlist movies: {str(e)}"
+            )
+            raise
+        except SQLAlchemyError as e:
+            current_app.logger.error(
+                f"SQLAlchemyError getting recent watchlist movies: {str(e)}"
+            )
+            raise Exception(
+                f"Nie udało się pobrać ostatnich filmów z listy do obejrzenia: {str(e)}"
+            )
+        except Exception as e:
+            current_app.logger.error(
+                f"Unexpected error getting recent watchlist movies: {str(e)}"
             )
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")

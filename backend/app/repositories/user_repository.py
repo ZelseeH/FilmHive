@@ -1,6 +1,4 @@
 from app.models.user import User
-from app.models.rating import Rating
-from app.models.movie import Movie
 
 
 class UserRepository:
@@ -144,4 +142,36 @@ class UserRepository:
                 "added_at": fav.added_at.isoformat() if fav.added_at else None,
             }
             for fav, movie in results
+        ]
+
+    def get_recent_watchlist_movies(self, user_id, limit=6):
+        from app.models.watchlist import Watchlist
+        from app.models.movie import Movie
+        from flask import url_for
+
+        results = (
+            self.session.query(Watchlist, Movie)
+            .join(Movie, Watchlist.movie_id == Movie.movie_id)
+            .filter(Watchlist.user_id == user_id)
+            .order_by(Watchlist.added_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        return [
+            {
+                "movie_id": movie.movie_id,
+                "title": movie.title,
+                "poster_url": (
+                    url_for(
+                        "static", filename=f"posters/{movie.poster_url}", _external=True
+                    )
+                    if movie.poster_url
+                    else None
+                ),
+                "added_at": (
+                    watchlist.added_at.isoformat() if watchlist.added_at else None
+                ),
+            }
+            for watchlist, movie in results
         ]

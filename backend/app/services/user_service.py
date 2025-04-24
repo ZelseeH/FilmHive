@@ -138,3 +138,16 @@ def get_recent_favorite_movies(user_id, limit=6):
         raise Exception(
             f"Błąd podczas pobierania ostatnich polubionych filmów: {str(e)}"
         )
+
+
+def get_recent_watchlist_movies(user_id, limit=6):
+    try:
+        from app.services.watchlist_service import WatchlistService
+
+        watchlist_service = WatchlistService()
+        result = watchlist_service.get_recent_watchlist_movies(user_id, limit)
+        return result.get("movies", [])
+    except Exception as e:
+        raise Exception(
+            f"Błąd podczas pobierania ostatnich filmów z listy do obejrzenia: {str(e)}"
+        )

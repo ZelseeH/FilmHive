@@ -63,17 +63,17 @@
     padding: 0;
 }
 
-.ratingBadge {
+.eyeIcon {
     position: absolute;
     top: 0;
     left: 0;
     background: rgba(40, 40, 40, 0.88);
-    color: white;
+    color: #4d9eff;
     font-weight: bold;
     border-radius: 0 0 6px 0;
     min-width: 36px;
     min-height: 25px;
-    padding: 3px 5px 2px 5px;
+    padding: 0px 0px 2px 5px;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -81,22 +81,20 @@
     z-index: 2;
     box-shadow: none;
     border: none;
-    margin: 0;
 }
 
-.ratingValue {
-    color: white;
-    font-weight: bold;
-    font-size: 1.15em;
-    letter-spacing: 0.5px;
-}
-
-.star {
-    color: #ffcc00;
-    font-size: 1.1em;
-    margin-right: 3px;
+.eyeIconInner {
     display: inline-block;
-    margin-top: -5px;
+    transition: transform 0.2s ease;
+
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover .eyeIconInner {
+    transform: scale(1.2);
 }
 
 .title {
@@ -133,20 +131,11 @@
         gap: 20px;
     }
 
-    .ratingBadge {
+    .eyeIcon {
         min-width: 32px;
         min-height: 26px;
         padding: 2px 9px 2px 5px;
         font-size: 1.1em;
-    }
-
-    .ratingValue {
-        font-size: 1.05em;
-    }
-
-    .star {
-        font-size: 1em;
-        margin-right: 3px;
     }
 }
 
@@ -167,28 +156,13 @@
 
     .title {
         font-size: 0.9em;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .ratingBadge {
+    .eyeIcon {
         min-width: 30px;
         min-height: 24px;
         padding: 2px 8px 2px 4px;
         font-size: 1em;
-    }
-
-    .ratingValue {
-        font-size: 1em;
-    }
-
-    .star {
-        font-size: 0.9em;
-        margin-right: 2px;
     }
 }
 
@@ -209,27 +183,12 @@
 
     .title {
         font-size: 0.85em;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .ratingBadge {
+    .eyeIcon {
         min-width: 26px;
         min-height: 22px;
         padding: 1px 7px 1px 4px;
         font-size: 0.9em;
-    }
-
-    .ratingValue {
-        font-size: 0.9em;
-    }
-
-    .star {
-        font-size: 0.8em;
-        margin-right: 2px;
     }
 }
