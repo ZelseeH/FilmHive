@@ -1,3 +1,4 @@
+// src/hooks/useSearchResults.ts
 import { useEffect, useState } from "react";
 import { searchMovies, searchActors, searchUsers } from "../services/searchService";
 

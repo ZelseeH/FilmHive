@@ -32,6 +32,7 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
                         }}
                     />
                 </Link>
+
                 {movie.user_rating !== undefined && movie.user_rating !== null && (
                     <div className={styles.movieRating}>
                         <span className={styles.star}>★</span>
