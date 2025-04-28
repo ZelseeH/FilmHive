@@ -97,7 +97,6 @@ def get_all_movies_list():
 
 
 @movies_bp.route("/<int:id>", methods=["GET"])
-@cached_response(timeout=120)
 def get_movie(id):
     try:
         include_roles = request.args.get("include_roles", "false").lower() == "true"
