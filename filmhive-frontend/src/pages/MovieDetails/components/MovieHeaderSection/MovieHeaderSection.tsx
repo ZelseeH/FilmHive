@@ -9,7 +9,6 @@ interface MovieHeaderSectionProps {
     onShowFullDescription: () => void;
 }
 
-// Definiujemy interfejs dla gatunku, aby upewnić się, że TypeScript zna jego strukturę
 interface Genre {
     id?: number;
     name: string;

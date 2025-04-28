@@ -258,12 +258,12 @@ const MovieListPage: React.FC = () => {
                   <MovieItem
                     key={movie.id || movie.movie_id}
                     movie={movie}
-                    userRating={userRatings && userRatings[Number(movie.id || movie.movie_id)]}
                   />
                 ))
               ) : (
                 <div className={styles.noMovies}>Nie znaleziono filmów</div>
               )}
+
               {totalPages > 1 && (
                 <Pagination
                   currentPage={currentPage}

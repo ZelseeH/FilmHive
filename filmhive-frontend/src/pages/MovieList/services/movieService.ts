@@ -16,7 +16,7 @@ export interface Movie {
     country?: string;
     average_rating?: number;
     rating_count?: number;
-    user_rating?: number; // Dodane pole user_rating
+    user_rating?: number;
 }
 
 export interface Actor {

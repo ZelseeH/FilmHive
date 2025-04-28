@@ -10,6 +10,8 @@ import MovieListPage from './pages/MovieList/MovieListPage';
 import MovieDetail from './pages/MovieDetails/MovieDetailsPage';
 import ActorListPage from './pages/ActorList/ActorListPage';
 import ActorDetail from './pages/ActorDetails/ActotDetails';
+import SearchPage from './pages/Search/SearchPage';
+
 
 const AppRoutes: React.FC = () => {
     const { user } = useAuth();
@@ -33,6 +35,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/actors" element={<ActorListPage />} />
             <Route path="/actor/details/:actorName" element={<ActorDetail />} />
             <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/search" element={<SearchPage />} />
         </Routes>
     );
 };

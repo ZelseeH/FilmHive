@@ -43,7 +43,6 @@ class Movie(Base):
         "Recommendation", back_populates="movie", lazy="select"
     )
 
-    # Cachowane właściwości
     _average_rating = None
     _rating_count = None
 
@@ -116,6 +115,7 @@ class Movie(Base):
             "trailer_url": self.trailer_url,
             "average_rating": self.average_rating,
             "rating_count": self.rating_count,
+            "user_rating": getattr(self, "_user_rating", None),  # <-- TO JEST POPRAWKA
         }
 
         if include_genres:

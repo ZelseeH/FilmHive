@@ -1,4 +1,5 @@
 from app.models.user import User
+from sqlalchemy import or_
 
 
 class UserRepository:
@@ -175,3 +176,29 @@ class UserRepository:
             }
             for watchlist, movie in results
         ]
+
+    def search(self, query, page=1, per_page=10):
+        search_query = f"%{query}%"
+        base = self.session.query(User).filter(
+            or_(
+                User.username.ilike(search_query),
+                User.name.ilike(search_query),
+            )
+        )
+        total = base.count()
+        users = (
+            base.order_by(User.username)
+            .offset((page - 1) * per_page)
+            .limit(per_page)
+            .all()
+        )
+        total_pages = (total + per_page - 1) // per_page
+        return {
+            "users": users,
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "total_pages": total_pages,
+            },
+        }

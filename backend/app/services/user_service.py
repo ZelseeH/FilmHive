@@ -151,3 +151,14 @@ def get_recent_watchlist_movies(user_id, limit=6):
         raise Exception(
             f"Błąd podczas pobierania ostatnich filmów z listy do obejrzenia: {str(e)}"
         )
+
+
+def search_users(query, page=1, per_page=10):
+    try:
+        result = user_repo.search(query, page, per_page)
+        users = result["users"]
+        pagination = result["pagination"]
+        serialized_users = [user.serialize() for user in users]
+        return {"users": serialized_users, "pagination": pagination}
+    except Exception as e:
+        raise Exception(f"Błąd podczas wyszukiwania użytkowników: {str(e)}")

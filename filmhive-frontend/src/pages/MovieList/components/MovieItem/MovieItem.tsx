@@ -6,10 +6,9 @@ import styles from './MovieItem.module.css';
 
 interface MovieItemProps {
     movie: Movie;
-    userRating?: number;
 }
 
-const MovieItem: React.FC<MovieItemProps> = ({ movie, userRating }) => {
+const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
     const renderActors = (actors?: { id: number; name: string }[]): string => {
         if (!actors || !Array.isArray(actors) || actors.length === 0) {
             return 'Brak informacji o obsadzie';
@@ -33,11 +32,11 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userRating }) => {
                         }}
                     />
                 </Link>
-                {userRating !== undefined && (
+                {movie.user_rating !== undefined && movie.user_rating !== null && (
                     <div className={styles.movieRating}>
                         <span className={styles.star}>★</span>
                         <span className={styles.ratingValue}>
-                            {userRating}
+                            {movie.user_rating}
                         </span>
                     </div>
                 )}

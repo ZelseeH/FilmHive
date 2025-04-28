@@ -1,6 +1,6 @@
 from app.models.actor import Actor
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import or_, func  
+from sqlalchemy import or_, func
 from functools import reduce
 
 
@@ -301,3 +301,32 @@ class ActorRepository:
 
         countries = [row.country.strip() for row in query.all() if row.country]
         return countries
+
+    def search(self, query, page=1, per_page=10):
+        search_query = f"%{query}%"
+        total = (
+            self.session.query(Actor)
+            .filter(Actor.actor_name.ilike(search_query))
+            .count()
+        )
+
+        actors = (
+            self.session.query(Actor)
+            .filter(Actor.actor_name.ilike(search_query))
+            .order_by(Actor.actor_name)
+            .offset((page - 1) * per_page)
+            .limit(per_page)
+            .all()
+        )
+
+        total_pages = (total + per_page - 1) // per_page
+
+        return {
+            "actors": actors,
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "total_pages": total_pages,
+            },
+        }

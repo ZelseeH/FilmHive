@@ -246,6 +246,7 @@ class MovieRepository:
             ratings_map = {movie_id: rating for movie_id, rating in user_ratings}
             for movie in movies:
                 movie._user_rating = ratings_map.get(movie.movie_id)
+                print(f"Movie: {movie.title}, user_rating: {movie._user_rating}")
 
         total_pages = (total + per_page - 1) // per_page
         return {
@@ -257,3 +258,14 @@ class MovieRepository:
                 "total_pages": total_pages,
             },
         }
+
+    def search(self, query, page=1, per_page=10, user_id=None):
+        filters = {"title": query}
+        return self.filter_movies(
+            filters=filters,
+            page=page,
+            per_page=per_page,
+            sort_by="title",
+            sort_order="asc",
+            user_id=user_id,
+        )

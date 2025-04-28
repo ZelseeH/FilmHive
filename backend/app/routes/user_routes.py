@@ -231,3 +231,22 @@ def get_recent_watchlist_movies_route(username):
             f"Error in get_recent_watchlist_movies_route: {str(e)}"
         )
         return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/search", methods=["GET"])
+def search_users_route():
+    try:
+        query = request.args.get("q", "")
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 10, type=int)
+        from app.services.user_service import search_users
+
+        result = search_users(query, page, per_page)
+        return jsonify(result), 200
+    except Exception as e:
+        return (
+            jsonify(
+                {"error": f"Wystąpił błąd podczas wyszukiwania użytkowników: {str(e)}"}
+            ),
+            500,
+        )

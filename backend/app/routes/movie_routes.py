@@ -13,6 +13,7 @@ from app.services.movie_service import (
     filter_movies,
     get_movie_filter_options,
     get_top_rated_movies,
+    search_movies,
 )
 
 movies_bp = Blueprint("movies", __name__)
@@ -299,3 +300,33 @@ def remove_rating(id):
     except Exception as e:
         current_app.logger.error(f"Error in remove_rating: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+
+@movies_bp.route("/search", methods=["GET"])
+def search_movies_route():
+    try:
+        query = request.args.get("q", "")
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 10, type=int)
+        user_id = get_current_user_id()
+
+        per_page = min(per_page, 20)
+
+        result = search_movies(query, page=page, per_page=per_page, user_id=user_id)
+
+        response = jsonify(
+            {"results": result["movies"], "pagination": result["pagination"]}
+        )
+        response.headers["Cache-Control"] = "private, max-age=60"
+        return response, 200
+    except Exception as e:
+        current_app.logger.error(f"Error in search_movies_route: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas wyszukiwania filmów",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )

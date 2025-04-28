@@ -140,3 +140,12 @@ class ActorService:
     def get_unique_birthplaces(self):
         result = self.actor_repository.get_unique_birthplaces()
         return result
+
+    def search_actors(self, query, page=1, per_page=10):
+        result = self.actor_repository.search(query, page, per_page)
+        actors = result["actors"]
+        pagination = result["pagination"]
+
+        serialized_actors = [actor.serialize() for actor in actors]
+
+        return {"actors": serialized_actors, "pagination": pagination}

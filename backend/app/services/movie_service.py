@@ -173,3 +173,24 @@ def get_movie_filter_options():
     except Exception as e:
         logger.error(f"Error in get_movie_filter_options: {str(e)}")
         raise Exception(f"Błąd podczas pobierania opcji filtrów: {str(e)}")
+
+
+def search_movies(query, page=1, per_page=10, user_id=None):
+    try:
+        result = movie_repo.search(
+            query=query,
+            page=page,
+            per_page=per_page,
+            user_id=user_id,
+        )
+        serialized_movies = [
+            {
+                **movie.serialize(include_genres=True, include_actors=True),
+                "user_rating": getattr(movie, "_user_rating", None),
+            }
+            for movie in result["movies"]
+        ]
+        return {"movies": serialized_movies, "pagination": result["pagination"]}
+    except Exception as e:
+        logger.error(f"Error in search_movies: {str(e)}")
+        raise Exception(f"Błąd podczas wyszukiwania filmów: {str(e)}")

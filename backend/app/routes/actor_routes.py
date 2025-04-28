@@ -5,7 +5,6 @@ actors_bp = Blueprint("actors", __name__)
 actor_service = ActorService()
 
 
-# Dodajemy dekorator do obsługi CORS
 def cors_headers(f):
     def decorated_function(*args, **kwargs):
         if request.method == "OPTIONS":
@@ -175,3 +174,32 @@ def get_birthplaces():
 
     birthplaces = actor_service.get_unique_birthplaces()
     return jsonify({"birthplaces": birthplaces})
+
+
+actor_service = ActorService()
+
+
+@actors_bp.route("/search", methods=["GET"])
+def search_actors_route():
+    try:
+        query = request.args.get("q", "")
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 10, type=int)
+
+        result = actor_service.search_actors(query, page=page, per_page=per_page)
+
+        return (
+            jsonify({"results": result["actors"], "pagination": result["pagination"]}),
+            200,
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error in search_actors_route: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas wyszukiwania aktorów",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )
