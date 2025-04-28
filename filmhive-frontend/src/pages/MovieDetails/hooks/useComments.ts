@@ -31,17 +31,23 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
         per_page: 10
     });
     const fetchingRef = useRef<boolean>(false);
+
     const getUserComment = useCallback(async () => {
-        if (!user) return null;
+        console.log('[useComments] getUserComment called', { movieId, user });
+        if (!user) {
+            console.log('[useComments] getUserComment: brak użytkownika');
+            return null;
+        }
         setIsLoading(true);
         setError(null);
         try {
             const token = getToken();
             if (!token) throw new Error('Brak tokenu autoryzacyjnego');
             const comment = await CommentService.getUserComment(movieId, token);
+            console.log('[useComments] getUserComment: pobrano komentarz', comment);
             return comment;
         } catch (err) {
-            console.error('Błąd podczas pobierania komentarza użytkownika:', err);
+            console.error('[useComments] Błąd podczas pobierania komentarza użytkownika:', err);
             setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
             return null;
         } finally {
@@ -50,7 +56,11 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
     }, [user, movieId, getToken]);
 
     const fetchComments = useCallback(async (page: number = 1) => {
-        if (!movieId || fetchingRef.current) return;
+        console.log('[useComments] fetchComments called', { movieId, page });
+        if (!movieId || fetchingRef.current) {
+            console.log('[useComments] fetchComments: brak movieId lub już trwa pobieranie');
+            return;
+        }
 
         fetchingRef.current = true;
         setIsLoading(true);
@@ -58,10 +68,11 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
 
         try {
             const result = await CommentService.getMovieComments(movieId, page);
+            console.log('[useComments] fetchComments: pobrano komentarze', result);
             setComments(result.comments);
             setPagination(result.pagination);
         } catch (error) {
-            console.error('Błąd podczas pobierania komentarzy:', error);
+            console.error('[useComments] Błąd podczas pobierania komentarzy:', error);
             setError('Nie udało się pobrać komentarzy');
         } finally {
             setIsLoading(false);
@@ -70,6 +81,7 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
     }, [movieId]);
 
     useEffect(() => {
+        console.log('[useComments] useEffect: movieId się zmienił', movieId);
         fetchComments(1);
 
         return () => {
@@ -78,7 +90,11 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
     }, [movieId, fetchComments]);
 
     const addComment = async (commentText: string) => {
-        if (!user || isLoading || !movieId) return null;
+        console.log('[useComments] addComment called', { movieId, user, commentText });
+        if (!user || isLoading || !movieId) {
+            console.log('[useComments] addComment: brak user/isLoading/movieId');
+            return null;
+        }
 
         setIsLoading(true);
         setError(null);
@@ -91,12 +107,13 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
             }
 
             const newComment = await CommentService.addComment(movieId, commentText, token);
+            console.log('[useComments] addComment: komentarz dodany', newComment);
 
             await fetchComments(pagination.page);
 
             return newComment;
         } catch (error) {
-            console.error('Błąd podczas dodawania komentarza:', error);
+            console.error('[useComments] Błąd podczas dodawania komentarza:', error);
             setError(error instanceof Error ? error.message : 'Wystąpił nieznany błąd');
             return null;
         } finally {
@@ -105,7 +122,11 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
     };
 
     const updateComment = async (commentId: number, commentText: string) => {
-        if (!user || isLoading) return null;
+        console.log('[useComments] updateComment called', { commentId, commentText });
+        if (!user || isLoading) {
+            console.log('[useComments] updateComment: brak user/isLoading');
+            return null;
+        }
 
         setIsLoading(true);
         setError(null);
@@ -118,6 +139,7 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
             }
 
             const updatedComment = await CommentService.updateComment(commentId, commentText, token);
+            console.log('[useComments] updateComment: komentarz zaktualizowany', updatedComment);
 
             // Aktualizacja komentarza w lokalnym stanie
             setComments(prevComments =>
@@ -128,7 +150,7 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
 
             return updatedComment;
         } catch (error) {
-            console.error('Błąd podczas aktualizacji komentarza:', error);
+            console.error('[useComments] Błąd podczas aktualizacji komentarza:', error);
             setError(error instanceof Error ? error.message : 'Wystąpił nieznany błąd');
             return null;
         } finally {
@@ -137,7 +159,11 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
     };
 
     const deleteComment = async (commentId: number) => {
-        if (!user || isLoading) return false;
+        console.log('[useComments] deleteComment called', { commentId });
+        if (!user || isLoading) {
+            console.log('[useComments] deleteComment: brak user/isLoading');
+            return false;
+        }
 
         setIsLoading(true);
         setError(null);
@@ -150,6 +176,7 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
             }
 
             await CommentService.deleteComment(commentId, token);
+            console.log('[useComments] deleteComment: komentarz usunięty', commentId);
             setComments(prevComments =>
                 prevComments.filter(comment => comment.id !== commentId)
             );
@@ -160,7 +187,7 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
 
             return true;
         } catch (error) {
-            console.error('Błąd podczas usuwania komentarza:', error);
+            console.error('[useComments] Błąd podczas usuwania komentarza:', error);
             setError(error instanceof Error ? error.message : 'Wystąpił nieznany błąd');
             return false;
         } finally {
@@ -169,7 +196,11 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
     };
 
     const changePage = (page: number) => {
-        if (page < 1 || page > pagination.total_pages || isLoading) return;
+        console.log('[useComments] changePage called', { page });
+        if (page < 1 || page > pagination.total_pages || isLoading) {
+            console.log('[useComments] changePage: nieprawidłowa strona lub ładowanie');
+            return;
+        }
         fetchComments(page);
     };
 

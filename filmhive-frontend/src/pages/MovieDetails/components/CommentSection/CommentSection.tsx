@@ -15,9 +15,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [wordsLeft, setWordsLeft] = useState(MAX_WORDS);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [userComment, setUserComment] = useState<Comment | null>(null);
 
     const {
-        comments,
         isLoading,
         error,
         addComment,
@@ -26,20 +26,30 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
         getUserComment
     } = useComments({ movieId, user, getToken });
 
-    const [userComment, setUserComment] = useState<Comment | null>(null);
+    useEffect(() => {
+        setUserComment(null);
+        setCommentText('');
+        setIsEditing(false);
+        setWordsLeft(MAX_WORDS);
+        setShowDeleteConfirm(false);
+    }, [movieId, user]);
 
     useEffect(() => {
+        let cancelled = false;
         if (user) {
             const fetchUserComment = async () => {
                 const comment = await getUserComment();
-                setUserComment(comment);
-                if (comment) {
-                    setCommentText(comment.text);
-                    updateWordsLeft(comment.text);
+                if (!cancelled) {
+                    setUserComment(comment);
+                    if (comment) {
+                        setCommentText(comment.text);
+                        updateWordsLeft(comment.text);
+                    }
                 }
             };
             fetchUserComment();
         }
+        return () => { cancelled = true; };
     }, [user, getUserComment]);
 
     const updateWordsLeft = (text: string) => {
@@ -55,6 +65,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log("Kliknięto submit w komentarzu!", commentText);
         if (!user) {
             openLoginModal();
             return;
@@ -63,9 +74,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
         if (!commentText.trim()) return;
 
         const wordCount = commentText.trim().split(/\s+/).length;
-        if (wordCount > MAX_WORDS) {
-            return;
-        }
+        if (wordCount > MAX_WORDS) return;
 
         if (userComment) {
             const updatedComment = await updateComment(userComment.id, commentText);
@@ -83,9 +92,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
         }
     };
 
-    const handleDelete = () => {
-        setShowDeleteConfirm(true);
-    };
+    const handleDelete = () => setShowDeleteConfirm(true);
 
     const confirmDelete = async () => {
         if (userComment) {
@@ -97,13 +104,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
         }
     };
 
-    const cancelDelete = () => {
-        setShowDeleteConfirm(false);
-    };
+    const cancelDelete = () => setShowDeleteConfirm(false);
 
-    const handleEdit = () => {
-        setIsEditing(true);
-    };
+    const handleEdit = () => setIsEditing(true);
 
     const handleCancelEdit = () => {
         setIsEditing(false);
@@ -122,7 +125,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
     return (
         <div className={styles.commentSection}>
             {error && <p className={styles.error}>{error}</p>}
-
             {isLoading ? (
                 <p className={styles.loading}>Ładowanie...</p>
             ) : userComment && !isEditing ? (
@@ -130,7 +132,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
                     <p className={styles.commentText}>{userComment.text}</p>
                     <div className={styles.commentInfo}>
                         <span className={styles.editHint}>Kliknij, aby edytować</span>
-                        <button onClick={(e) => { e.stopPropagation(); handleDelete(); }} className={styles.deleteButton}>
+                        <button
+                            onClick={e => { e.stopPropagation(); handleDelete(); }}
+                            className={styles.deleteButton}
+                        >
                             <span className={styles.deleteIcon}>🗑️</span>
                         </button>
                     </div>
@@ -179,8 +184,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
                     </div>
                 </div>
             )}
-
-
         </div>
     );
 };
