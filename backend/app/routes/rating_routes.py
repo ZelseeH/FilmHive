@@ -12,8 +12,12 @@ from app.services.rating_service import (
     update_rating,
     delete_rating,
 )
+from app.schemas.rating_schema import RatingSchema
 
 ratings_bp = Blueprint("ratings", __name__)
+
+rating_schema = RatingSchema()
+ratings_schema = RatingSchema(many=True)
 
 
 @ratings_bp.route("/movies/<int:movie_id>/ratings", methods=["GET"])
@@ -23,6 +27,7 @@ def get_ratings_for_movie(movie_id):
         per_page = min(request.args.get("per_page", 10, type=int), 50)
 
         result = get_movie_ratings(movie_id, page, per_page)
+        result["ratings"] = ratings_schema.dump(result["ratings"])
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": f"Błąd pobierania ocen: {str(e)}"}), 500
@@ -32,7 +37,7 @@ def get_ratings_for_movie(movie_id):
 def get_average_rating(movie_id):
     try:
         result = get_movie_average_rating(movie_id)
-        return jsonify({"average_rating": result}), 200
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": f"Błąd pobierania średniej oceny: {str(e)}"}), 500
 
@@ -41,7 +46,7 @@ def get_average_rating(movie_id):
 def get_rating_count(movie_id):
     try:
         result = get_movie_rating_count(movie_id)
-        return jsonify({"rating_count": result}), 200
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": f"Błąd pobierania liczby ocen: {str(e)}"}), 500
 
@@ -62,6 +67,7 @@ def get_ratings_by_user(user_id):
         per_page = min(request.args.get("per_page", 10, type=int), 50)
 
         result = get_user_ratings(user_id, page, per_page)
+        result["ratings"] = ratings_schema.dump(result["ratings"])
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": f"Błąd pobierania ocen użytkownika: {str(e)}"}), 500
@@ -72,17 +78,13 @@ def get_ratings_by_user(user_id):
 def get_current_user_rating(movie_id):
     try:
         user_id = int(get_jwt_identity())
-        print(f"Current user ID: {user_id}")
         result = get_user_rating_for_movie(user_id, movie_id)
-        print(f"User rating for movie {movie_id}: {result}")
-
         response = jsonify({"rating": result or None})
         response.headers["Cache-Control"] = (
             "no-store, no-cache, must-revalidate, max-age=0"
         )
         return response, 200
     except Exception as e:
-        print(f"Error in get_current_user_rating: {str(e)}")
         return jsonify({"error": f"Błąd pobierania oceny: {str(e)}"}), 500
 
 
@@ -103,10 +105,12 @@ def rate_movie(movie_id):
         user_id = int(get_jwt_identity())
         result = create_rating(user_id, movie_id, rating_value)
 
-        stats = get_movie_rating_stats(movie_id)
-        result.update(stats)
-
-        return jsonify(result), 201
+        # result = {"rating": <Rating>, ...statystyki}
+        response = {
+            "rating": rating_schema.dump(result["rating"]),
+            **{k: v for k, v in result.items() if k != "rating"},
+        }
+        return jsonify(response), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
@@ -136,12 +140,11 @@ def update_movie_rating(rating_id):
                 403,
             )
 
-        movie_id = result.get("movie_id")
-        if movie_id:
-            stats = get_movie_rating_stats(movie_id)
-            result.update(stats)
-
-        return jsonify(result), 200
+        response = {
+            "rating": rating_schema.dump(result["rating"]),
+            **{k: v for k, v in result.items() if k != "rating"},
+        }
+        return jsonify(response), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
@@ -153,8 +156,6 @@ def update_movie_rating(rating_id):
 def delete_movie_rating(movie_id):
     try:
         user_id = int(get_jwt_identity())
-        print(f"Deleting rating for user {user_id} and movie {movie_id}")
-
         rating_value = get_user_rating_for_movie(user_id, movie_id)
 
         if not rating_value:
@@ -172,5 +173,4 @@ def delete_movie_rating(movie_id):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        print(f"Error in delete_movie_rating: {str(e)}")
         return jsonify({"error": f"Błąd usuwania oceny: {str(e)}"}), 500

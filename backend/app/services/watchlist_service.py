@@ -17,7 +17,6 @@ class WatchlistService:
 
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
-
             if not movie:
                 raise ValueError(f"Film o ID {movie_id} nie istnieje")
 
@@ -25,10 +24,23 @@ class WatchlistService:
                 current_app.logger.info(
                     f"Film {movie_id} już jest na liście do obejrzenia użytkownika {user_id}"
                 )
+<<<<<<< Updated upstream
                 watchlist_entry = self.watchlist_repository.get_user_watchlist(user_id)[
                     0
                 ]
                 return watchlist_entry.serialize()
+=======
+                watchlist_entries = self.watchlist_repository.get_user_watchlist(
+                    user_id
+                )
+                if watchlist_entries and len(watchlist_entries) > 0:
+                    watchlist_entry = watchlist_entries[0]
+                    return watchlist_entry  # <-- zwracaj obiekt Watchlist
+                else:
+                    return (
+                        None  # lub {"message": "Film już jest na liście do obejrzenia"}
+                    )
+>>>>>>> Stashed changes
 
             watchlist_entry = self.watchlist_repository.add_to_watchlist(
                 user_id, movie_id
@@ -36,7 +48,7 @@ class WatchlistService:
             current_app.logger.info(
                 f"Dodano film {movie_id} do listy do obejrzenia użytkownika {user_id}"
             )
-            return watchlist_entry.serialize()
+            return watchlist_entry  # <-- zwracaj obiekt Watchlist
         except ValueError as e:
             current_app.logger.error(f"ValueError adding to watchlist: {str(e)}")
             raise
@@ -66,7 +78,6 @@ class WatchlistService:
                 current_app.logger.info(
                     f"Film {movie_id} nie był na liście do obejrzenia użytkownika {user_id}"
                 )
-
             return {"success": success}
         except ValueError as e:
             current_app.logger.error(f"ValueError removing from watchlist: {str(e)}")
@@ -134,7 +145,7 @@ class WatchlistService:
             current_app.logger.info(
                 f"Pobrano filmy z listy do obejrzenia użytkownika {user_id}, strona {page}, {len(result['movies'])} filmów"
             )
-            return result
+            return result  # <-- słownik z listą Movie lub Watchlist, zależnie od repo
         except ValueError as e:
             current_app.logger.error(f"ValueError getting user watchlist: {str(e)}")
             raise
@@ -150,3 +161,37 @@ class WatchlistService:
                 f"Unexpected error getting user watchlist: {str(e)}"
             )
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
+<<<<<<< Updated upstream
+=======
+
+    def get_recent_watchlist_movies(self, user_id, limit=6):
+        try:
+            user = db.session.get(User, user_id)
+            if not user:
+                raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
+
+            movies = self.watchlist_repository.get_recent_watchlist_movies(
+                user_id, limit
+            )
+            current_app.logger.info(
+                f"Pobrano ostatnie {len(movies)} filmy z listy do obejrzenia użytkownika {user_id}"
+            )
+            return {"movies": movies}  # <-- lista Movie lub Watchlist, zależnie od repo
+        except ValueError as e:
+            current_app.logger.error(
+                f"ValueError getting recent watchlist movies: {str(e)}"
+            )
+            raise
+        except SQLAlchemyError as e:
+            current_app.logger.error(
+                f"SQLAlchemyError getting recent watchlist movies: {str(e)}"
+            )
+            raise Exception(
+                f"Nie udało się pobrać ostatnich filmów z listy do obejrzenia: {str(e)}"
+            )
+        except Exception as e:
+            current_app.logger.error(
+                f"Unexpected error getting recent watchlist movies: {str(e)}"
+            )
+            raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
+>>>>>>> Stashed changes

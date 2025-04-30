@@ -35,8 +35,80 @@ class MovieRepository:
             },
         }
 
+<<<<<<< Updated upstream
     def get_by_id(self, movie_id):
         return self.session.get(Movie, movie_id)
+=======
+    def get_top_rated(self, limit=10, user_id=None):
+        query = (
+            self.session.query(
+                Movie,
+                func.avg(Rating.rating).label("avg_rating"),
+                func.count(Rating.rating_id).label("rating_count"),
+            )
+            .outerjoin(Rating, Movie.movie_id == Rating.movie_id)
+            .group_by(Movie.movie_id)
+            .order_by(func.count(Rating.rating_id).desc())  # Sortowanie po liczbie ocen
+            .options(joinedload(Movie.genres))
+            .limit(limit)
+        )
+
+        movies_with_ratings = query.all()
+
+        user_ratings = {}
+        if user_id:
+            user_ratings_query = (
+                self.session.query(Rating.movie_id, Rating.rating)
+                .filter(Rating.user_id == user_id)
+                .filter(
+                    Rating.movie_id.in_(
+                        [movie.movie_id for movie, _, _ in movies_with_ratings]
+                    )
+                )
+            )
+            user_ratings = {movie_id: rating for movie_id, rating in user_ratings_query}
+
+        result = []
+        for movie, avg_rating, rating_count in movies_with_ratings:
+            movie._average_rating = (
+                float(avg_rating) if avg_rating is not None else None
+            )
+            movie._rating_count = rating_count or 0
+            movie._user_rating = user_ratings.get(movie.movie_id)
+            result.append(movie)
+
+        for movie in result:
+            print(f"\nFilm: {movie.title} (ID: {movie.movie_id})")
+            print("Genres:")
+            for genre in movie.genres:
+                print(f"  Type: {type(genre)}")
+                print(f"  genre_id: {getattr(genre, 'genre_id', None)}")
+                print(f"  genre_name: {getattr(genre, 'genre_name', None)}")
+
+        return result
+
+    def get_by_id(self, movie_id, user_id=None):
+        movie = (
+            self.session.query(Movie)
+            .options(
+                joinedload(Movie.genres),
+                selectinload(Movie.ratings),
+                selectinload(Movie.actors),
+                selectinload(Movie.directors),
+            )
+            .get(movie_id)
+        )
+
+        if movie and user_id:
+            user_rating = (
+                self.session.query(Rating.rating)
+                .filter(Rating.user_id == user_id, Rating.movie_id == movie_id)
+                .scalar()
+            )
+            movie._user_rating = user_rating
+
+        return movie
+>>>>>>> Stashed changes
 
     def add(self, movie):
         self.session.add(movie)

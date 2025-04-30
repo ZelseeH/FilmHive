@@ -1,15 +1,16 @@
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CommentService } from '../services/commentService';
 import { User } from '../../../contexts/AuthContext';
 
 export interface Comment {
-    id: number;
+    comment_id: number;
     user_id: number;
     movie_id: number;
     text: string;
     created_at: string;
     user?: {
-        id: number;
+        user_id: number;
         username: string;
     };
 }
@@ -17,10 +18,9 @@ export interface Comment {
 interface UseCommentsProps {
     movieId: number;
     user: User | null;
-    getToken: () => string | null;
 }
 
-export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
+export const useComments = ({ movieId, user }: UseCommentsProps) => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -36,18 +36,24 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
         setIsLoading(true);
         setError(null);
         try {
+<<<<<<< Updated upstream
             const token = getToken();
             if (!token) throw new Error('Brak tokenu autoryzacyjnego');
             const comment = await CommentService.getUserComment(movieId, token);
             return comment;
         } catch (err) {
             console.error('Błąd podczas pobierania komentarza użytkownika:', err);
+=======
+            const comment = await CommentService.getUserComment(movieId);
+            return comment;
+        } catch (err) {
+>>>>>>> Stashed changes
             setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
             return null;
         } finally {
             setIsLoading(false);
         }
-    }, [user, movieId, getToken]);
+    }, [user, movieId]);
 
     const fetchComments = useCallback(async (page: number = 1) => {
         if (!movieId || fetchingRef.current) return;
@@ -61,7 +67,10 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
             setComments(result.comments);
             setPagination(result.pagination);
         } catch (error) {
+<<<<<<< Updated upstream
             console.error('Błąd podczas pobierania komentarzy:', error);
+=======
+>>>>>>> Stashed changes
             setError('Nie udało się pobrać komentarzy');
         } finally {
             setIsLoading(false);
@@ -71,7 +80,6 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
 
     useEffect(() => {
         fetchComments(1);
-
         return () => {
             fetchingRef.current = false;
         };
@@ -79,11 +87,15 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
 
     const addComment = async (commentText: string) => {
         if (!user || isLoading || !movieId) return null;
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         setIsLoading(true);
         setError(null);
 
         try {
+<<<<<<< Updated upstream
             const token = getToken();
             if (!token) {
                 setError('Brak tokenu autoryzacyjnego');
@@ -92,11 +104,17 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
 
             const newComment = await CommentService.addComment(movieId, commentText, token);
 
+=======
+            const newComment = await CommentService.addComment(movieId, commentText);
+>>>>>>> Stashed changes
             await fetchComments(pagination.page);
 
             return newComment;
         } catch (error) {
+<<<<<<< Updated upstream
             console.error('Błąd podczas dodawania komentarza:', error);
+=======
+>>>>>>> Stashed changes
             setError(error instanceof Error ? error.message : 'Wystąpił nieznany błąd');
             return null;
         } finally {
@@ -106,29 +124,34 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
 
     const updateComment = async (commentId: number, commentText: string) => {
         if (!user || isLoading) return null;
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         setIsLoading(true);
         setError(null);
 
         try {
-            const token = getToken();
-            if (!token) {
-                setError('Brak tokenu autoryzacyjnego');
-                return null;
-            }
+            const updatedComment = await CommentService.updateComment(commentId, commentText);
 
+<<<<<<< Updated upstream
             const updatedComment = await CommentService.updateComment(commentId, commentText, token);
 
             // Aktualizacja komentarza w lokalnym stanie
+=======
+>>>>>>> Stashed changes
             setComments(prevComments =>
                 prevComments.map(comment =>
-                    comment.id === commentId ? updatedComment : comment
+                    comment.comment_id === commentId ? updatedComment : comment
                 )
             );
 
             return updatedComment;
         } catch (error) {
+<<<<<<< Updated upstream
             console.error('Błąd podczas aktualizacji komentarza:', error);
+=======
+>>>>>>> Stashed changes
             setError(error instanceof Error ? error.message : 'Wystąpił nieznany błąd');
             return null;
         } finally {
@@ -138,11 +161,15 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
 
     const deleteComment = async (commentId: number) => {
         if (!user || isLoading) return false;
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         setIsLoading(true);
         setError(null);
 
         try {
+<<<<<<< Updated upstream
             const token = getToken();
             if (!token) {
                 setError('Brak tokenu autoryzacyjnego');
@@ -150,8 +177,11 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
             }
 
             await CommentService.deleteComment(commentId, token);
+=======
+            await CommentService.deleteComment(commentId);
+>>>>>>> Stashed changes
             setComments(prevComments =>
-                prevComments.filter(comment => comment.id !== commentId)
+                prevComments.filter(comment => comment.comment_id !== commentId)
             );
             setPagination(prev => ({
                 ...prev,
@@ -160,7 +190,10 @@ export const useComments = ({ movieId, user, getToken }: UseCommentsProps) => {
 
             return true;
         } catch (error) {
+<<<<<<< Updated upstream
             console.error('Błąd podczas usuwania komentarza:', error);
+=======
+>>>>>>> Stashed changes
             setError(error instanceof Error ? error.message : 'Wystąpił nieznany błąd');
             return false;
         } finally {

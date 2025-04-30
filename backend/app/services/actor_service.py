@@ -13,10 +13,8 @@ class ActorService:
         result = self.actor_repository.get_all(page, per_page)
         actors = result["actors"]
         pagination = result["pagination"]
-
-        serialized_actors = [actor.serialize() for actor in actors]
-
-        return {"actors": serialized_actors, "pagination": pagination}
+        # Zwracaj obiekty, NIE: [actor.serialize() for actor in actors]
+        return {"actors": actors, "pagination": pagination}
 
     def get_actor_by_id(self, actor_id):
         return self.actor_repository.get_by_id(actor_id)
@@ -25,10 +23,7 @@ class ActorService:
         result = self.actor_repository.search(query, page, per_page)
         actors = result["actors"]
         pagination = result["pagination"]
-
-        serialized_actors = [actor.serialize() for actor in actors]
-
-        return {"actors": serialized_actors, "pagination": pagination}
+        return {"actors": actors, "pagination": pagination}
 
     def add_actor(self, actor_data):
         try:
@@ -67,9 +62,14 @@ class ActorService:
         movies = result["movies"]
         pagination = result["pagination"]
 
+<<<<<<< Updated upstream
         serialized_movies = [movie.serialize() for movie in movies]
 
         return {"movies": serialized_movies, "pagination": pagination}
+=======
+        # Zwracaj obiekty Movie, nie serializuj tutaj!
+        return {"movies": movies, "pagination": pagination}
+>>>>>>> Stashed changes
 
     def upload_actor_photo(self, actor_id, photo_file):
         try:
@@ -110,10 +110,8 @@ class ActorService:
             actors = result["actors"]
             pagination = result["pagination"]
 
-            serialized_actors = [actor.serialize() for actor in actors]
-
             return {
-                "actors": serialized_actors,
+                "actors": actors,
                 "pagination": pagination,
                 "sort_by": sort_by,
                 "sort_order": sort_order,

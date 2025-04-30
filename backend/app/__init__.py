@@ -2,7 +2,7 @@ from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-from app.services.database import db
+from app.services.database import db, ma
 import os
 
 
@@ -27,6 +27,7 @@ def create_app():
 
     jwt = JWTManager(app)
     db.init_app(app)
+    ma.init_app(app)
     migrate = Migrate(app, db)
 
     # Usuń podwójną konfigurację dla plików statycznych

@@ -18,13 +18,10 @@ class CommentService:
 
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
-
             if not movie:
                 raise ValueError(f"Film o ID {movie_id} nie istnieje")
-
             if not comment_text or len(comment_text.strip()) == 0:
                 raise ValueError("Treść komentarza nie może być pusta")
-
             if len(comment_text) > 1000:
                 raise ValueError("Komentarz nie może przekraczać 1000 znaków")
 
@@ -34,7 +31,7 @@ class CommentService:
             current_app.logger.info(
                 f"Dodano komentarz do filmu {movie_id} przez użytkownika {user_id}"
             )
-            return comment.serialize(include_user=True)
+            return comment  # <-- Zwracaj obiekt Comment, NIE serializuj!
         except ValueError as e:
             current_app.logger.error(f"ValueError adding comment: {str(e)}")
             raise
@@ -52,10 +49,8 @@ class CommentService:
             user = db.session.get(User, user_id)
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
-
             if not new_text or len(new_text.strip()) == 0:
                 raise ValueError("Treść komentarza nie może być pusta")
-
             if len(new_text) > 1000:
                 raise ValueError("Komentarz nie może przekraczać 1000 znaków")
 
@@ -71,7 +66,7 @@ class CommentService:
             current_app.logger.info(
                 f"Zaktualizowano komentarz {comment_id} przez użytkownika {user_id}"
             )
-            return comment.serialize(include_user=True)
+            return comment  # <-- Zwracaj obiekt Comment
         except ValueError as e:
             current_app.logger.error(f"ValueError updating comment: {str(e)}")
             raise
@@ -113,7 +108,7 @@ class CommentService:
             db.session.rollback()
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
 
-    def get_comment_by_id(self, comment_id, include_rating=False):
+    def get_comment_by_id(self, comment_id):
         try:
             comment = self.comment_repository.get_comment_by_id(comment_id)
             if not comment:
@@ -121,9 +116,7 @@ class CommentService:
                 return None
 
             current_app.logger.info(f"Pobrano komentarz o ID {comment_id}")
-            return comment.serialize(
-                include_user=True, include_movie=True, include_rating=include_rating
-            )
+            return comment  # <-- Zwracaj obiekt Comment
         except SQLAlchemyError as e:
             current_app.logger.error(f"SQLAlchemyError getting comment: {str(e)}")
             raise Exception(f"Nie udało się pobrać komentarza: {str(e)}")
@@ -138,7 +131,6 @@ class CommentService:
         per_page=10,
         sort_by="created_at",
         sort_order="desc",
-        include_ratings=True,
     ):
         try:
             movie = db.session.get(Movie, movie_id)
@@ -159,11 +151,12 @@ class CommentService:
                 sort_order = "desc"
 
             result = self.comment_repository.get_movie_comments(
-                movie_id, page, per_page, sort_by, sort_order, include_ratings
+                movie_id, page, per_page, sort_by, sort_order
             )
             current_app.logger.info(
                 f"Pobrano komentarze dla filmu {movie_id}, strona {page}, {len(result['comments'])} komentarzy"
             )
+            # Zwracaj słownik z listą obiektów Comment i paginacją
             return result
         except ValueError as e:
             current_app.logger.error(f"ValueError getting movie comments: {str(e)}")
@@ -179,7 +172,7 @@ class CommentService:
             )
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
 
-    def get_user_comments(self, user_id, page=1, per_page=10, include_ratings=True):
+    def get_user_comments(self, user_id, page=1, per_page=10):
         try:
             user = db.session.get(User, user_id)
             if not user:
@@ -192,12 +185,11 @@ class CommentService:
             if per_page > 50:
                 per_page = 50
 
-            result = self.comment_repository.get_user_comments(
-                user_id, page, per_page, include_ratings
-            )
+            result = self.comment_repository.get_user_comments(user_id, page, per_page)
             current_app.logger.info(
                 f"Pobrano komentarze użytkownika {user_id}, strona {page}, {len(result['comments'])} komentarzy"
             )
+            # Zwracaj słownik z listą obiektów Comment i paginacją
             return result
         except ValueError as e:
             current_app.logger.error(f"ValueError getting user comments: {str(e)}")
@@ -234,7 +226,7 @@ class CommentService:
             )
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
 
-    def get_user_comment_for_movie(self, user_id, movie_id, include_rating=True):
+    def get_user_comment_for_movie(self, user_id, movie_id):
         try:
             user = db.session.get(User, user_id)
             movie = db.session.get(Movie, movie_id)
@@ -244,36 +236,19 @@ class CommentService:
             if not movie:
                 raise ValueError(f"Film o ID {movie_id} nie istnieje")
 
-            if include_rating:
-                comment, comment_data = (
-                    self.comment_repository.get_user_comment_for_movie(
-                        user_id, movie_id, include_rating
-                    )
-                )
-                if not comment:
-                    current_app.logger.info(
-                        f"Użytkownik {user_id} nie ma komentarza dla filmu {movie_id}"
-                    )
-                    return None
-
+            comment = self.comment_repository.get_user_comment_for_movie(
+                user_id, movie_id
+            )
+            if not comment:
                 current_app.logger.info(
-                    f"Pobrano komentarz użytkownika {user_id} dla filmu {movie_id}"
+                    f"Użytkownik {user_id} nie ma komentarza dla filmu {movie_id}"
                 )
-                return comment_data
-            else:
-                comment = self.comment_repository.get_user_comment_for_movie(
-                    user_id, movie_id, include_rating=False
-                )
-                if not comment:
-                    current_app.logger.info(
-                        f"Użytkownik {user_id} nie ma komentarza dla filmu {movie_id}"
-                    )
-                    return None
+                return None
 
-                current_app.logger.info(
-                    f"Pobrano komentarz użytkownika {user_id} dla filmu {movie_id}"
-                )
-                return comment.serialize(include_user=True)
+            current_app.logger.info(
+                f"Pobrano komentarz użytkownika {user_id} dla filmu {movie_id}"
+            )
+            return comment  # <-- Zwracaj obiekt Comment
         except ValueError as e:
             current_app.logger.error(f"ValueError getting user comment: {str(e)}")
             raise
@@ -287,7 +262,6 @@ class CommentService:
     def get_movie_comments_with_ratings(
         self, movie_id, page=1, per_page=10, sort_by="created_at", sort_order="desc"
     ):
-
         try:
             movie = db.session.get(Movie, movie_id)
             if not movie:
@@ -309,10 +283,10 @@ class CommentService:
             result = self.comment_repository.get_movie_comments(
                 movie_id, page, per_page, sort_by, sort_order, include_user_ratings=True
             )
-
             current_app.logger.info(
                 f"Pobrano komentarze z ocenami dla filmu {movie_id}, strona {page}, {len(result['comments'])} komentarzy"
             )
+            # Zwracaj słownik z listą obiektów Comment i paginacją
             return result
         except ValueError as e:
             current_app.logger.error(

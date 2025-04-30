@@ -26,8 +26,22 @@ export const useMovies = (currentPage: number = 1) => {
             const calculatedTotalPages = Math.ceil(data.length / moviesPerPage);
             setTotalPages(calculatedTotalPages);
 
+<<<<<<< Updated upstream
             if (data.length > 0) {
                 setSelectedMovie(data[0]);
+=======
+                const ratings: UserRatings = {};
+                data.forEach(movie => {
+                    if (movie.user_rating !== undefined) {
+                        ratings[movie.movie_id] = movie.user_rating;
+                    }
+                });
+                setUserRatings(ratings);
+
+                if (data.length > 0) {
+                    setSelectedMovie(data[0]);
+                }
+>>>>>>> Stashed changes
             }
         } catch (err: any) {
             setError(err.message);
@@ -36,6 +50,7 @@ export const useMovies = (currentPage: number = 1) => {
         }
     }, []);
 
+<<<<<<< Updated upstream
     const fetchUserRatings = useCallback(async () => {
         if (!user || !movies.length) return;
 
@@ -60,6 +75,14 @@ export const useMovies = (currentPage: number = 1) => {
             console.error('Error fetching user ratings:', error);
         }
     }, [user, movies, getToken]);
+=======
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
+>>>>>>> Stashed changes
 
     useEffect(() => {
         fetchMovies();

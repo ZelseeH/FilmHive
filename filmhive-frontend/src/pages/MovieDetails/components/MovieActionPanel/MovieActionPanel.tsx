@@ -4,9 +4,7 @@ import styles from './MovieActionPanel.module.css';
 import { useFavoriteMovie } from '../../hooks/useFavoriteMovie';
 import { useWatchlist } from '../../hooks/useWatchlist';
 import { useAuth } from '../../../../contexts/AuthContext';
-import { FavoriteMovieService } from '../../services/favoriteMovieService';
 import { useUserRating } from '../../hooks/useUserRating';
-import { watchlistService } from '../../services/watchlistService';
 import CommentSection from '../../components/CommentSection/CommentSection';
 
 interface MovieActionPanelProps {
@@ -15,18 +13,16 @@ interface MovieActionPanelProps {
 }
 
 const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingChange }) => {
-    const { user, getToken, openLoginModal } = useAuth();
+    const { user, openLoginModal } = useAuth();
 
     const { rating: userRating, isLoading: isRatingLoading, setRating } = useUserRating({
         movieId,
-        user,
-        getToken
+        user
     });
 
-    const { isFavorite, isLoading: isFavoriteLoading, setIsFavorite } = useFavoriteMovie({
+    const { isFavorite, isLoading: isFavoriteLoading, setIsFavorite, toggleFavorite } = useFavoriteMovie({
         movieId,
-        user,
-        getToken
+        user
     });
 
     const {
@@ -36,8 +32,7 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
         removeFromWatchlist
     } = useWatchlist({
         movieId,
-        user,
-        getToken
+        user
     });
 
     const [isSubmittingFavorite, setIsSubmittingFavorite] = useState(false);
@@ -52,10 +47,32 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
 
     useEffect(() => {
         if (user) {
+<<<<<<< Updated upstream
             checkWatchlistStatus();
         }
     }, [userRating, user, checkWatchlistStatus]);
 
+=======
+            const timer = setTimeout(() => {
+                checkWatchlistStatus();
+            }, 1000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [userRating, user, checkWatchlistStatus]);
+
+    // Efekt do obsługi sytuacji, gdy ocena została właśnie usunięta
+    useEffect(() => {
+        if (ratingJustRemoved) {
+            const timer = setTimeout(() => {
+                setRatingJustRemoved(false);
+            }, 2000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [ratingJustRemoved]);
+
+>>>>>>> Stashed changes
     const handleToggleFavorite = async () => {
         if (!user) {
             openLoginModal();
@@ -68,17 +85,7 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
         setError(null);
 
         try {
-            const token = getToken();
-            if (!token) {
-                throw new Error('Brak tokenu autoryzacyjnego');
-            }
-
-            if (isFavorite) {
-                await FavoriteMovieService.removeFromFavorites(movieId, token);
-            } else {
-                await FavoriteMovieService.addToFavorites(movieId, token);
-            }
-            setIsFavorite(!isFavorite);
+            await toggleFavorite();
         } catch (err) {
             console.error('Błąd podczas zmiany statusu ulubionego:', err);
             setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
@@ -97,27 +104,45 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
             setError('Nie można dodać do listy "chcę obejrzeć" filmu, który już oceniłeś');
             return;
         }
+<<<<<<< Updated upstream
 
         if (isSubmittingWatchlist) return;
+=======
+        if (isSubmittingWatchlist || ratingJustRemoved) {
+            if (ratingJustRemoved) {
+                setError('Poczekaj chwilę po usunięciu oceny przed dodaniem do listy "chcę obejrzeć"');
+            }
+            return;
+        }
+>>>>>>> Stashed changes
 
         setIsSubmittingWatchlist(true);
         setError(null);
 
         try {
-            const token = getToken();
-            if (!token) {
-                throw new Error('Brak tokenu autoryzacyjnego');
-            }
-
             if (isInWatchlist) {
-                await watchlistService.removeFromWatchlist(movieId, token);
+                await removeFromWatchlist();
             } else {
+<<<<<<< Updated upstream
                 await watchlistService.addToWatchlist(movieId, token);
             }
             checkWatchlistStatus();
         } catch (err) {
             console.error('Błąd podczas zmiany statusu listy do obejrzenia:', err);
             setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
+=======
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await addToWatchlist();
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await checkWatchlistStatus();
+        } catch (err) {
+            console.error('Błąd podczas zmiany statusu listy do obejrzenia:', err);
+            setError(err instanceof Error ? err.message : 'Wystąpił nieznany błąd');
+            setTimeout(() => {
+                checkWatchlistStatus();
+            }, 1000);
+>>>>>>> Stashed changes
         } finally {
             setIsSubmittingWatchlist(false);
         }
@@ -127,6 +152,13 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
         setRating(newRating);
         onRatingChange(newRating);
 
+<<<<<<< Updated upstream
+=======
+        if (oldRating > 0 && newRating === 0) {
+            setRatingJustRemoved(true);
+        }
+
+>>>>>>> Stashed changes
         setTimeout(() => {
             checkWatchlistStatus();
         }, 500);
@@ -167,7 +199,6 @@ const MovieActionPanel: React.FC<MovieActionPanelProps> = ({ movieId, onRatingCh
                     <StarRating movieId={movieId} onRatingChange={handleRatingChange} />
                 </div>
             </div>
-
             {userRating > 0 && (
                 <>
                     <div className={styles['divider']}></div>

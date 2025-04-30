@@ -1,9 +1,16 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.favorite_movie_service import FavoriteMovieService
+from app.schemas.FavoriteMovie_schema import FavoriteMovieSchema
+from app.schemas.movie_schema import MovieSchema
 
 favorites_bp = Blueprint("favorites", __name__)
 favorite_service = FavoriteMovieService()
+
+favorite_movie_schema = FavoriteMovieSchema()
+favorite_movies_schema = FavoriteMovieSchema(many=True)
+movie_schema = MovieSchema()
+movies_schema = MovieSchema(many=True)
 
 
 @favorites_bp.route("/add", methods=["POST"])
@@ -17,9 +24,9 @@ def add_to_favorites():
         if not movie_id:
             return jsonify({"error": "movie_id jest wymagane"}), 400
 
-        result = favorite_service.add_to_favorites(user_id, movie_id)
+        favorite = favorite_service.add_to_favorites(user_id, movie_id)
         current_app.logger.info(f"User {user_id} added movie {movie_id} to favorites")
-        return jsonify(result), 201
+        return favorite_movie_schema.dump(favorite), 201
     except ValueError as e:
         current_app.logger.error(f"ValueError in add_to_favorites: {str(e)}")
         return jsonify({"error": str(e)}), 400
@@ -80,7 +87,10 @@ def get_user_favorites():
         page = request.args.get("page", 1, type=int)
         per_page = min(request.args.get("per_page", 10, type=int), 50)
 
+        # Zwracamy paginowaną listę filmów (Movie), nie FavoriteMovie!
         result = favorite_service.get_user_favorite_movies(user_id, page, per_page)
+        # result = {"movies": [Movie, ...], "pagination": {...}}
+        result["movies"] = movies_schema.dump(result["movies"])
         current_app.logger.info(f"Retrieved favorites for user {user_id}, page {page}")
         return jsonify(result), 200
     except Exception as e:

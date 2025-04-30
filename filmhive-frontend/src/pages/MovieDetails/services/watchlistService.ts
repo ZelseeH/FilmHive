@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 export class watchlistService {
     static async addToWatchlist(movieId: number, token: string): Promise<void> {
         const response = await fetch(`http://localhost:5000/api/watchlist/add`, {
@@ -78,5 +79,43 @@ export class watchlistService {
 
         const data = await response.json();
         return data.count ?? 0;
+=======
+import { fetchWithAuth } from '../../../services/api';
+
+export class WatchlistService {
+    static async addToWatchlist(movieId: number): Promise<void> {
+        await fetchWithAuth('watchlist/add', {
+            method: 'POST',
+            body: JSON.stringify({ movie_id: movieId }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
+
+    static async removeFromWatchlist(movieId: number): Promise<void> {
+        await fetchWithAuth(`watchlist/remove?movie_id=${movieId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    static async checkIfInWatchlist(movieId: number): Promise<boolean> {
+        const timestamp = new Date().getTime();
+        const data = await fetchWithAuth(`watchlist/check/${movieId}?_=${timestamp}`);
+        return data.is_in_watchlist ?? false;
+    }
+
+    static async getUserWatchlist(page: number = 1, perPage: number = 10): Promise<any> {
+        return fetchWithAuth(`watchlist/user?page=${page}&per_page=${perPage}`);
+    }
+
+    static async getMovieWatchlistCount(movieId: number): Promise<number> {
+        const data = await fetchWithAuth(`watchlist/count/${movieId}`);
+        return data.count ?? 0;
+    }
+
+    static async getUserRecentWatchlist(limit: number = 6): Promise<any> {
+        return fetchWithAuth(`watchlist/user/recent?limit=${limit}`);
+>>>>>>> Stashed changes
     }
 }

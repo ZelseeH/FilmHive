@@ -9,6 +9,19 @@ interface MovieHeaderSectionProps {
     onShowFullDescription: () => void;
 }
 
+<<<<<<< Updated upstream
+=======
+interface Genre {
+    genre_id?: number;
+    genre_name: string;
+}
+
+interface Director {
+    director_id?: number;
+    director_name: string;
+}
+
+>>>>>>> Stashed changes
 const MovieHeaderSection: React.FC<MovieHeaderSectionProps> = ({ movie, onShowFullDescription }) => {
     const navigate = useNavigate();
 
@@ -54,13 +67,21 @@ const MovieHeaderSection: React.FC<MovieHeaderSectionProps> = ({ movie, onShowFu
                 </div>
 
                 <div className={styles['movie-genre-tags']}>
+<<<<<<< Updated upstream
                     {movie.genres && movie.genres.map((genre, index) => (
                         <span
                             key={index}
                             className={styles['movie-genre-tag']}
                             onClick={() => handleGenreClick(genre.name)}
+=======
+                    {movie.genres && movie.genres.map((genre: Genre) => (
+                        <span
+                            key={genre.genre_id || genre.genre_name}
+                            className={styles['movie-genre-tag']}
+                            onClick={(e) => handleGenreClick(genre.genre_id || genre.genre_name, e)}
+>>>>>>> Stashed changes
                         >
-                            {genre.name}
+                            {genre.genre_name}
                         </span>
                     ))}
                 </div>
@@ -70,10 +91,13 @@ const MovieHeaderSection: React.FC<MovieHeaderSectionProps> = ({ movie, onShowFu
                         <div className={styles['detail-item']}>
                             <span className={styles['detail-label']}>reżyseria</span>
                             <span className={styles['detail-value']}>
-                                {formatDirectorNames(movie.directors)}
+                                {formatDirectorNames(
+                                    movie.directors.map(d => ({ name: d.director_name }))
+                                )}
                             </span>
                         </div>
                     )}
+
                     <div className={styles['detail-item']}>
                         <span className={styles['detail-label']}>produkcja</span>
                         <span className={styles['detail-value']}>{movie.country || 'Brak danych'}</span>

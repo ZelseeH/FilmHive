@@ -41,16 +41,16 @@ const ActorSorting: React.FC<ActorSortingProps> = ({ value, onChange, onClose, i
                             <span>A-Z</span>
                             <input
                                 type="radio"
-                                checked={isSelected('name', 'asc')}
-                                onChange={() => handleSortChange('name', 'asc')}
+                                checked={isSelected('actor_name', 'asc')}
+                                onChange={() => handleSortChange('actor_name', 'asc')}
                             />
                         </label>
                         <label className={styles.optionLabel}>
                             <span>Z-A</span>
                             <input
                                 type="radio"
-                                checked={isSelected('name', 'desc')}
-                                onChange={() => handleSortChange('name', 'desc')}
+                                checked={isSelected('actor_name', 'desc')}
+                                onChange={() => handleSortChange('actor_name', 'desc')}
                             />
                         </label>
                     </div>

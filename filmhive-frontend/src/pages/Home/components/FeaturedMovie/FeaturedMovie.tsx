@@ -5,7 +5,7 @@ import styles from './FeaturedMovie.module.css';
 import { formatDuration, createSlug } from '../../../../utils/formatters';
 
 interface Movie {
-    id: number;
+    movie_id: number;
     title: string;
     description?: string;
     poster_url?: string;
@@ -31,7 +31,7 @@ const FeaturedMovie: React.FC<FeaturedMovieProps> = ({ movie }) => {
             </motion.h2>
 
             <motion.div
-                key={movie.id}
+                key={movie.movie_id}
                 className={styles['featured-movie']}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0, transition: { duration: 0.5 } }}
@@ -50,7 +50,7 @@ const FeaturedMovie: React.FC<FeaturedMovieProps> = ({ movie }) => {
                     animate={{ opacity: 1, x: 0, transition: { duration: 0.5 } }}
                     exit={{ opacity: 0, x: 50, transition: { duration: 0.3 } }}
                 >
-                    <Link to={`/movie/details/${createSlug(movie.title)}`} state={{ movieId: movie.id }} className={styles['featured-movie-title']}>
+                    <Link to={`/movie/details/${createSlug(movie.title)}`} state={{ movieId: movie.movie_id }} className={styles['featured-movie-title']}>
                         {movie.title}
                     </Link>
 
@@ -76,6 +76,5 @@ const FeaturedMovie: React.FC<FeaturedMovieProps> = ({ movie }) => {
         </div>
     );
 };
-
 
 export default FeaturedMovie;

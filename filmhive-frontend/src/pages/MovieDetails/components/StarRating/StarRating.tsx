@@ -10,12 +10,12 @@ interface StarRatingProps {
 }
 
 const StarRating: React.FC<StarRatingProps> = ({ movieId, onRatingChange }) => {
-    const { user, getToken, openLoginModal } = useAuth();
+    const { user, openLoginModal } = useAuth();
     const [hover, setHover] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
-    const { rating, isLoading, setRating } = useUserRating({ movieId, user, getToken });
+    const { rating, isLoading, setRating } = useUserRating({ movieId, user });
     const [ratingToRemove, setRatingToRemove] = useState<number | null>(null);
     const previousRatingRef = useRef<number>(0);
 
@@ -45,12 +45,7 @@ const StarRating: React.FC<StarRatingProps> = ({ movieId, onRatingChange }) => {
         setError(null);
 
         try {
-            const token = getToken();
-            if (!token) {
-                throw new Error('Brak tokenu autoryzacyjnego');
-            }
-
-            await RatingService.submitRating(movieId, selectedRating, token);
+            await RatingService.submitRating(movieId, selectedRating);
             setRating(selectedRating);
             onRatingChange?.(selectedRating);
             console.log('Ocena została pomyślnie wysłana');
@@ -69,12 +64,17 @@ const StarRating: React.FC<StarRatingProps> = ({ movieId, onRatingChange }) => {
         setError(null);
 
         try {
-            const token = getToken();
-            if (!token) {
-                throw new Error('Brak tokenu autoryzacyjnego');
+            await RatingService.deleteRating(movieId);
+
+<<<<<<< Updated upstream
+            await RatingService.deleteRating(movieId, token);
+=======
+            const userComment = await CommentService.getUserComment(movieId);
+            if (userComment && userComment.comment_id) {
+                await CommentService.deleteComment(userComment.comment_id);
             }
 
-            await RatingService.deleteRating(movieId, token);
+>>>>>>> Stashed changes
             setRating(0);
             onRatingChange?.(0);
             console.log('Ocena została pomyślnie usunięta');

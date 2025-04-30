@@ -75,7 +75,7 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                 <>
                     <div className={styles['comments-list']}>
                         {comments.map((comment) => (
-                            <div key={comment.id} className={styles['comment-item']}>
+                            <div key={comment.comment_id} className={styles['comment-item']}>
                                 <div className={styles['comment-header']}>
                                     <div className={styles['user-info']}>
                                         {comment.user?.profile_picture && (
@@ -102,6 +102,7 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                                 <p className={styles['comment-text']}>{comment.text}</p>
                             </div>
                         ))}
+
                     </div>
 
                     {pagination.total_pages > 1 && (

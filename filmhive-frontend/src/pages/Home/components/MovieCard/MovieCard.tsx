@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import styles from './MovieCard.module.css';
 
 interface Movie {
-    id: number;
+    movie_id: number;
     title: string;
     poster_url?: string;
     [key: string]: any;

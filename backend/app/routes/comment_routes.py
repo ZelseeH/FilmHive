@@ -1,9 +1,13 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.comment_service import CommentService
+from app.schemas.comment_schema import CommentSchema
 
 comments_bp = Blueprint("comments", __name__)
 comment_service = CommentService()
+
+comment_schema = CommentSchema()
+comments_schema = CommentSchema(many=True)
 
 
 @comments_bp.route("/add", methods=["POST"])
@@ -22,9 +26,9 @@ def add_comment():
         if len(comment_text) > 1000:
             return jsonify({"error": "Komentarz nie może przekraczać 1000 znaków"}), 400
 
-        result = comment_service.add_comment(user_id, movie_id, comment_text)
+        comment = comment_service.add_comment(user_id, movie_id, comment_text)
         current_app.logger.info(f"User {user_id} added comment to movie {movie_id}")
-        return jsonify(result), 201
+        return comment_schema.dump(comment), 201
     except ValueError as e:
         current_app.logger.error(f"ValueError in add_comment: {str(e)}")
         return jsonify({"error": str(e)}), 400
@@ -46,10 +50,10 @@ def update_comment(comment_id):
         if len(comment_text) > 1000:
             return jsonify({"error": "Komentarz nie może przekraczać 1000 znaków"}), 400
 
-        result = comment_service.update_comment(comment_id, user_id, comment_text)
-        if result:
+        comment = comment_service.update_comment(comment_id, user_id, comment_text)
+        if comment:
             current_app.logger.info(f"User {user_id} updated comment {comment_id}")
-            return jsonify(result), 200
+            return comment_schema.dump(comment), 200
         else:
             return (
                 jsonify(
@@ -100,7 +104,6 @@ def get_movie_comments(movie_id):
         sort_order = request.args.get("sort_order", "desc")
         include_ratings = request.args.get("include_ratings", "true").lower() == "true"
 
-        # Walidacja parametrów sortowania
         valid_sort_fields = ["created_at", "rating"]
         if sort_by not in valid_sort_fields:
             sort_by = "created_at"
@@ -111,6 +114,8 @@ def get_movie_comments(movie_id):
             movie_id, page, per_page, sort_by, sort_order, include_ratings
         )
         current_app.logger.info(f"Retrieved comments for movie {movie_id}, page {page}")
+        # Serializacja listy komentarzy
+        result["comments"] = comments_schema.dump(result["comments"])
         return jsonify(result), 200
     except Exception as e:
         current_app.logger.error(f"Error in get_movie_comments: {str(e)}")
@@ -130,6 +135,7 @@ def get_user_comments():
             user_id, page, per_page, include_ratings
         )
         current_app.logger.info(f"Retrieved comments for user {user_id}, page {page}")
+        result["comments"] = comments_schema.dump(result["comments"])
         return jsonify(result), 200
     except Exception as e:
         current_app.logger.error(f"Error in get_user_comments: {str(e)}")
@@ -164,7 +170,7 @@ def get_comment_by_id(comment_id):
         comment = comment_service.get_comment_by_id(comment_id, include_rating)
         if comment:
             current_app.logger.info(f"Retrieved comment {comment_id}")
-            return jsonify(comment), 200
+            return comment_schema.dump(comment), 200
         else:
             return jsonify({"error": "Komentarz nie istnieje"}), 404
     except Exception as e:
@@ -186,7 +192,7 @@ def get_user_comment_for_movie(movie_id):
             current_app.logger.info(
                 f"Retrieved user {user_id} comment for movie {movie_id}"
             )
-            return jsonify(comment), 200
+            return comment_schema.dump(comment), 200
         else:
             return jsonify({"message": "Komentarz nie istnieje"}), 404
     except Exception as e:
@@ -219,6 +225,7 @@ def get_movie_comments_with_ratings(movie_id):
         current_app.logger.info(
             f"Retrieved comments with ratings for movie {movie_id}, page {page}"
         )
+        result["comments"] = comments_schema.dump(result["comments"])
         return jsonify(result), 200
     except Exception as e:
         current_app.logger.error(f"Error in get_movie_comments_with_ratings: {str(e)}")

@@ -1,44 +1,24 @@
+import { fetchWithAuth } from '../../../services/api';
+
 export class RatingService {
-    static async fetchUserRating(movieId: number, token: string): Promise<number> {
-        const response = await fetch(`http://localhost:5000/api/ratings/movies/${movieId}/user-rating`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Cache-Control': 'no-cache'
-            }
-        });
-
-        if (!response.ok) throw new Error(`Nie udało się pobrać oceny: ${response.status}`);
-
-        const data = await response.json();
-        return data.rating ?? 0;
+    static async fetchUserRating(movieId: number): Promise<number> {
+        const response = await fetchWithAuth(`ratings/movies/${movieId}/user-rating`);
+        return response.rating ?? 0;
     }
 
-    static async submitRating(movieId: number, rating: number, token: string): Promise<void> {
-        if (!token) throw new Error('Musisz być zalogowany, aby ocenić film');
-
-        const response = await fetch(`http://localhost:5000/api/ratings/movies/${movieId}/ratings`, {
+    static async submitRating(movieId: number, rating: number): Promise<void> {
+        await fetchWithAuth(`ratings/movies/${movieId}/user-rating`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ rating })
         });
-
-        if (!response.ok) throw new Error('Wystąpił błąd podczas oceniania filmu');
     }
 
-    static async deleteRating(movieId: number, token: string): Promise<void> {
-        if (!token) throw new Error('Musisz być zalogowany, aby usunąć ocenę');
-
-        const response = await fetch(`http://localhost:5000/api/ratings/movies/${movieId}/user-rating`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Cache-Control': 'no-cache'
-            }
+    static async deleteRating(movieId: number): Promise<void> {
+        await fetchWithAuth(`ratings/movies/${movieId}/user-rating`, {
+            method: 'DELETE'
         });
-
-        if (!response.ok) throw new Error(`Nie udało się usunąć oceny: ${response.status}`);
     }
 }

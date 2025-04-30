@@ -25,11 +25,11 @@ const ActorItem: React.FC<ActorItemProps> = ({ actor }) => {
     return (
         <div className={styles.actorItem}>
             <div className={styles.actorPhoto}>
-                <Link to={`/actor/details/${getActorSlug(actor.name)}`} state={{ actorId: actor.id }}>
+                <Link to={`/actor/details/${getActorSlug(actor.actor_name)}`} state={{ actorId: actor.actor_id }}>
                     {actor.photo_url ? (
-                        <img src={actor.photo_url} alt={actor.name} />
+                        <img src={actor.photo_url} alt={actor.actor_name} />
                     ) : (
-                        <div className={styles.noImage}>{getActorInitials(actor.name)}</div>
+                        <div className={styles.noImage}>{getActorInitials(actor.actor_name)}</div>
                     )}
                 </Link>
             </div>
@@ -37,8 +37,8 @@ const ActorItem: React.FC<ActorItemProps> = ({ actor }) => {
                 <div className={styles.actorLabel}>AKTOR</div>
                 <div className={styles.actorHeader}>
                     <h3 className={styles.actorName}>
-                        <Link to={`/actor/details/${getActorSlug(actor.name)}`} state={{ actorId: actor.id }}>
-                            {actor.name}
+                        <Link to={`/actor/details/${getActorSlug(actor.actor_name)}`} state={{ actorId: actor.actor_id }}>
+                            {actor.actor_name}
                         </Link>
                     </h3>
                     {ageInfo && (

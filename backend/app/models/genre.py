@@ -1,6 +1,7 @@
 from .base import Base, Mapped, mapped_column, relationship, String, Integer
 from .movie import Movie
 
+
 class Genre(Base):
     __tablename__ = "genres"
 
@@ -13,9 +14,6 @@ class Genre(Base):
 
     def __repr__(self):
         return f"<Genre(id={self.genre_id}, name='{self.genre_name}')>"
-    
+
     def serialize(self):
-        return {
-            "id": self.genre_id,
-            "name": self.genre_name
-        }
+        return {"genre_id": self.genre_id, "genre_name": self.genre_name}

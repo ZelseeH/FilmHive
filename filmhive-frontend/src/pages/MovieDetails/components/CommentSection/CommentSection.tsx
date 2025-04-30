@@ -10,7 +10,7 @@ interface CommentSectionProps {
 const MAX_WORDS = 150;
 
 const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
-    const { user, getToken, openLoginModal } = useAuth();
+    const { user, openLoginModal } = useAuth();
     const [commentText, setCommentText] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [wordsLeft, setWordsLeft] = useState(MAX_WORDS);
@@ -23,7 +23,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
         updateComment,
         deleteComment,
         getUserComment
-    } = useComments({ movieId, user, getToken });
+    } = useComments({ movieId, user });
 
     const [userComment, setUserComment] = useState<Comment | null>(null);
 
@@ -68,7 +68,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
         }
 
         if (userComment) {
-            const updatedComment = await updateComment(userComment.id, commentText);
+            const updatedComment = await updateComment(userComment.comment_id, commentText);
             if (updatedComment) {
                 setUserComment(updatedComment);
                 setIsEditing(false);
@@ -83,9 +83,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({ movieId }) => {
         }
     };
 
+<<<<<<< Updated upstream
     const handleDelete = async () => {
         if (userComment && window.confirm('Czy na pewno chcesz usunąć ten komentarz?')) {
             await deleteComment(userComment.id);
+=======
+    const handleDelete = () => setShowDeleteConfirm(true);
+
+    const confirmDelete = async () => {
+        if (userComment) {
+            await deleteComment(userComment.comment_id);
+>>>>>>> Stashed changes
             setUserComment(null);
             setCommentText('');
             setWordsLeft(MAX_WORDS);

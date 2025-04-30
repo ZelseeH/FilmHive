@@ -50,7 +50,7 @@ const HomePage = () => {
 
         <MovieSlider
           movies={movies}
-          selectedMovieId={selectedMovie?.id}
+          selectedMovieId={selectedMovie?.movie_id}
           userRatings={userRatings}
           onMovieSelect={handleMovieSelect}
         />

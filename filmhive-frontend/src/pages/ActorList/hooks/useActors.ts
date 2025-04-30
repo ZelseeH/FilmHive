@@ -1,6 +1,6 @@
-// hooks/useActors.ts
 import { useState, useEffect, useCallback } from 'react';
 import { Actor } from '../services/actorService';
+import { fetchWithAuth } from '../../../services/api';
 
 interface PaginationData {
     page: number;
@@ -29,7 +29,7 @@ interface SortOption {
 export const useActors = (
     filters: Filters,
     page: number,
-    sortOption: SortOption = { field: 'name', order: 'asc' }
+    sortOption: SortOption = { field: 'actor_name', order: 'asc' }
 ) => {
     const [actors, setActors] = useState<Actor[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -52,14 +52,7 @@ export const useActors = (
             queryParams.append('sort_by', sortOption.field);
             queryParams.append('sort_order', sortOption.order);
 
-            const response = await fetch(`http://localhost:5000/api/actors/filter?${queryParams}`);
-
-            if (!response.ok) {
-                throw new Error('Nie udało się pobrać aktorów');
-            }
-
-            const data: ActorsResponse = await response.json();
-            console.log('API response:', data);
+            const data: ActorsResponse = await fetchWithAuth(`actors/filter?${queryParams.toString()}`);
 
             setActors(data.actors || []);
             setTotalPages(data.pagination?.total_pages || 1);

@@ -26,13 +26,13 @@ class FavoriteMovieService:
                     f"Film {movie_id} już jest w ulubionych użytkownika {user_id}"
                 )
                 favorite = self.favorite_repository.get_user_favorites(user_id)[0]
-                return favorite.serialize()
+                return favorite  # <-- Zwracaj obiekt FavoriteMovie
 
             favorite = self.favorite_repository.add_favorite(user_id, movie_id)
             current_app.logger.info(
                 f"Dodano film {movie_id} do ulubionych użytkownika {user_id}"
             )
-            return favorite.serialize()
+            return favorite  # <-- Zwracaj obiekt FavoriteMovie
         except ValueError as e:
             current_app.logger.error(f"ValueError adding to favorites: {str(e)}")
             raise
@@ -113,7 +113,7 @@ class FavoriteMovieService:
             current_app.logger.info(
                 f"Pobrano {len(favorites)} ulubionych filmów użytkownika {user_id}"
             )
-            return [favorite.serialize() for favorite in favorites]
+            return favorites  # <-- Zwracaj listę obiektów FavoriteMovie
         except ValueError as e:
             current_app.logger.error(f"ValueError getting user favorites: {str(e)}")
             raise
@@ -133,7 +133,6 @@ class FavoriteMovieService:
             user = db.session.get(User, user_id)
             if not user:
                 raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
-
             if page < 1:
                 page = 1
             if per_page < 1:
@@ -147,7 +146,7 @@ class FavoriteMovieService:
             current_app.logger.info(
                 f"Pobrano ulubione filmy użytkownika {user_id}, strona {page}, {len(result['movies'])} filmów"
             )
-            return result
+            return result  # <-- Zwracaj słownik z listą Movie, NIE serializuj!
         except ValueError as e:
             current_app.logger.error(
                 f"ValueError getting user favorite movies: {str(e)}"
@@ -188,3 +187,34 @@ class FavoriteMovieService:
                 f"Unexpected error getting movie favorite count: {str(e)}"
             )
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
+<<<<<<< Updated upstream
+=======
+
+    def get_recent_favorite_movies(self, user_id, limit=6):
+        try:
+            user = db.session.get(User, user_id)
+            if not user:
+                raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
+            movies = self.favorite_repository.get_recent_favorite_movies(user_id, limit)
+            current_app.logger.info(
+                f"Pobrano ostatnie {len(movies)} ulubione filmy użytkownika {user_id}"
+            )
+            return movies  # <-- Zwracaj listę obiektów Movie
+        except ValueError as e:
+            current_app.logger.error(
+                f"ValueError getting recent favorite movies: {str(e)}"
+            )
+            raise
+        except SQLAlchemyError as e:
+            current_app.logger.error(
+                f"SQLAlchemyError getting recent favorite movies: {str(e)}"
+            )
+            raise Exception(
+                f"Nie udało się pobrać ostatnich ulubionych filmów: {str(e)}"
+            )
+        except Exception as e:
+            current_app.logger.error(
+                f"Unexpected error getting recent favorite movies: {str(e)}"
+            )
+            raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
+>>>>>>> Stashed changes

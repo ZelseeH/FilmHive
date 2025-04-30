@@ -5,14 +5,14 @@ import { User } from '../../../contexts/AuthContext';
 interface UseFavoriteMovieProps {
     movieId: number;
     user: User | null;
-    getToken: () => string | null;
 }
 
-export const useFavoriteMovie = ({ movieId, user, getToken }: UseFavoriteMovieProps) => {
+export const useFavoriteMovie = ({ movieId, user }: UseFavoriteMovieProps) => {
     const [isFavorite, setIsFavorite] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const fetchingRef = useRef<boolean>(false);
+
     useEffect(() => {
         const checkFavoriteStatus = async () => {
             if (!user || !movieId || fetchingRef.current) return;
@@ -22,10 +22,7 @@ export const useFavoriteMovie = ({ movieId, user, getToken }: UseFavoriteMoviePr
             setError(null);
 
             try {
-                const token = getToken();
-                if (!token) return;
-
-                const status = await FavoriteMovieService.checkIfFavorite(movieId, token);
+                const status = await FavoriteMovieService.checkIfFavorite(movieId);
                 setIsFavorite(status);
             } catch (error) {
                 console.error('Błąd podczas sprawdzania statusu ulubionego:', error);
@@ -41,7 +38,7 @@ export const useFavoriteMovie = ({ movieId, user, getToken }: UseFavoriteMoviePr
         return () => {
             fetchingRef.current = false;
         };
-    }, [movieId, user, getToken]);
+    }, [movieId, user]);
 
     const toggleFavorite = async () => {
         if (!user || isLoading) return;
@@ -50,16 +47,10 @@ export const useFavoriteMovie = ({ movieId, user, getToken }: UseFavoriteMoviePr
         setError(null);
 
         try {
-            const token = getToken();
-            if (!token) {
-                setError('Brak tokenu autoryzacyjnego');
-                return;
-            }
-
             if (isFavorite) {
-                await FavoriteMovieService.removeFromFavorites(movieId, token);
+                await FavoriteMovieService.removeFromFavorites(movieId);
             } else {
-                await FavoriteMovieService.addToFavorites(movieId, token);
+                await FavoriteMovieService.addToFavorites(movieId);
             }
 
             setIsFavorite(!isFavorite);

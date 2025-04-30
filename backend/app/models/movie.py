@@ -91,11 +91,15 @@ class Movie(Base):
             "trailer_url": self.trailer_url,
             "average_rating": self.average_rating,
             "rating_count": self.rating_count,
+<<<<<<< Updated upstream
+=======
+            "user_rating": getattr(self, "_user_rating", None),
+>>>>>>> Stashed changes
         }
 
         if include_genres:
             result["genres"] = [
-                {"id": genre.genre_id, "name": genre.genre_name}
+                {"genre_id": genre.genre_id, "genre_name": genre.genre_name}
                 for genre in self.genres
             ]
 
@@ -161,3 +165,56 @@ class Movie(Base):
             result["comments"] = [comment.serialize() for comment in self.comments]
 
         return result
+<<<<<<< Updated upstream
+=======
+
+    def serialize_basic(self):
+        return {
+            "id": self.movie_id,
+            "title": self.title,
+            "poster_url": (
+                url_for("static", filename=f"posters/{self.poster_url}", _external=True)
+                if self.poster_url
+                else None
+            ),
+        }
+
+
+@classmethod
+def get_with_ratings(cls, session, page=1, per_page=10, genre_id=None, user_id=None):
+    from app.models.rating import Rating
+
+    # Podzapytanie do ocen
+    subq = (
+        session.query(
+            Rating.movie_id,
+            func.avg(Rating.rating).label("avg_rating"),
+            func.count(Rating.rating_id).label("rating_count"),
+        )
+        .group_by(Rating.movie_id)
+        .subquery()
+    )
+
+    # Główne zapytanie do filmów
+    query = (
+        session.query(Movie, subq.c.avg_rating, subq.c.rating_count)
+        .outerjoin(subq, Movie.movie_id == subq.c.movie_id)
+        .options(joinedload(Movie.genres))
+        .order_by(desc(subq.c.avg_rating))
+    )
+
+    # Filtr po gatunku, jeśli podano genre_id
+    if genre_id:
+        query = query.join(Movie.genres).filter(Genre.genre_id == genre_id)
+
+    total = query.count()
+    movies_with_ratings = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    result = []
+    for movie, avg_rating, rating_count in movies_with_ratings:
+        movie._average_rating = float(avg_rating) if avg_rating is not None else None
+        movie._rating_count = rating_count or 0
+        result.append(movie)
+
+    return result, total
+>>>>>>> Stashed changes

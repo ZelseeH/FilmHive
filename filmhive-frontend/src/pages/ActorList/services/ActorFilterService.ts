@@ -1,15 +1,15 @@
+import { fetchWithAuth } from '../../../services/api';
+
 const ActorFilterService = {
     async getBirthplaces(): Promise<string[]> {
         try {
-            const response = await fetch('http://localhost:5000/api/actors/birthplaces');
-            if (!response.ok) {
-                throw new Error('Failed to fetch birthplaces');
-            }
-            const data = await response.json();
+            // Jeśli endpoint wymaga autoryzacji, użyj fetchWithAuth
+            const data = await fetchWithAuth('actors/birthplaces');
+            // Marshmallow zwraca { birthplaces: [...] }
             return data.birthplaces || [];
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error in getBirthplaces:', error);
-            throw error;
+            throw new Error(error.message || 'Błąd podczas pobierania miejsc urodzenia');
         }
     }
 };

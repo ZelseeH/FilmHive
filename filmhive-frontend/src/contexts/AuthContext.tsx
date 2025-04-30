@@ -1,14 +1,19 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Interfejs zgodny z backendem Marshmallow
 export interface User {
-  id: string;
+  user_id: number;
   username: string;
   email: string;
   name?: string;
   bio?: string;
   profile_picture?: string;
   registration_date?: string;
+  background_image?: string;
+  background_position?: { x: number; y: number };
+  role?: number;
+  // Dodaj inne pola jeśli są potrzebne
 }
 
 interface AuthContextType {
@@ -51,9 +56,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const signal = controller.signal;
 
     const verifyTokenInBackground = async (): Promise<void> => {
-      console.log("Verifying token in background...");
       const token = localStorage.getItem('token');
-
       if (!token) {
         setLoading(false);
         return;
@@ -68,12 +71,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (!response.ok) {
           if (response.status === 401 || response.status === 403) {
-            console.error("Token validation failed");
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             setUser(null);
           }
         } else {
+          // Jeśli backend zwraca { user: {...} }
+          // const { user } = await response.json();
+          // setUser(user);
+
+          // Jeśli backend zwraca bezpośrednio usera:
           const userData = await response.json();
           setUser(userData);
         }
@@ -87,29 +94,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     verifyTokenInBackground();
-
     return () => controller.abort();
   }, []);
 
   const login = (userData: User, token: string): void => {
-    console.log("Login function called with:", { userData, tokenExists: !!token });
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     closeLoginModal();
+<<<<<<< Updated upstream
 
     navigate('/');
+=======
+    window.location.href = '/';
+>>>>>>> Stashed changes
   };
 
   const logout = (): void => {
-    console.log("Logout function called");
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
+<<<<<<< Updated upstream
 
     if (window.location.pathname !== '/') {
       navigate('/');
     }
+=======
+    window.location.href = '/';
+>>>>>>> Stashed changes
   };
 
   const openLoginModal = (): void => {

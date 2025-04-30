@@ -5,10 +5,9 @@ import { User } from '../../../contexts/AuthContext';
 interface UseUserRatingProps {
     movieId: number;
     user: User | null;
-    getToken: () => string | null;
 }
 
-export const useUserRating = ({ movieId, user, getToken }: UseUserRatingProps) => {
+export const useUserRating = ({ movieId, user }: UseUserRatingProps) => {
     const [rating, setRating] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const fetchingRef = useRef<boolean>(false);
@@ -21,10 +20,7 @@ export const useUserRating = ({ movieId, user, getToken }: UseUserRatingProps) =
             setIsLoading(true);
 
             try {
-                const token = getToken();
-                if (!token) return;
-
-                const userRating = await RatingService.fetchUserRating(movieId, token);
+                const userRating = await RatingService.fetchUserRating(movieId);
                 setRating(userRating);
             } catch (error) {
                 console.error('Błąd podczas pobierania oceny użytkownika:', error);
@@ -39,7 +35,7 @@ export const useUserRating = ({ movieId, user, getToken }: UseUserRatingProps) =
         return () => {
             fetchingRef.current = false;
         };
-    }, [movieId, user, getToken]);
+    }, [movieId, user]);
 
     return { rating, isLoading, setRating };
 };

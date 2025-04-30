@@ -133,7 +133,7 @@ const ActorListPage: React.FC = () => {
                             <div className={styles.actorListContainer}>
                                 {actors.length > 0 ? (
                                     actors.map(actor => (
-                                        <ActorItem key={actor.id} actor={actor} />
+                                        <ActorItem key={actor.actor_id} actor={actor} />
                                     ))
                                 ) : (
                                     <div className={styles.noActors}>Nie znaleziono żadnych aktorów.</div>

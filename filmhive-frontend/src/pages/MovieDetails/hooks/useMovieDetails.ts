@@ -18,8 +18,20 @@ export const useMovieDetails = (movieId?: number, movieSlug?: string): UseMovieD
             try {
                 setLoading(true);
 
+<<<<<<< Updated upstream
                 if (movieId) {
                     const movieData = await getMovieDetailsWithRoles(movieId);
+=======
+            if (movieId) {
+                const movieData = await getMovieDetailsWithRoles(movieId);
+                setMovie(movieData);
+            } else if (movieSlug) {
+                const allMovies = await getAllMovies();
+                const foundMovie = allMovies.find(m => createSlug(m.title) === movieSlug);
+
+                if (foundMovie) {
+                    const movieData = await getMovieDetailsWithRoles(foundMovie.movie_id);
+>>>>>>> Stashed changes
                     setMovie(movieData);
                 } else if (movieSlug) {
                     const allMovies = await getAllMovies();

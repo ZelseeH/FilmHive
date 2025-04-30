@@ -4,6 +4,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import * as authService from './services/authService';
 import styles from './LoginModal.module.css';
 
+// Import typów z serwisu
+import type { LoginResponse } from './services/authService';
+
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,7 +27,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      let data;
+      let data: LoginResponse;
 
       if (isLoginMode) {
         data = await authService.login(username, password);
@@ -39,7 +42,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       login(data.user, data.access_token);
       onClose();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Wystąpił błąd podczas logowania/rejestracji");
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,10 @@ import { Actor } from '../../services/movieService';
 import { handleImageError } from '../../utils/movieUtils';
 import styles from './MovieCastSection.module.css';
 import { useSlider } from '../../hooks/useSlider';
+<<<<<<< Updated upstream
+=======
+import { createSlug } from '../../../../utils/formatters';
+>>>>>>> Stashed changes
 
 interface MovieCastSectionProps {
     actors: Actor[];
@@ -23,19 +27,28 @@ const MovieCastSection: React.FC<MovieCastSectionProps> = ({ actors, title }) =>
                 <div className={styles['cast-slider-wrapper']}>
                     <div className={styles['cast-slider']} ref={sliderRef}>
                         {actors.map(actor => (
+<<<<<<< Updated upstream
                             <div key={actor.id} className={styles['cast-member']}>
+=======
+                            <Link
+                                to={`/actor/details/${createSlug(actor.actor_name)}`}
+                                state={{ actorId: actor.actor_id }}
+                                className={styles['cast-member']}
+                                key={actor.actor_id}
+                            >
+>>>>>>> Stashed changes
                                 <div className={styles['actor-photo']}>
                                     {actor.photo_url ? (
                                         <img
                                             src={actor.photo_url}
-                                            alt={actor.name}
+                                            alt={actor.actor_name}
                                             onError={(e) => handleImageError(e, '/placeholder-actor.jpg')}
                                         />
                                     ) : (
                                         <div className={styles['no-poster']}>Brak zdjęcia</div>
                                     )}
                                 </div>
-                                <div className={styles['actor-name']}>{actor.name}</div>
+                                <div className={styles['actor-name']}>{actor.actor_name}</div>
                                 {actor.role && <div className={styles['actor-role']}>{actor.role}</div>}
                             </div>
                         ))}

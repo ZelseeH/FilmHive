@@ -40,7 +40,7 @@ const MovieDetail: React.FC = () => {
             <div className={styles['header-panel-container']}>
                 <MovieHeaderSection movie={movie} onShowFullDescription={toggleDescriptionModal} />
                 <div className={styles['side-panel']}>
-                    <MovieActionPanel movieId={movie.id} onRatingChange={handleRatingChange} />
+                    <MovieActionPanel movieId={movie.movie_id} onRatingChange={handleRatingChange} />
                 </div>
             </div>
 
@@ -55,7 +55,7 @@ const MovieDetail: React.FC = () => {
                 {movie.actors?.length > 0 && <MovieCastSection actors={movie.actors} />}
 
                 <section className={styles['comments-section']}>
-                    <AllMovieComments movieId={movie.id} />
+                    <AllMovieComments movieId={movie.movie_id} />
                 </section>
             </div>
 

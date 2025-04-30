@@ -1,8 +1,13 @@
 from flask import Blueprint, jsonify, request, current_app
 from app.services.actor_service import ActorService
+from app.schemas.actor_schema import ActorSchema, ActorWithMoviesSchema
 
 actors_bp = Blueprint("actors", __name__)
 actor_service = ActorService()
+
+actor_schema = ActorSchema()
+actors_schema = ActorSchema(many=True)
+actor_with_movies_schema = ActorWithMoviesSchema()
 
 
 @actors_bp.route("/", methods=["GET"])
@@ -10,6 +15,8 @@ def get_all_actors():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
     result = actor_service.get_all_actors(page, per_page)
+    # Zakładam, że result = {"actors": [...], "pagination": {...}}
+    result["actors"] = actors_schema.dump(result["actors"])
     return jsonify(result)
 
 
@@ -17,7 +24,7 @@ def get_all_actors():
 def get_actor(actor_id):
     actor = actor_service.get_actor_by_id(actor_id)
     if actor:
-        return jsonify(actor.serialize())
+        return actor_schema.dump(actor)
     return jsonify({"error": "Actor not found"}), 404
 
 
@@ -27,6 +34,8 @@ def search_actors():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
     result = actor_service.search_actors(query, page, per_page)
+    # Zakładam, że result = {"actors": [...], "pagination": {...}}
+    result["actors"] = actors_schema.dump(result["actors"])
     return jsonify(result)
 
 
@@ -34,7 +43,7 @@ def search_actors():
 def add_actor():
     data = request.json
     actor = actor_service.add_actor(data)
-    return jsonify(actor.serialize()), 201
+    return actor_schema.dump(actor), 201
 
 
 @actors_bp.route("/<int:actor_id>", methods=["PUT"])
@@ -42,7 +51,7 @@ def update_actor(actor_id):
     data = request.json
     actor = actor_service.update_actor(actor_id, data)
     if actor:
-        return jsonify(actor.serialize())
+        return actor_schema.dump(actor)
     return jsonify({"error": "Actor not found"}), 404
 
 
@@ -60,7 +69,8 @@ def get_actor_movies(actor_id):
     per_page = request.args.get("per_page", 10, type=int)
     result = actor_service.get_actor_movies(actor_id, page, per_page)
     if result:
-        return jsonify(result)
+        # Jeśli chcesz zwracać aktora z filmami, użyj ActorWithMoviesSchema
+        return actor_with_movies_schema.dump(result)
     return jsonify({"error": "Actor not found"}), 404
 
 
@@ -103,6 +113,8 @@ def filter_actors():
             sort_by=sort_by,
             sort_order=sort_order,
         )
+        # Zakładam, że result = {"actors": [...], "pagination": {...}}
+        result["actors"] = actors_schema.dump(result["actors"])
         return jsonify(result), 200
     except Exception as e:
         current_app.logger.error(f"Error in filter_actors route: {str(e)}")
@@ -121,3 +133,32 @@ def filter_actors():
 def get_birthplaces():
     birthplaces = actor_service.get_unique_birthplaces()
     return jsonify({"birthplaces": birthplaces})
+<<<<<<< Updated upstream
+=======
+
+
+@actors_bp.route("/search", methods=["GET"])
+def search_actors_route():
+    try:
+        query = request.args.get("q", "")
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 10, type=int)
+
+        result = actor_service.search_actors(query, page=page, per_page=per_page)
+        result["actors"] = actors_schema.dump(result["actors"])
+        return (
+            jsonify({"results": result["actors"], "pagination": result["pagination"]}),
+            200,
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error in search_actors_route: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas wyszukiwania aktorów",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )
+>>>>>>> Stashed changes

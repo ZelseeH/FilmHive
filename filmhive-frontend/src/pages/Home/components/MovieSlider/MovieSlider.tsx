@@ -3,7 +3,7 @@ import styles from './MovieSlider.module.css';
 import MovieCard from '../MovieCard/MovieCard';
 
 interface Movie {
-    id: number;
+    movie_id: number;
     title: string;
     poster_url?: string;
     [key: string]: any;
@@ -42,10 +42,10 @@ const MovieSlider: React.FC<MovieSliderProps> = ({ movies, selectedMovieId, user
                 <div className={styles['movies-slider']} ref={sliderRef}>
                     {movies.map((movie) => (
                         <MovieCard
-                            key={movie.id}
+                            key={movie.movie_id}
                             movie={movie}
-                            isActive={selectedMovieId === movie.id}
-                            userRating={userRatings[movie.id]}
+                            isActive={selectedMovieId === movie.movie_id}
+                            userRating={userRatings[movie.movie_id]}
                             onClick={() => onMovieSelect(movie)}
                         />
                     ))}
