@@ -9,7 +9,7 @@ export interface User {
   bio?: string;
   profile_picture?: string;
   registration_date?: string;
-  role: number;
+  role: number; // 1=admin, 2=moderator, 3=user
   is_active: boolean;
 }
 
@@ -53,11 +53,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [user]);
 
   const refreshAccessToken = async (): Promise<string | null> => {
-    console.log("🔄 Refreshing access token...");
+    console.log("Refreshing access token...");
     const refreshToken = localStorage.getItem('refreshToken');
 
     if (!refreshToken) {
-      console.error("❌ No refresh token available");
+      console.error("No refresh token available");
       logout();
       return null;
     }
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (!response.ok) {
-        console.error("❌ Failed to refresh token:", response.status);
+        console.error("Failed to refresh token:", response.status);
         logout();
         return null;
       }
@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (data.user) {
         if (!data.user.is_active) {
-          console.error("⚠️ Account is suspended");
+          console.error("Account is suspended");
           logout();
           return null;
         }
@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       return data.access_token;
     } catch (error) {
-      console.error("❌ Error refreshing token:", error);
+      console.error("Error refreshing token:", error);
       logout();
       return null;
     }
@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const signal = controller.signal;
 
     const verifyTokenInBackground = async (): Promise<void> => {
-      console.log("🔍 Verifying token in background...");
+      console.log("Verifying token in background...");
       const token = localStorage.getItem('accessToken');
 
       if (!token) {
@@ -121,22 +121,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (!response.ok) {
           if (response.status === 401) {
-            console.log("⚠️ Token expired, refreshing...");
+            console.log("Token expired, attempting to refresh...");
             const newToken = await refreshAccessToken();
             if (!newToken) {
-              console.error("❌ Failed to refresh token");
+              console.error("Failed to refresh token");
             }
           } else if (response.status === 403) {
-            console.error("⚠️ Account suspended");
+            console.error("Account is suspended");
             logout();
           } else {
-            console.error("❌ Token validation failed");
+            console.error("Token validation failed");
             logout();
           }
         } else {
           const userData = await response.json();
+
           if (userData.user && !userData.user.is_active) {
-            console.error("⚠️ Account is suspended");
+            console.error("Account is suspended");
             logout();
             return;
           }
@@ -145,7 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error: any) {
         if (error.name !== 'AbortError') {
-          console.error('❌ Error verifying token:', error);
+          console.error('Error verifying token:', error);
         }
       } finally {
         setLoading(false);
@@ -165,7 +166,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const response = await originalFetch(input, init);
 
         if (response.status === 401) {
-          console.warn("⚠️ Got 401, trying to refresh...");
           const newToken = await refreshAccessToken();
 
           if (newToken) {
@@ -185,9 +185,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } else if (response.status === 403) {
           try {
             const errorData = await response.clone().json();
-            console.log("🚫 Got 403, checking if suspended:", errorData);
             if (errorData.error && errorData.error.includes("zawieszone")) {
-              console.error("🚫 Account suspended via 403");
+              console.error("Account is suspended");
               logout();
             }
           } catch (e) {
@@ -197,7 +196,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         return response;
       } catch (error) {
-        console.error("❌ Fetch error:", error);
+        console.error("Fetch error:", error);
         throw error;
       }
     };
@@ -208,10 +207,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = (userData: User, token: string, refreshToken: string): boolean => {
-    console.log("✅ Login function called with:", { userData, tokenExists: !!token });
+    console.log("Login function called with:", { userData, tokenExists: !!token });
 
     if (!userData.is_active) {
-      console.error("❌ Cannot login - account suspended");
+      console.error("Cannot login - account is suspended");
       return false;
     }
 
@@ -221,16 +220,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(userData);
     closeLoginModal();
 
+
+
     return true;
   };
 
   const logout = (): void => {
-    console.log("🚨 Logout triggered!");
+    console.log("Logout function called");
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     setUser(null);
-    navigate('/'); // ⬅️ używamy navigate zamiast reload
+
   };
 
   const openLoginModal = (): void => {
@@ -245,9 +246,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return localStorage.getItem('accessToken');
   };
 
-  const isAdmin = (): boolean => user?.role === 1;
-  const isModerator = (): boolean => user?.role === 2;
-  const isStaff = (): boolean => user?.role === 1 || user?.role === 2;
+  const isAdmin = (): boolean => {
+    return user?.role === 1;
+  };
+
+  const isModerator = (): boolean => {
+    return user?.role === 2;
+  };
+
+  const isStaff = (): boolean => {
+    return user?.role === 1 || user?.role === 2;
+  };
 
   return (
     <AuthContext.Provider

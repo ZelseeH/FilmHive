@@ -15,15 +15,16 @@ import ActorDetail from './pages/ActorDetails/ActotDetails';
 import SearchPage from './pages/Search/SearchPage';
 import UnauthorizedPage from './pages/Unauthorized/UnauthorizedPage';
 
-import AdminDashboard from './pages/Admin/Dashboard';
-import UserManagement from './pages/Admin/UserManagement';
-import ModeratorDashboard from './pages/Moderator/Dashboard';
+// Nowy wspólny dashboard
+import Dashboard from './pages/Dashboard/Dashboard';
+import UserManagement from './pages/Dashboard/components/UserManagement';
+import UserDetails from './pages/Dashboard/components/UserDetails/UserDetails';
 
 const AppRoutes: React.FC = () => {
     const { user, loading } = useAuth();
 
     if (loading) {
-        return <div>Loading...</div>; // Możesz tu wrzucić spinner, animację itd.
+        return <div>Loading...</div>;
     }
 
     return (
@@ -37,7 +38,10 @@ const AppRoutes: React.FC = () => {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            <Route path="/login"></Route>
 
+            {/* Trasy dostępne tylko dla zalogowanych użytkowników */}
+            {/* Chronione trasy dla zalogowanych użytkowników */}
             <Route path="/settings" element={
                 <ProtectedRoute>
                     <SettingsPage />
@@ -49,23 +53,24 @@ const AppRoutes: React.FC = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/admin" element={
-                <AdminRoute>
-                    <AdminDashboard />
-                </AdminRoute>
+            <Route path="/dashboard" element={
+                <StaffRoute>
+                    <Dashboard />
+                </StaffRoute>
             } />
-            <Route path="/admin/users" element={
+
+            <Route path="/dashboard/users" element={
                 <AdminRoute>
                     <UserManagement />
                 </AdminRoute>
             } />
-            <Route path="/moderator" element={
-                <StaffRoute>
-                    <ModeratorDashboard />
-                </StaffRoute>
+
+            <Route path="/dashboard/users/:id" element={
+                <AdminRoute>
+                    <UserDetails />
+                </AdminRoute>
             } />
 
-            {/* Fallback: przekierowanie na stronę główną dla nieznanych adresów */}
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );

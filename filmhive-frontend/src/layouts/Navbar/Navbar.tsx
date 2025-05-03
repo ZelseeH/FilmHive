@@ -179,6 +179,9 @@ const Navbar: React.FC = () => {
                 >
                   Mój Profil
                 </Link>
+
+
+
                 <Link
                   to="/settings"
                   className={styles['mobile-menu-link']}
@@ -186,12 +189,34 @@ const Navbar: React.FC = () => {
                 >
                   Ustawienia
                 </Link>
+                {/* Panel Administratora - tylko dla roli 1 (admin) */}
+                {user.role === 1 && (
+                  <Link
+                    to="/dashboard"
+                    className={styles['mobile-menu-link']}
+                    onClick={closeMobileMenu}
+                  >
+                    Panel Administratora
+                  </Link>
+                )}
+
+                {/* Panel Moderatora - tylko dla roli 2 (moderator) */}
+                {user.role === 2 && (
+                  <Link
+                    to="/dashboard"
+                    className={styles['mobile-menu-link']}
+                    onClick={closeMobileMenu}
+                  >
+                    Panel Moderatora
+                  </Link>
+                )}
                 <button
                   className={styles['mobile-logout-btn']}
                   onClick={() => {
                     onLogout();
                     closeMobileMenu();
                   }}
+
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -224,6 +249,7 @@ const Navbar: React.FC = () => {
               </button>
             )}
           </div>
+
         </div>
       </Menu>
 
@@ -233,6 +259,7 @@ const Navbar: React.FC = () => {
           onClose={closeUserMenu}
           onLogout={onLogout}
           position={menuPosition}
+          role={user.role} // Przekazujemy rolę użytkownika
         />
       )}
 

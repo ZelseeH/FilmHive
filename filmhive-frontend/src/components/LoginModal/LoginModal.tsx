@@ -47,9 +47,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       }
     } catch (err: any) {
       console.error("Login error:", err);
-
-      if (err.response && err.response.status === 403) {
+      if (err.response && err.response.status === 401) {
+        setError("Niepoprawny login lub hasło.");
+      }
+      else if (err.response && err.response.status === 403) {
         setError("Twoje konto zostało zawieszone lub dezaktywowane przez administratora.");
+      } else if (err.response && err.response.status === 409) {
+        setError("Email albo Nazwa użytkownika jest już zajęta.");
       } else if (err.message) {
         setError(err.message);
       } else {

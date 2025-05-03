@@ -1,0 +1,572 @@
+:root {
+    --yellow: #ffcc00;
+    --black: #1a1a1a;
+    --blue: #0055a4;
+    --background: #f5f5f5;
+    --text: #333;
+    --border: #e0e0e0;
+    --transition: all 0.2s ease;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 70px auto 20px;
+    padding: 15px;
+    background: white;
+}
+
+.header {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 12px;
+}
+
+.backButton {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: var(--background);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+}
+
+.backButton:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--yellow);
+    margin: 50px auto 0;
+    text-align: center;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    color: #666;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid var(--yellow);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.miniSpinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e0e0e0;
+    border-top: 2px solid var(--yellow);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.errorMessage {
+    background: rgba(255, 77, 77, 0.1);
+    color: #d32f2f;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border-left: 3px solid #d32f2f;
+    font-size: 13px;
+}
+
+.fieldError {
+    color: #d32f2f;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.userDetailsCard {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.userHeader {
+    display: flex;
+    padding: 20px;
+    background-color: var(--background);
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+}
+
+.userAvatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 20px;
+}
+
+.userAvatarPlaceholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--blue);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+.userInfo {
+    flex: 1;
+}
+
+.userInfo h2 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    color: var(--text);
+}
+
+.userRole {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.userStatus {
+    margin: 8px 0 0 0;
+}
+
+.activeStatus,
+.inactiveStatus {
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    height: 24px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    line-height: 24px;
+    font-size: 13px;
+}
+
+.activeStatus {
+    background: rgba(0, 204, 153, 0.2);
+    color: #008b66;
+    border: 1px solid rgba(0, 204, 153, 0.3);
+}
+
+.inactiveStatus {
+    background: rgba(255, 77, 77, 0.2);
+    color: #d32f2f;
+    border: 1px solid rgba(255, 77, 77, 0.3);
+}
+
+.activeStatus::before,
+.inactiveStatus::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.activeStatus::before {
+    background-color: #00cc99;
+    box-shadow: 0 0 4px #00cc99;
+}
+
+.inactiveStatus::before {
+    background-color: #ff4d4d;
+    box-shadow: 0 0 4px #ff4d4d;
+}
+
+.userDetailsContent {
+    padding: 20px;
+}
+
+.userDetailsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.detailItem {
+    position: relative;
+}
+
+.detailItem h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #666;
+    font-weight: 600;
+}
+
+.detailItem p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+.editableText {
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: var(--transition);
+    font-size: 14px;
+    color: var(--blue);
+}
+
+.bioField .editableText {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    max-width: 300px;
+    max-height: 60px;
+}
+
+.editableText:hover {
+    background-color: rgba(255, 204, 0, 0.1);
+}
+
+.editIcon {
+    opacity: 0;
+    margin-left: 8px;
+    color: var(--yellow);
+    transition: var(--transition);
+}
+
+.editableText:hover .editIcon {
+    opacity: 1;
+}
+
+.emptyValue {
+    color: #999;
+    font-style: italic;
+}
+
+.editableFieldWrapper {
+    margin-top: 8px;
+}
+
+.editableInput {
+    width: 300px;
+    height: 80px;
+    overflow-y: auto;
+    resize: none;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 8px;
+    transition: var(--transition);
+}
+
+.editableInput:focus {
+    border-color: var(--blue);
+}
+
+.editActions {
+    display: flex;
+    gap: 8px;
+}
+
+.saveButton,
+.cancelButton,
+.changePasswordButton {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.saveButton {
+    background-color: var(--yellow);
+    color: var(--black);
+}
+
+.saveButton:hover:not(:disabled) {
+    background-color: #ffdb4d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.saveButton:disabled {
+    background-color: #f0f0f0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.cancelButton {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.cancelButton:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.changePasswordButton {
+    background-color: var(--blue);
+    color: white;
+}
+
+.changePasswordButton:hover {
+    background-color: #0066cc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.passwordForm {
+    margin-top: 8px;
+}
+
+.passwordFields {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.formGroup label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #666;
+}
+
+.input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.input:focus {
+    border-color: var(--blue);
+}
+
+.passwordActions {
+    display: flex;
+    gap: 8px;
+}
+
+.selectWrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.select {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: white;
+    min-width: 150px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.select:focus {
+    border-color: var(--blue);
+}
+
+.statusToggle {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.statusButton {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.statusButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.statusButtonActive {
+    border-color: var(--blue);
+    background-color: rgba(0, 85, 164, 0.1);
+    color: var(--blue);
+}
+
+/* Style dla blokowania edycji własnego konta */
+.currentUserBadge {
+    font-size: 0.8rem;
+    color: #666;
+    font-style: italic;
+    margin-left: 8px;
+}
+
+.roleText,
+.statusText {
+    position: relative;
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    color: #666;
+    font-size: 13px;
+}
+
+.tooltipText {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.roleText:hover .tooltipText,
+.statusText:hover .tooltipText {
+    visibility: visible;
+    opacity: 1;
+}
+
+.disabledButton {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.disabledButtonWrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.disabledButtonWrapper:hover .tooltipText {
+    visibility: visible;
+    opacity: 1;
+}
+
+.currentUserRow {
+    background-color: rgba(255, 204, 0, 0.1);
+}
+
+.warningText {
+    color: #ff9800;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+@media (max-width: 900px) {
+    .userDetailsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .passwordFields {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .container {
+        margin: 70px 10px 10px;
+        padding: 12px;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+
+    .userHeader {
+        padding: 15px;
+    }
+
+    .userDetailsContent {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 500px) {
+    .title {
+        font-size: 20px;
+    }
+
+    .container {
+        margin: 70px 8px 8px;
+        padding: 10px;
+    }
+
+    .userAvatar,
+    .userAvatarPlaceholder {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+    }
+}

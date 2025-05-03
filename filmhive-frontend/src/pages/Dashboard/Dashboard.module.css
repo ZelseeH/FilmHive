@@ -1,0 +1,440 @@
+:root {
+    --primary: #ffcc00;
+    --primary-dark: #ffdb4d;
+    --text: #333;
+    --background: #f5f5f5;
+    --border: #e0e0e0;
+    --admin-color: #e57373;
+    --moderator-color: #64b5f6;
+    --user-color: #81c784;
+    --widget-gradient: linear-gradient(135deg, #1a1a1a, #333);
+    --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --transition: all 0.2s ease;
+}
+
+body {
+    background: var(--background);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 70px auto 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: var(--card-shadow);
+}
+
+.header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.title {
+    margin: 0 0 8px 0;
+    color: var(--primary);
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.welcome {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.dashboardGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin: 0 auto 40px;
+}
+
+.widgetCard {
+    background: var(--black, #1a1a1a);
+    border-radius: 6px;
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+    flex: 1;
+    min-width: 300px;
+}
+
+.widgetCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.widgetHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.widgetTitle {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.widgetIcon {
+    font-size: 20px;
+    color: var(--primary);
+}
+
+.widgetContent {
+    padding: 10px 0;
+    width: 100%;
+}
+
+.widgetStat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statLabel {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.statLabel::before {
+    content: '●';
+    font-size: 10px;
+    line-height: 1;
+}
+
+.totalLabel::before {
+    color: #fff;
+}
+
+.activeLabel::before {
+    color: #00cc99;
+}
+
+.adminLabel::before {
+    color: var(--admin-color);
+}
+
+.moderatorLabel::before {
+    color: var(--moderator-color);
+}
+
+.userLabel::before {
+    color: var(--user-color);
+}
+
+.statValue {
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+}
+
+.widgetLink {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    padding: 8px 12px;
+    background-color: var(--primary);
+    color: var(--black);
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+}
+
+.widgetLink:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.statsCard {
+    background-color: #1a1a1a;
+    border-radius: 6px;
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+    transition: var(--transition);
+    flex: 1;
+    min-width: 300px;
+}
+
+.statsCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cardTitle {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    color: var(--primary);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+}
+
+.statItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+}
+
+.cardLink {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    padding: 8px 12px;
+    background-color: var(--primary);
+    color: var(--black);
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+}
+
+.cardLink:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.quickActions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+    padding: 10px 15px;
+    background-color: var(--primary);
+    color: var(--black);
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.actionButton:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.actionButton:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+    font-size: 16px;
+}
+
+.recentUsersSection {
+    margin: 30px auto 0;
+    background: white;
+    border-radius: 6px;
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+}
+
+.sectionTitle {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.tableContainer {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.recentUsersTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.recentUsersTable th,
+.recentUsersTable td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+
+.recentUsersTable th {
+    background-color: var(--black);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.recentUsersTable tr:hover {
+    background-color: rgba(255, 204, 0, 0.1);
+}
+
+.tableLink {
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.tableLink:hover {
+    text-decoration: underline;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    color: #666;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.errorMessage {
+    background: rgba(255, 77, 77, 0.1);
+    color: #d32f2f;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border-left: 3px solid #d32f2f;
+    font-size: 13px;
+}
+
+@media (max-width: 900px) {
+    .dashboardGrid {
+        flex-direction: column;
+    }
+
+    .widgetCard,
+    .statsCard {
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 700px) {
+    .container {
+        margin: 70px 10px 10px;
+        padding: 12px;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+
+    .welcome {
+        font-size: 13px;
+    }
+
+    .dashboardGrid {
+        gap: 15px;
+    }
+
+    .widgetCard,
+    .statsCard {
+        padding: 15px;
+    }
+
+    .widgetTitle,
+    .cardTitle {
+        font-size: 16px;
+    }
+
+    .recentUsersTable th,
+    .recentUsersTable td {
+        padding: 8px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 500px) {
+    .container {
+        margin: 70px 8px 8px;
+        padding: 10px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .welcome {
+        font-size: 12px;
+    }
+
+    .widgetTitle,
+    .cardTitle {
+        font-size: 15px;
+    }
+
+    .statLabel,
+    .statValue {
+        font-size: 12px;
+    }
+
+    .actionButton {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .recentUsersSection {
+        padding: 15px 10px;
+    }
+
+    .sectionTitle {
+        font-size: 18px;
+    }
+
+    .recentUsersTable th,
+    .recentUsersTable td {
+        padding: 6px;
+        font-size: 11px;
+    }
+}

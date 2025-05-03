@@ -7,9 +7,15 @@ interface UserMenuProps {
     onClose: () => void;
     onLogout: () => void;
     position: { top: number; left: number };
+    role?: number;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({ username, onClose, onLogout, position }) => {
+const UserMenu: React.FC<UserMenuProps> = ({ username, onClose, onLogout, position, role }) => {
+    const handleLogout = () => {
+        onLogout();
+        window.location.reload();
+    };
+
     return (
         <div
             className={styles['user-menu']}
@@ -33,9 +39,29 @@ const UserMenu: React.FC<UserMenuProps> = ({ username, onClose, onLogout, positi
             >
                 Ustawienia
             </Link>
+            {/* Panel Administratora - tylko dla roli 1 (admin) */}
+            {role === 1 && (
+                <Link
+                    to="/dashboard"
+                    className={styles['user-menu-item']}
+                    onClick={onClose}
+                >
+                    Panel Administratora
+                </Link>
+            )}
+            {/* Panel Moderatora - tylko dla roli 2 (moderator) */}
+            {role === 2 && (
+                <Link
+                    to="/dashboard"
+                    className={styles['user-menu-item']}
+                    onClick={onClose}
+                >
+                    Panel Moderatora
+                </Link>
+            )}
             <button
                 className={`${styles['user-menu-item']} ${styles['logout-btn']}`}
-                onClick={onLogout}
+                onClick={handleLogout}
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

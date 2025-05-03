@@ -1,8 +1,9 @@
-// src/pages/Admin/UserManagement.tsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import Pagination from '../../components/ui/Pagination';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import Pagination from '../../../components/ui/Pagination';
 import styles from './UserManagement.module.css';
+import { createSlug } from '../../../utils/formatters';
 
 interface User {
     id: string;
@@ -12,6 +13,7 @@ interface User {
     is_active: boolean;
     registration_date: string;
     last_login?: string;
+    is_current_user?: boolean;
 }
 
 interface ApiResponse {
@@ -25,7 +27,8 @@ interface ApiResponse {
 }
 
 const UserManagement: React.FC = () => {
-    const { getToken } = useAuth();
+    const { getToken, user: currentUser } = useAuth();
+    const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -63,17 +66,19 @@ const UserManagement: React.FC = () => {
 
             const data: ApiResponse = await response.json();
 
-            // Sortowanie użytkowników najpierw po roli, potem po nazwie
-            const sortedUsers = [...data.users].sort((a, b) => {
+            // Oznaczamy obecnie zalogowanego użytkownika
+            const sortedUsers = [...data.users].map(user => ({
+                ...user,
+                is_current_user: user.id === currentUser?.id
+            })).sort((a, b) => {
                 if (a.role !== b.role) {
-                    return a.role - b.role; // Sortowanie po roli (rosnąco)
+                    return a.role - b.role;
                 }
-                return a.username.localeCompare(b.username); // Sortowanie po nazwie
+                return a.username.localeCompare(b.username);
             });
 
             setUsers(sortedUsers);
 
-            // Bezpieczne ustawienie danych paginacji
             if (data.pagination) {
                 setCurrentPage(data.pagination.page || 1);
                 setTotalPages(data.pagination.total_pages || 1);
@@ -125,7 +130,6 @@ const UserManagement: React.FC = () => {
                 throw new Error('Nie udało się zmienić roli użytkownika');
             }
 
-            // Aktualizacja listy użytkowników po zmianie roli
             fetchUsers(currentPage);
         } catch (err: any) {
             setError(err.message);
@@ -153,7 +157,6 @@ const UserManagement: React.FC = () => {
                 throw new Error('Nie udało się zmienić statusu użytkownika');
             }
 
-            // Aktualizacja listy użytkowników po zmianie statusu
             fetchUsers(currentPage);
         } catch (err: any) {
             setError(err.message);
@@ -182,6 +185,11 @@ const UserManagement: React.FC = () => {
             hour: '2-digit',
             minute: '2-digit'
         }).format(date);
+    };
+
+    const navigateToUserDetails = (user: User) => {
+        const userSlug = createSlug(user.username);
+        navigate(`/dashboard/users/${user.id}-${userSlug}`);
     };
 
     return (
@@ -245,32 +253,70 @@ const UserManagement: React.FC = () => {
                             </thead>
                             <tbody>
                                 {users.map(user => (
-                                    <tr key={user.id} className={!user.is_active ? styles.inactiveUser : ''}>
+                                    <tr
+                                        key={user.id}
+                                        className={`${!user.is_active ? styles.inactiveUser : ''} 
+                                                  ${user.role === 2 ? styles.moderatorRow : ''} 
+                                                  ${user.is_current_user ? styles.currentUserRow : ''}`}
+                                    >
                                         <td>{user.id}</td>
-                                        <td className={styles.usernameCell}>{user.username}</td>
+                                        <td
+                                            className={`${styles.usernameCell} ${styles.clickable}`}
+                                            onClick={() => navigateToUserDetails(user)}
+                                        >
+                                            {user.username}
+                                            {user.is_current_user && <span className={styles.currentUserBadge}> (Ty)</span>}
+                                        </td>
                                         <td className={styles.emailCell}>{user.email}</td>
                                         <td>
-                                            <select
-                                                value={user.role}
-                                                onChange={(e) => changeUserRole(user.id, Number(e.target.value))}
-                                                className={styles.roleSelect}
-                                            >
-                                                <option value={1}>Administrator</option>
-                                                <option value={2}>Moderator</option>
-                                                <option value={3}>Użytkownik</option>
-                                            </select>
+                                            {user.is_current_user ? (
+                                                <div className={styles.roleText}>
+                                                    {getRoleName(user.role)}
+                                                    <span className={styles.tooltipText}>Nie możesz zmienić własnej roli</span>
+                                                </div>
+                                            ) : (
+                                                <select
+                                                    value={user.role}
+                                                    onChange={(e) => changeUserRole(user.id, Number(e.target.value))}
+                                                    className={styles.roleSelect}
+                                                >
+                                                    <option value={1}>Administrator</option>
+                                                    <option value={2}>Moderator</option>
+                                                    <option value={3}>Użytkownik</option>
+                                                </select>
+                                            )}
                                         </td>
-                                        <td className={user.is_active ? styles.activeStatus : styles.inactiveStatus}>
-                                            {user.is_active ? 'Aktywny' : 'Nieaktywny'}
+                                        <td>
+                                            <div className={user.is_active ? styles.activeStatus : styles.inactiveStatus}>
+                                                {user.is_active ? 'Aktywny' : 'Nieaktywny'}
+                                            </div>
                                         </td>
                                         <td>{formatDate(user.registration_date)}</td>
                                         <td>{formatDate(user.last_login)}</td>
                                         <td>
+                                            {user.is_current_user ? (
+                                                <div className={styles.disabledButtonWrapper}>
+                                                    <button
+                                                        className={`${styles.deactivateBtn} ${styles.disabledButton}`}
+                                                        disabled={true}
+                                                    >
+                                                        Dezaktywuj
+                                                    </button>
+                                                    <span className={styles.tooltipText}>Nie możesz dezaktywować własnego konta</span>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => toggleUserStatus(user.id, user.is_active)}
+                                                    className={user.is_active ? styles.deactivateBtn : styles.activateBtn}
+                                                >
+                                                    {user.is_active ? 'Dezaktywuj' : 'Aktywuj'}
+                                                </button>
+                                            )}
                                             <button
-                                                onClick={() => toggleUserStatus(user.id, user.is_active)}
-                                                className={user.is_active ? styles.deactivateBtn : styles.activateBtn}
+                                                onClick={() => navigateToUserDetails(user)}
+                                                className={styles.detailsBtn}
                                             >
-                                                {user.is_active ? 'Dezaktywuj' : 'Aktywuj'}
+                                                Szczegóły
                                             </button>
                                         </td>
                                     </tr>
