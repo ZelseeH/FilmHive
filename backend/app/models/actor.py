@@ -7,9 +7,9 @@ from .base import (
     Integer,
     Date,
     datetime,
-    Enum,  
+    Enum,
 )
-import enum  
+import enum
 from .movie import Movie
 from flask import url_for
 
@@ -29,9 +29,7 @@ class Actor(Base):
     birth_date: Mapped[datetime] = mapped_column(Date)
     birth_place: Mapped[str] = mapped_column(String(255))
     biography: Mapped[str] = mapped_column(String(2000))
-    photo_url: Mapped[str] = mapped_column(
-        String(255), nullable=True
-    )  
+    photo_url: Mapped[str] = mapped_column(String(255), nullable=True)
 
     gender: Mapped[Gender] = mapped_column(Enum(Gender), nullable=True)
 

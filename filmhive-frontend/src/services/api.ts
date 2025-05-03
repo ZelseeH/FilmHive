@@ -1,7 +1,7 @@
 const API_URL = 'http://localhost:5000/api';
 
 export const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken'); // Zmieniono z 'token' na 'accessToken'
 
     const headers = {
         'Content-Type': 'application/json',
@@ -20,10 +20,15 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
 
     if (!response.ok) {
         try {
-            const error = await response.json();
-            throw new Error(error.error || 'Wystąpił błąd');
+            const errorData = await response.json();
+            const error: any = new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+            error.response = response; // Dodajemy obiekt response do błędu
+            throw error;
         } catch (e) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            // Jeśli nie możemy sparsować JSON, tworzymy błąd z informacją o statusie
+            const error: any = new Error(`HTTP error! Status: ${response.status}`);
+            error.response = response;
+            throw error;
         }
     }
 
@@ -31,7 +36,9 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
 };
 
 export const clearAuthAndCache = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('accessToken'); // Zmieniono z 'token' na 'accessToken'
+    localStorage.removeItem('refreshToken'); // Dodano usuwanie refresh tokenu
+    localStorage.removeItem('user'); // Dodano usuwanie danych użytkownika
 
     if ('caches' in window) {
         try {

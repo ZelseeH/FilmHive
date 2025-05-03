@@ -36,10 +36,25 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         throw new Error("Brak tokenu w odpowiedzi");
       }
 
-      login(data.user, data.access_token);
-      onClose();
+      const refreshToken = data.refresh_token || '';
+      const loginSuccess = login(data.user, data.access_token, refreshToken);
+
+      if (loginSuccess) {
+        onClose();
+        setTimeout(() => {
+          window.location.reload();
+        }, 100); // Odświeżenie po zamknięciu modala
+      }
     } catch (err: any) {
-      setError(err.message);
+      console.error("Login error:", err);
+
+      if (err.response && err.response.status === 403) {
+        setError("Twoje konto zostało zawieszone lub dezaktywowane przez administratora.");
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError("Wystąpił nieznany błąd podczas logowania.");
+      }
     } finally {
       setLoading(false);
     }

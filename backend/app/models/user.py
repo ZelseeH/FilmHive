@@ -68,16 +68,13 @@ class User(Base):
 
     @property
     def is_admin(self):
-        """Sprawdza, czy użytkownik ma uprawnienia administratora"""
         return self.role == 1
 
     @property
     def is_moderator(self):
-        """Sprawdza, czy użytkownik ma uprawnienia moderatora"""
         return self.role <= 2
 
     def update_last_login(self):
-        """Aktualizuje datę ostatniego logowania"""
         self.last_login = datetime.utcnow()
 
     def serialize(
@@ -89,7 +86,6 @@ class User(Base):
         include_recommendations=False,
         include_watchlist=False,
     ):
-        """Serializuje obiekt użytkownika do formatu JSON"""
         background_position = {"x": 50, "y": 50}  # Domyślna pozycja
         if self.background_image:
             bg_path = self.background_image.lstrip("/static/")

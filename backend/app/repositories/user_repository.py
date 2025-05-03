@@ -1,5 +1,10 @@
+from sqlalchemy import or_, func
+from flask import url_for
 from app.models.user import User
-from sqlalchemy import or_
+from app.models.rating import Rating
+from app.models.movie import Movie
+from app.models.favorite_movie import FavoriteMovie
+from app.models.watchlist import Watchlist
 
 
 class UserRepository:
@@ -85,10 +90,6 @@ class UserRepository:
         return user
 
     def get_recent_rated_movies(self, user_id, limit=6):
-        from app.models.rating import Rating
-        from app.models.movie import Movie
-        from flask import url_for
-
         results = (
             self.session.query(Rating, Movie)
             .join(Movie, Rating.movie_id == Movie.movie_id)
@@ -116,10 +117,6 @@ class UserRepository:
         ]
 
     def get_recent_favorite_movies(self, user_id, limit=6):
-        from app.models.favorite_movie import FavoriteMovie
-        from app.models.movie import Movie
-        from flask import url_for
-
         results = (
             self.session.query(FavoriteMovie, Movie)
             .join(Movie, FavoriteMovie.movie_id == Movie.movie_id)
@@ -146,10 +143,6 @@ class UserRepository:
         ]
 
     def get_recent_watchlist_movies(self, user_id, limit=6):
-        from app.models.watchlist import Watchlist
-        from app.models.movie import Movie
-        from flask import url_for
-
         results = (
             self.session.query(Watchlist, Movie)
             .join(Movie, Watchlist.movie_id == Movie.movie_id)
@@ -202,3 +195,92 @@ class UserRepository:
                 "total_pages": total_pages,
             },
         }
+
+    # Nowe metody do obsługi panelu administratora
+
+    def get_all(self):
+        """Pobierz wszystkich użytkowników"""
+        return self.session.query(User).all()
+
+    def get_all_paginated(self, page=1, per_page=20):
+        """Pobierz paginowaną listę użytkowników"""
+        return self.session.query(User).paginate(page=page, per_page=per_page)
+
+    def count_all(self):
+        """Policz wszystkich użytkowników"""
+        return self.session.query(func.count(User.user_id)).scalar()
+
+    def count_active(self):
+        """Policz aktywnych użytkowników"""
+        return (
+            self.session.query(func.count(User.user_id))
+            .filter(User.is_active == True)
+            .scalar()
+        )
+
+    def count_by_role(self, role):
+        """Policz użytkowników z określoną rolą"""
+        return (
+            self.session.query(func.count(User.user_id))
+            .filter(User.role == role)
+            .scalar()
+        )
+
+    def get_by_role(self, role):
+        """Pobierz użytkowników z określoną rolą"""
+        return self.session.query(User).filter(User.role == role).all()
+
+    def change_user_role(self, user_id, new_role):
+        """Zmień rolę użytkownika"""
+        user = self.get_by_id(user_id)
+        if not user:
+            return None
+
+        user.role = new_role
+        self.session.commit()
+        return user
+
+    def activate_deactivate_user(self, user_id, is_active):
+        """Aktywuj lub dezaktywuj konto użytkownika"""
+        user = self.get_by_id(user_id)
+        if not user:
+            return None
+
+        user.is_active = is_active
+        self.session.commit()
+        return user
+
+    def get_user_stats(self):
+        """Pobierz statystyki użytkowników dla panelu administratora"""
+        total_users = self.count_all()
+        active_users = self.count_active()
+        admins = self.count_by_role(1)  # 1 = admin
+        moderators = self.count_by_role(2)  # 2 = moderator
+        regular_users = self.count_by_role(3)  # 3 = user
+
+        return {
+            "total": total_users,
+            "active": active_users,
+            "admins": admins,
+            "moderators": moderators,
+            "regular_users": regular_users,
+        }
+
+    def get_recent_users(self, limit=10):
+        """Pobierz ostatnio zarejestrowanych użytkowników"""
+        return (
+            self.session.query(User)
+            .order_by(User.registration_date.desc())
+            .limit(limit)
+            .all()
+        )
+
+    def get_recent_active_users(self, limit=10):
+        """Pobierz ostatnio aktywnych użytkowników"""
+        return (
+            self.session.query(User)
+            .filter(User.last_login != None)
+            .order_by(User.last_login.desc())
+            .limit(limit)
+            .all()
+        )

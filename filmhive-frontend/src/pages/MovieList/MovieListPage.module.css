@@ -20,12 +20,10 @@
 
 .sortingBar.visible {
   transform: translateY(0);
-  /* Widoczny pod Navbar */
 }
 
 .sortingBar.hidden {
   transform: translateY(-100%);
-  /* Chowa się nad ekranem */
 }
 
 .pageContainer {
