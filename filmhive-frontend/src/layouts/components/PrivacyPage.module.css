@@ -1,0 +1,94 @@
+/* PrivacyPage.module.css */
+.container {
+    max-width: 1100px;
+    margin: 70px auto 20px;
+    padding: 15px;
+    background: white;
+}
+
+.pageHeader {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.pageTitle {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 15px;
+}
+
+.titleUnderline {
+    height: 3px;
+    width: 80px;
+    background-color: #ffcc00;
+    margin: 0 auto;
+}
+
+.privacyContent {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.lastUpdated {
+    font-style: italic;
+    color: #666;
+    text-align: right;
+    margin-bottom: 30px;
+}
+
+.privacySection {
+    margin-bottom: 40px;
+}
+
+.sectionTitle {
+    font-size: 22px;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.sectionTitle::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 40px;
+    background-color: #ffcc00;
+}
+
+.paragraph {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.privacyList {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+.privacyList li {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .privacyContent {
+        padding: 0 15px;
+    }
+
+    .sectionTitle {
+        font-size: 20px;
+    }
+
+    .paragraph,
+    .privacyList li {
+        font-size: 15px;
+    }
+}

@@ -1,0 +1,182 @@
+/* ContactPage.module.css */
+.container {
+    max-width: 1100px;
+    margin: 70px auto 20px;
+    padding: 15px;
+    background: white;
+}
+
+.pageHeader {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.pageTitle {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 15px;
+}
+
+.titleUnderline {
+    height: 3px;
+    width: 80px;
+    background-color: #ffcc00;
+    margin: 0 auto;
+}
+
+.contactWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.contactInfo {
+    flex: 1;
+    min-width: 300px;
+}
+
+.contactForm {
+    flex: 2;
+    min-width: 300px;
+    background-color: #f9f9f9;
+    padding: 30px;
+    border-radius: 8px;
+}
+
+.sectionTitle {
+    font-size: 24px;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.sectionTitle::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 40px;
+    background-color: #ffcc00;
+}
+
+.paragraph {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.infoItem {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.infoIcon {
+    font-size: 24px;
+    margin-right: 15px;
+    color: #0055a4;
+}
+
+.infoTitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #1a1a1a;
+}
+
+.infoText {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.socialLinks {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.socialLink {
+    color: #0055a4;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.socialLink:hover {
+    color: #ffcc00;
+}
+
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formLabel {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.formInput,
+.formTextarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.formInput:focus,
+.formTextarea:focus {
+    border-color: #0055a4;
+    outline: none;
+}
+
+.formTextarea {
+    resize: vertical;
+}
+
+.submitButton {
+    background-color: #0055a4;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submitButton:hover {
+    background-color: #003d7a;
+    transform: translateY(-2px);
+}
+
+.successMessage {
+    text-align: center;
+    padding: 30px;
+}
+
+.successMessage h3 {
+    font-size: 24px;
+    color: #2e7d32;
+    margin-bottom: 10px;
+}
+
+.successMessage p {
+    font-size: 16px;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .contactWrapper {
+        flex-direction: column;
+    }
+}

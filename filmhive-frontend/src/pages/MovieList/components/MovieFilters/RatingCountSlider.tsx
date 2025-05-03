@@ -3,6 +3,7 @@ import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
 import styles from './RatingCountSlider.module.css';
 
+
 interface RatingCountSliderProps {
     value: number;
     onChange: (value: number) => void;

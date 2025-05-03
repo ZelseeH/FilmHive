@@ -14,6 +14,10 @@ import ActorListPage from './pages/ActorList/ActorListPage';
 import ActorDetail from './pages/ActorDetails/ActotDetails';
 import SearchPage from './pages/Search/SearchPage';
 import UnauthorizedPage from './pages/Unauthorized/UnauthorizedPage';
+import AboutPage from './layouts/components/AboutPage';
+import ContactPage from './layouts/components/ContactPage';
+import TermsPage from './layouts/components/TermsPage';
+import PrivacyPage from './layouts/components/PrivacyPage';
 
 // Nowy wspólny dashboard
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -29,7 +33,6 @@ const AppRoutes: React.FC = () => {
 
     return (
         <Routes>
-            {/* Publiczne trasy */}
             <Route path="/" element={<HomePage />} />
             <Route path="/movies" element={<MovieListPage />} />
             <Route path="/movie/details/:movieTitle" element={<MovieDetail />} />
@@ -39,9 +42,11 @@ const AppRoutes: React.FC = () => {
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route path="/login"></Route>
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
 
-            {/* Trasy dostępne tylko dla zalogowanych użytkowników */}
-            {/* Chronione trasy dla zalogowanych użytkowników */}
             <Route path="/settings" element={
                 <ProtectedRoute>
                     <SettingsPage />
