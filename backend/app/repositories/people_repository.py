@@ -1,198 +1,164 @@
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import or_, func, and_, extract
 from app.models.actor import Actor
 from app.models.director import Director
-from functools import reduce
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import or_, func, select, desc, text, union_all
+from app.utils.people_utils import serialize_person, get_people_query
+from flask import url_for
 
 
 class PeopleRepository:
-    MODEL_MAP = {
-        "actor": {
-            "model": Actor,
-            "id_column": Actor.actor_id,
-            "name_column": Actor.actor_name,
-            "birth_date": Actor.birth_date,
-            "birth_place": Actor.birth_place,
-            "biography": Actor.biography,
-            "gender": Actor.gender,
-            "movies_relationship": "movies",
-            "photo_url": Actor.photo_url,
-        },
-        "director": {
-            "model": Director,
-            "id_column": Director.director_id,
-            "name_column": Director.director_name,
-            "birth_date": Director.birth_date,
-            "birth_place": Director.birth_place,
-            "biography": Director.biography,
-            "gender": Director.gender,
-            "movies_relationship": "movies",
-            "photo_url": Director.photo_url,
-        },
-    }
-
     def __init__(self, session):
         self.session = session
 
-    def _get_model_info(self, person_type):
-        return self.MODEL_MAP.get(person_type)
+    def _apply_sorting(self, query, sort_by="name", sort_order="asc"):
+        subquery = query.alias("people")
 
-    def get_all(self, person_type, page=1, per_page=10):
-        model_info = self._get_model_info(person_type)
-        query = self.session.query(model_info["model"])
+        if sort_by == "name":
+            if sort_order.lower() == "asc":
+                return select(subquery).order_by(subquery.c.name)
+            else:
+                return select(subquery).order_by(subquery.c.name.desc())
 
-        total = query.count()
-        people = (
-            query.order_by(model_info["name_column"])
-            .offset((page - 1) * per_page)
-            .limit(per_page)
-            .all()
-        )
+        elif sort_by == "birth_date":
+            if sort_order.lower() == "asc":
+                return select(subquery).order_by(subquery.c.birth_date)
+            else:
+                return select(subquery).order_by(subquery.c.birth_date.desc())
 
-        return {
-            "people": people,
-            "pagination": self._build_pagination(page, per_page, total),
-        }
-
-    def get_by_id(self, person_type, person_id):
-        model_info = self._get_model_info(person_type)
-        return (
-            self.session.query(model_info["model"])
-            .filter(model_info["id_column"] == person_id)
-            .first()
-        )
-
-    def search(self, person_type, query, page=1, per_page=10):
-        model_info = self._get_model_info(person_type)
-        search_term = f"%{query}%"
-
-        total = (
-            self.session.query(model_info["model"])
-            .filter(
-                or_(
-                    model_info["name_column"].ilike(search_term),
-                    model_info["biography"].ilike(search_term),
-                )
-            )
-            .count()
-        )
-
-        people = (
-            self.session.query(model_info["model"])
-            .filter(
-                or_(
-                    model_info["name_column"].ilike(search_term),
-                    model_info["biography"].ilike(search_term),
-                )
-            )
-            .order_by(model_info["name_column"])
-            .offset((page - 1) * per_page)
-            .limit(per_page)
-            .all()
-        )
-
-        return {
-            "people": people,
-            "pagination": self._build_pagination(page, per_page, total),
-        }
-
-    def _apply_filters(self, query, filters, model_info):
-        if "name" in filters and filters["name"]:
-            search_name = f"%{filters['name']}%"
-            query = query.filter(model_info["name_column"].ilike(search_name))
-
-        if "countries" in filters and filters["countries"]:
-            countries = [c.strip() for c in filters["countries"].split(",")]
-            country_conditions = [
-                model_info["birth_place"].ilike(f"%{country}%") for country in countries
-            ]
-            if country_conditions:
-                query = query.filter(or_(*country_conditions))
-
-        if "years" in filters and filters["years"]:
-            years = [y.strip() for y in filters["years"].split(",")]
-            year_conditions = [
-                extract("year", model_info["birth_date"]) == int(year)
-                for year in years
-                if year.isdigit()
-            ]
-            if year_conditions:
-                query = query.filter(or_(*year_conditions))
-
-        if "gender" in filters and filters["gender"]:
-            query = query.filter(model_info["gender"] == filters["gender"])
-
-        return query
-
-    def _apply_sorting(self, query, model_info, sort_by="name", sort_order="asc"):
-        sort_column = model_info["name_column"]
-
-        if sort_by == "birth_date":
-            sort_column = model_info["birth_date"]
-        elif sort_by == "movie_count":
-            from app.models.movie_actor import MovieActor
-
-            sort_column = func.count(MovieActor.movie_id)
-
-        if sort_order.lower() == "desc":
-            query = query.order_by(sort_column.desc())
         else:
-            query = query.order_by(sort_column.asc())
+            if sort_order.lower() == "asc":
+                return select(subquery).order_by(subquery.c.name)
+            else:
+                return select(subquery).order_by(subquery.c.name.desc())
 
-        return query
+    def get_all(
+        self, page=1, per_page=10, sort_by="name", sort_order="asc", filters=None
+    ):
+        base_query = get_people_query(filters)
+        query = self._apply_sorting(base_query, sort_by, sort_order)
+        count_query = select(func.count()).select_from(base_query.alias())
+        total = self.session.execute(count_query).scalar()
+        final_query = query.offset((page - 1) * per_page).limit(per_page)
+        result = self.session.execute(final_query)
+
+        people = []
+        for row in result:
+            person_dict = {}
+            for key in row._mapping.keys():
+                value = row._mapping[key]
+                if key == "gender" and value is not None:
+                    person_dict[key] = value.value
+                else:
+                    person_dict[key] = value
+
+            # Generowanie poprawnego URL dla zdjęcia
+            person_type = person_dict["type"]
+            if person_dict["photo_url"]:
+                folder = "actors" if person_type == "actor" else "directors"
+                person_dict["photo_url"] = url_for(
+                    "static",
+                    filename=f"{folder}/{person_dict['photo_url']}",
+                    _external=True,
+                )
+
+            people.append(person_dict)
+
+        total_pages = (total + per_page - 1) // per_page
+
+        return {
+            "people": people,
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "total_pages": total_pages,
+            },
+        }
+
+    def get_by_id(self, id, person_type):
+        if person_type == "actor":
+            person = self.session.query(Actor).filter(Actor.actor_id == id).first()
+            if person:
+                return serialize_person(person, "actor")
+        elif person_type == "director":
+            person = (
+                self.session.query(Director).filter(Director.director_id == id).first()
+            )
+            if person:
+                return serialize_person(person, "director")
+        return None
+
+    def search(self, query, page=1, per_page=10):
+        filters = {"name": query}
+        return self.get_all(page, per_page, filters=filters)
+
+    def get_person_movies(self, id, person_type, page=1, per_page=10):
+        if person_type == "actor":
+            actor = self.session.query(Actor).filter(Actor.actor_id == id).first()
+            if not actor:
+                return None
+
+            total = len(actor.movies)
+            movies = actor.movies[(page - 1) * per_page : page * per_page]
+
+            total_pages = (total + per_page - 1) // per_page
+
+            return {
+                "movies": movies,
+                "pagination": {
+                    "page": page,
+                    "per_page": per_page,
+                    "total": total,
+                    "total_pages": total_pages,
+                },
+            }
+
+        elif person_type == "director":
+            director = (
+                self.session.query(Director).filter(Director.director_id == id).first()
+            )
+            if not director:
+                return None
+
+            total = len(director.movies)
+            movies = director.movies[(page - 1) * per_page : page * per_page]
+
+            total_pages = (total + per_page - 1) // per_page
+
+            return {
+                "movies": movies,
+                "pagination": {
+                    "page": page,
+                    "per_page": per_page,
+                    "total": total,
+                    "total_pages": total_pages,
+                },
+            }
+
+        else:
+            raise ValueError("Invalid person type. Must be 'actor' or 'director'.")
+
+    def get_unique_birthplaces(self):
+        actor_query = select(
+            func.split_part(Actor.birth_place, ",", -1).label("country")
+        ).distinct()
+
+        director_query = select(
+            func.split_part(Director.birth_place, ",", -1).label("country")
+        ).distinct()
+
+        combined_query = union_all(actor_query, director_query)
+        unique_query = (
+            select(combined_query.alias().c.country)
+            .distinct()
+            .order_by(text("country"))
+        )
+
+        result = self.session.execute(unique_query)
+        countries = [row.country.strip() for row in result if row.country]
+        return countries
 
     def filter_people(
-        self,
-        person_type,
-        filters,
-        page=1,
-        per_page=10,
-        sort_by="name",
-        sort_order="asc",
+        self, filters, page=1, per_page=10, sort_by="name", sort_order="asc"
     ):
-        model_info = self._get_model_info(person_type)
-        query = self.session.query(model_info["model"])
-
-        query = self._apply_filters(query, filters, model_info)
-        query = self._apply_sorting(query, model_info, sort_by, sort_order)
-
-        total = query.count()
-        people = query.offset((page - 1) * per_page).limit(per_page).all()
-
-        return {
-            "people": people,
-            "pagination": self._build_pagination(page, per_page, total),
-        }
-
-    def get_person_movies(self, person_type, person_id, page=1, per_page=10):
-        model_info = self._get_model_info(person_type)
-        person = self.get_by_id(person_type, person_id)
-
-        if not person:
-            return None
-
-        movies = getattr(person, model_info["movies_relationship"])
-        total = len(movies)
-        paginated_movies = movies[(page - 1) * per_page : page * per_page]
-
-        return {
-            "movies": paginated_movies,
-            "pagination": self._build_pagination(page, per_page, total),
-        }
-
-    def get_unique_birthplaces(self, person_type):
-        model_info = self._get_model_info(person_type)
-        return (
-            self.session.query(func.distinct(model_info["birth_place"]))
-            .order_by(model_info["birth_place"])
-            .scalars()
-            .all()
-        )
-
-    def _build_pagination(self, page, per_page, total):
-        return {
-            "page": page,
-            "per_page": per_page,
-            "total": total,
-            "total_pages": (total + per_page - 1) // per_page,
-        }
+        return self.get_all(page, per_page, sort_by, sort_order, filters)

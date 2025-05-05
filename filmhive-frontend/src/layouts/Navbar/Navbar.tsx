@@ -96,7 +96,7 @@ const Navbar: React.FC = () => {
             <Link to="/movies" className={styles['movies-link']}>
               Filmy
             </Link>
-            <Link to="/actors" className={styles['movies-link']}>
+            <Link to="/people" className={styles['movies-link']}>
               Aktorzy
             </Link>
           </div>

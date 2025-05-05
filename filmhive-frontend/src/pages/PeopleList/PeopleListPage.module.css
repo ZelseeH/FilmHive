@@ -37,7 +37,7 @@
     position: relative;
 }
 
-.actorListPage {
+.peopleListPage {
     width: 600px;
     flex-shrink: 0;
 }
@@ -75,13 +75,13 @@
     cursor: not-allowed;
 }
 
-.actorListPage h1 {
+.peopleListPage h1 {
     margin-top: 0;
     font-size: 24px;
     color: #fff;
 }
 
-.actorListContainer {
+.peopleListContainer {
     display: flex;
     flex-direction: column;
 }
@@ -117,7 +117,7 @@
     color: #ff4d4d;
 }
 
-.noActors {
+.noPeople {
     text-align: center;
     padding: 30px;
     font-size: 16px;
@@ -389,7 +389,7 @@
         width: 100%;
     }
 
-    .actorListPage {
+    .peopleListPage {
         width: 100%;
         padding-top: 0;
         margin-top: -10px;
@@ -434,7 +434,7 @@
         padding: 0 10px;
     }
 
-    .actorListContainer {
+    .peopleListContainer {
         width: 100%;
     }
 }

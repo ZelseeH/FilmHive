@@ -1,14 +1,13 @@
-// src/features/actors/utils/actorUtils.ts
 import { createSlug } from '../../../utils/formatters';
 
-export const formatActorName = (firstName?: string, lastName?: string): string => {
+export const formatPersonName = (firstName?: string, lastName?: string): string => {
     if (!firstName && !lastName) return '';
     if (!firstName) return lastName || '';
     if (!lastName) return firstName;
     return `${firstName} ${lastName}`;
 };
 
-export const getActorInitials = (name?: string): string => {
+export const getPersonInitials = (name?: string): string => {
     if (!name) return '';
     return name
         .split(' ')
@@ -17,9 +16,9 @@ export const getActorInitials = (name?: string): string => {
         .toUpperCase();
 };
 
-export const formatActorBirthDate = (birthDate?: string): string => {
+export const formatPersonBirthDate = (birthDate?: string): string => {
     if (!birthDate) return '';
-    return new Date(birthDate).toLocaleDateString('pl-PL');
+    return new Date(birthDate).toLocaleDateString();
 };
 
 export const calculateAge = (birthDate?: string, deathDate?: string): number | null => {
@@ -38,7 +37,7 @@ export const calculateAge = (birthDate?: string, deathDate?: string): number | n
     return age;
 };
 
-export const formatActorLifespan = (birthDate?: string, deathDate?: string): string => {
+export const formatPersonLifespan = (birthDate?: string, deathDate?: string): string => {
     if (!birthDate) return '';
 
     const birthYear = new Date(birthDate).getFullYear();
@@ -47,16 +46,18 @@ export const formatActorLifespan = (birthDate?: string, deathDate?: string): str
     return deathYear ? `${birthYear}-${deathYear}` : `ur. ${birthYear}`;
 };
 
-export const getActorSlug = (name: string): string => {
+export const getPersonSlug = (name: string): string => {
     return createSlug(name);
 };
 
-export const handleActorImageError = (
+export const handlePersonImageError = (
     e: React.SyntheticEvent<HTMLImageElement, Event>,
-    fallbackSrc: string = '/placeholder-actor.jpg'
+    type: 'actor' | 'director' = 'actor',
+    fallbackSrc?: string
 ): void => {
     const target = e.target as HTMLImageElement;
-    target.src = fallbackSrc;
+    const defaultFallback = type === 'actor' ? '/placeholder-actor.jpg' : '/placeholder-director.jpg';
+    target.src = fallbackSrc || defaultFallback;
     target.onerror = null;
 };
 
@@ -69,12 +70,7 @@ export const formatFilmography = (movies?: { title: string; year?: string }[]): 
         .join(', ');
 };
 
-export const formatGender = (gender?: 'M' | 'K' | null): string => {
-    if (!gender) return 'Nie określono';
-    return gender === 'M' ? 'Mężczyzna' : 'Kobieta';
-};
-
-export const truncateText = (text: string, maxLength: number): string => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+// Funkcja pomocnicza do określania typu osoby w tekście
+export const getPersonTypeLabel = (type: 'actor' | 'director'): string => {
+    return type === 'actor' ? 'Aktor' : 'Reżyser';
 };

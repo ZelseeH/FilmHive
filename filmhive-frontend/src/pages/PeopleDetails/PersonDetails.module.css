@@ -1,4 +1,4 @@
-.actor-detail-container {
+.person-detail-container {
     max-width: 1100px;
     margin: 3rem auto;
     padding: 1.5rem;
@@ -124,7 +124,7 @@
 
 /* Responsywność */
 @media (min-width: 1200px) {
-    .actor-detail-container {
+    .person-detail-container {
         padding: 2rem;
     }
 
@@ -134,7 +134,7 @@
 }
 
 @media (max-width: 768px) {
-    .actor-detail-container {
+    .person-detail-container {
         margin: 3.5rem 0;
         padding: 1rem;
     }

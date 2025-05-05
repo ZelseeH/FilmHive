@@ -1,4 +1,4 @@
-export interface Actor {
+export interface Person {
     id: number;
     name: string;
     birth_date: string | null;
@@ -6,6 +6,7 @@ export interface Actor {
     biography: string;
     photo_url: string | null;
     gender: 'M' | 'K' | null;
+    type: 'actor' | 'director';
     movies?: {
         id: number;
         title: string;

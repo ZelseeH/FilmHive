@@ -26,7 +26,7 @@ const MovieCastSection: React.FC<MovieCastSectionProps> = ({ actors, title }) =>
                     <div className={styles['cast-slider']} ref={sliderRef}>
                         {actors.map(actor => (
                             <Link
-                                to={`/actor/details/${createSlug(actor.name)}`}
+                                to={`/people/details/${createSlug(actor.name)}`}
                                 state={{ actorId: actor.id }}
                                 className={styles['cast-member']}
                                 key={actor.id}

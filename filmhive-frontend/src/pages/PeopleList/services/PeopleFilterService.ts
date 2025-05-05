@@ -1,9 +1,7 @@
-const API_URL = 'http://localhost:5000/api/people';
-
 const PeopleFilterService = {
-    async getBirthplaces(type: 'actor' | 'director' = 'actor'): Promise<string[]> {
+    async getBirthplaces(): Promise<string[]> {
         try {
-            const response = await fetch(`${API_URL}/birthplaces?type=${type}`);
+            const response = await fetch('http://localhost:5000/api/people/birthplaces');
             if (!response.ok) {
                 throw new Error('Failed to fetch birthplaces');
             }

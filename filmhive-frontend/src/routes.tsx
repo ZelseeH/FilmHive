@@ -23,6 +23,7 @@ import UserManagement from './pages/Dashboard/components/UserManagement';
 import UserDetails from './pages/Dashboard/components/UserDetails/UserDetails';
 import GenresPage from './pages/Dashboard/components/GenresPanel/GenresPage';
 import PeopleListPage from './pages/PeopleList/PeopleListPage';
+import PeopleDetails from './pages/PeopleDetails/PersonDetails';
 
 
 const AppRoutes: React.FC = () => {
@@ -36,10 +37,11 @@ const AppRoutes: React.FC = () => {
         <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/movies" element={<MovieListPage />} />
-            <Route path="/movie/details/:movieTitle" element={<MovieDetail />} />
-            <Route path="/actors" element={<ActorListPage />} />
-            <Route path="/people" element={<PeopleListPage personType="actor" />} />
-            <Route path="/actor/details/:actorName" element={<ActorDetail />} />
+            # <Route path="/movie/details/:movieTitle" element={<MovieDetail />} />
+            {/* <Route path="/actors" element={<ActorListPage />} /> */}
+            <Route path="/people" element={<PeopleListPage />} />
+            <Route path="/people/:personType/:personName" element={<PeopleDetails />} />
+            {/* <Route path="/actor/details/:actorName" element={<ActorDetail />} /> */}
             <Route path="/search" element={<SearchPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />

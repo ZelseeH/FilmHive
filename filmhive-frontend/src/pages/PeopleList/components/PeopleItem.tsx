@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Person } from '../services/peopleService';
-import { getPersonInitials, getPersonSlug } from '../utils/peopleUtils';
+import { getPersonInitials, getPersonSlug, getPersonTypeLabel } from '../utils/personUtils';
 import styles from './PeopleItem.module.css';
 
-interface PeopleItemProps {
+interface PersonItemProps {
     person: Person;
 }
 
-const PeopleItem: React.FC<PeopleItemProps> = ({ person }) => {
+const PersonItem: React.FC<PersonItemProps> = ({ person }) => {
     const calculateAge = () => {
         if (!person.birth_date) return null;
 
@@ -21,41 +21,43 @@ const PeopleItem: React.FC<PeopleItemProps> = ({ person }) => {
     };
 
     const ageInfo = calculateAge();
-
-    // Dynamiczne etykiety i ścieżki
-    const label = person.type === 'director' ? 'REŻYSER' : 'AKTOR';
-    const detailsPath = person.type === 'director'
-        ? `/director/details/${getPersonSlug(person.name)}`
-        : `/actor/details/${getPersonSlug(person.name)}`;
+    const personTypeLabel = getPersonTypeLabel(person.type);
 
     return (
-        <div className={styles.peopleItem}>
-            <div className={styles.peoplePhoto}>
-                <Link to={detailsPath} state={{ personId: person.id }}>
+        <div className={styles.personItem}>
+            <div className={styles.personPhoto}>
+                <Link to={`/people/${person.type}/${getPersonSlug(person.name)}`} state={{ personId: person.id, personType: person.type }}>
                     {person.photo_url ? (
-                        <img src={person.photo_url} alt={person.name} />
+                        <img
+                            src={person.photo_url}
+                            alt={person.name}
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = person.type === 'actor' ? '/placeholder-actor.jpg' : '/placeholder-director.jpg';
+                            }}
+                        />
                     ) : (
                         <div className={styles.noImage}>{getPersonInitials(person.name)}</div>
                     )}
                 </Link>
             </div>
-            <div className={styles.peopleInfo}>
-                <div className={styles.peopleLabel}>{label}</div>
-                <div className={styles.peopleHeader}>
-                    <h3 className={styles.peopleName}>
-                        <Link to={detailsPath} state={{ personId: person.id }}>
+            <div className={styles.personInfo}>
+                <div className={styles.personLabel}>{personTypeLabel.toUpperCase()}</div>
+                <div className={styles.personHeader}>
+                    <h3 className={styles.personName}>
+                        <Link to={`/people/${person.type}/${getPersonSlug(person.name)}`} state={{ personId: person.id, personType: person.type }}>
                             {person.name}
                         </Link>
                     </h3>
                     {ageInfo && (
-                        <p className={styles.peopleAge}>
+                        <p className={styles.personAge}>
                             {ageInfo.age} lat ({ageInfo.birthYear})
                         </p>
                     )}
                 </div>
-                <div className={styles.peopleDetails}>
+                <div className={styles.personDetails}>
                     {person.birth_place && (
-                        <p className={styles.peopleBirthPlace}>
+                        <p className={styles.personBirthPlace}>
                             <span>Miejsce Urodzenia</span>
                             <span className={styles.birthPlaceText}>{person.birth_place}</span>
                         </p>
@@ -66,4 +68,4 @@ const PeopleItem: React.FC<PeopleItemProps> = ({ person }) => {
     );
 };
 
-export default PeopleItem;
+export default PersonItem;

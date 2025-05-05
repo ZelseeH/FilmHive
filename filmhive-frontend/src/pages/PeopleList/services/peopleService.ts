@@ -1,4 +1,3 @@
-const API_URL = 'http://localhost:5000/api/people';
 export interface Person {
     id: number;
     name: string;
@@ -12,33 +11,34 @@ export interface Person {
 }
 
 interface PeopleResponse {
-    data: Person[];
+    people: Person[];
     pagination: {
         page: number;
-        per_page: number;
-        total: number;
         total_pages: number;
+        total: number;
+        per_page: number;
     };
 }
 
 export const getPeople = async (
-    type: 'actor' | 'director' = 'actor',
     filter: string = '',
     page: number = 1,
-    perPage: number = 10
+    perPage: number = 10,
+    type?: 'actor' | 'director'
 ): Promise<PeopleResponse> => {
-    const params = new URLSearchParams({
-        type,
-        name: filter,
-        page: page.toString(),
-        per_page: perPage.toString(),
-    });
-
     try {
-        const response = await fetch(`${API_URL}?${params}`);
+        let url = `http://localhost:5000/api/people?name=${filter}&page=${page}&per_page=${perPage}`;
+
+        if (type) {
+            url += `&type=${type}`;
+        }
+
+        const response = await fetch(url);
+
         if (!response.ok) {
             throw new Error('Nie udało się pobrać osób');
         }
+
         return await response.json();
     } catch (error) {
         console.error('Error fetching people:', error);
@@ -46,15 +46,14 @@ export const getPeople = async (
     }
 };
 
-export const getPersonById = async (
-    id: number,
-    type: 'actor' | 'director' = 'actor'
-): Promise<Person> => {
+export const getPersonById = async (id: number, type: 'actor' | 'director'): Promise<Person> => {
     try {
-        const response = await fetch(`${API_URL}/${id}?type=${type}`);
+        const response = await fetch(`http://localhost:5000/api/people/${type}/${id}`);
+
         if (!response.ok) {
-            throw new Error('Nie udało się pobrać danych osoby');
+            throw new Error(`Nie udało się pobrać danych osoby`);
         }
+
         return await response.json();
     } catch (error) {
         console.error(`Error fetching person with id ${id}:`, error);

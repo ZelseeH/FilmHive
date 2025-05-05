@@ -91,7 +91,7 @@ def create_app():
     app.register_blueprint(comments_bp, url_prefix="/api/comments")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
     app.register_blueprint(ai_bp)
-    app.register_blueprint(people_bp)
+    app.register_blueprint(people_bp, url_prefix="/api/people")
 
     @app.before_request
     def handle_options():

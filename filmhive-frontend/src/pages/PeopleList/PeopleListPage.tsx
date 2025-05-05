@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { usePeople } from './hooks/usePeople';
-import PeopleItem from './components/PeopleItem';
+import PersonItem from './components/PeopleItem';
 import PeopleFilter from './components/PeopleFilter';
 import PeopleSorting from './components/PeopleSorting/PeopleSorting';
 import Pagination from '../../components/ui/Pagination';
@@ -13,6 +13,7 @@ interface Filters {
     countries?: string;
     years?: string;
     gender?: string;
+    type?: 'actor' | 'director';
 }
 
 interface SortOption {
@@ -20,11 +21,7 @@ interface SortOption {
     order: 'asc' | 'desc';
 }
 
-interface PeopleListPageProps {
-    personType: 'actor' | 'director';
-}
-
-const PeopleListPage: React.FC<PeopleListPageProps> = ({ personType }) => {
+const PeopleListPage: React.FC = () => {
     const filterRef = useRef<HTMLDivElement>(null);
     const sortingRef = useRef<HTMLDivElement>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -34,8 +31,7 @@ const PeopleListPage: React.FC<PeopleListPageProps> = ({ personType }) => {
     const [sortOption, setSortOption] = useState<SortOption>({ field: 'name', order: 'asc' });
     const [isSortingBarVisible, setIsSortingBarVisible] = useState<boolean>(true);
     const [lastScrollY, setLastScrollY] = useState<number>(0);
-
-    const { people, loading, error, totalPages } = usePeople(personType, filters, currentPage, sortOption);
+    const { people, loading, error, totalPages } = usePeople(filters, currentPage, sortOption);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -130,7 +126,7 @@ const PeopleListPage: React.FC<PeopleListPageProps> = ({ personType }) => {
             <div className={styles.pageContainer}>
                 <div className={styles.peopleListPage}>
                     {loading ? (
-                        <div className={styles.loading}>Ładowanie...</div>
+                        <div className={styles.loading}>Ładowanie osób...</div>
                     ) : error ? (
                         <div className={styles.error}>Błąd: {error}</div>
                     ) : (
@@ -138,7 +134,7 @@ const PeopleListPage: React.FC<PeopleListPageProps> = ({ personType }) => {
                             <div className={styles.peopleListContainer}>
                                 {people.length > 0 ? (
                                     people.map(person => (
-                                        <PeopleItem key={person.id} person={person} />
+                                        <PersonItem key={`${person.type}-${person.id}`} person={person} />
                                     ))
                                 ) : (
                                     <div className={styles.noPeople}>Nie znaleziono żadnych osób.</div>
@@ -161,7 +157,6 @@ const PeopleListPage: React.FC<PeopleListPageProps> = ({ personType }) => {
                     <PeopleFilter
                         value={filters}
                         onChange={handleFilterChange}
-                        personType={personType}
                     />
                 </div>
             </div>
@@ -180,7 +175,6 @@ const PeopleListPage: React.FC<PeopleListPageProps> = ({ personType }) => {
                     value={filters}
                     onChange={handleFilterChange}
                     onClose={toggleFilter}
-                    personType={personType}
                 />
             </div>
 

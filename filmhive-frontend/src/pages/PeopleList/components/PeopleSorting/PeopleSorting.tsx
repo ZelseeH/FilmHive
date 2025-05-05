@@ -11,7 +11,6 @@ interface PeopleSortingProps {
     onChange: (newValue: SortOption) => void;
     onClose?: () => void;
     isDesktop?: boolean;
-    // Możesz dodać props "personLabel" jeśli chcesz zmieniać nagłówek (np. "Imię i nazwisko aktora")
 }
 
 const PeopleSorting: React.FC<PeopleSortingProps> = ({ value, onChange, onClose, isDesktop }) => {

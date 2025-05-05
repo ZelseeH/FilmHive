@@ -1,3 +1,4 @@
+// src/features/people/utils/personUtils.ts
 import { createSlug } from '../../../utils/formatters';
 
 export const formatPersonName = (firstName?: string, lastName?: string): string => {
@@ -18,7 +19,7 @@ export const getPersonInitials = (name?: string): string => {
 
 export const formatPersonBirthDate = (birthDate?: string): string => {
     if (!birthDate) return '';
-    return new Date(birthDate).toLocaleDateString();
+    return new Date(birthDate).toLocaleDateString('pl-PL');
 };
 
 export const calculateAge = (birthDate?: string, deathDate?: string): number | null => {
@@ -52,10 +53,12 @@ export const getPersonSlug = (name: string): string => {
 
 export const handlePersonImageError = (
     e: React.SyntheticEvent<HTMLImageElement, Event>,
-    fallbackSrc: string = '/placeholder-person.jpg'
+    type: 'actor' | 'director',
+    fallbackSrc?: string
 ): void => {
     const target = e.target as HTMLImageElement;
-    target.src = fallbackSrc;
+    const defaultFallback = type === 'actor' ? '/placeholder-actor.jpg' : '/placeholder-director.jpg';
+    target.src = fallbackSrc || defaultFallback;
     target.onerror = null;
 };
 
@@ -66,4 +69,18 @@ export const formatFilmography = (movies?: { title: string; year?: string }[]): 
         .slice(0, 3)
         .map(movie => movie.year ? `${movie.title} (${movie.year})` : movie.title)
         .join(', ');
+};
+
+export const formatGender = (gender?: 'M' | 'K' | null): string => {
+    if (!gender) return 'Nie określono';
+    return gender === 'M' ? 'Mężczyzna' : 'Kobieta';
+};
+
+export const truncateText = (text: string, maxLength: number): string => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+};
+
+export const getPersonTypeLabel = (type: 'actor' | 'director'): string => {
+    return type === 'actor' ? 'Aktor' : 'Reżyser';
 };

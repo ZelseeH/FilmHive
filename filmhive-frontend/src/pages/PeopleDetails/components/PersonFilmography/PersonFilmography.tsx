@@ -1,21 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import styles from './ActorFilmography.module.css';
-import { createSlug } from '../../../../utils/formatters'; // Importuj bezpośrednio z formatters
+import styles from './PersonFilmography.module.css';
+import { createSlug } from '../../../../utils/formatters';
 
 interface Movie {
     id: number;
     title: string;
     poster_url: string;
-    actor_role: string;
+    actor_role?: string; // Opcjonalne, tylko dla aktorów
     release_date: string;
 }
 
-interface ActorFilmographyProps {
+interface PersonFilmographyProps {
     movies: Movie[];
+    personType: 'actor' | 'director';
 }
 
-const ActorFilmography: React.FC<ActorFilmographyProps> = ({ movies }) => {
+const PersonFilmography: React.FC<PersonFilmographyProps> = ({ movies, personType }) => {
     if (!movies || movies.length === 0) {
         return <div className={styles['no-movies']}>Brak filmów w bazie danych.</div>;
     }
@@ -43,7 +44,9 @@ const ActorFilmography: React.FC<ActorFilmographyProps> = ({ movies }) => {
                         </div>
                         <div className={styles['movie-info']}>
                             <h3 className={styles['movie-title']}>{movie.title}</h3>
-                            <p className={styles['movie-role']}>{movie.actor_role || 'Brak informacji o roli'}</p>
+                            {personType === 'actor' && movie.actor_role && (
+                                <p className={styles['movie-role']}>{movie.actor_role || 'Brak informacji o roli'}</p>
+                            )}
                             {movie.release_date && (
                                 <p className={styles['movie-year']}>
                                     {new Date(movie.release_date).getFullYear()}
@@ -57,4 +60,4 @@ const ActorFilmography: React.FC<ActorFilmographyProps> = ({ movies }) => {
     );
 };
 
-export default ActorFilmography;
+export default PersonFilmography;

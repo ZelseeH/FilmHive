@@ -1,17 +1,6 @@
 // hooks/usePeople.ts
 import { useState, useEffect, useCallback } from 'react';
-
-interface Person {
-    id: number;
-    name: string;
-    birth_date?: string;
-    birth_place?: string;
-    biography?: string;
-    photo_url?: string;
-    gender?: string;
-    type: 'actor' | 'director';
-    movies?: { id: number; title: string }[];
-}
+import { Person } from '../services/peopleService';
 
 interface PaginationData {
     page: number;
@@ -21,7 +10,7 @@ interface PaginationData {
 }
 
 interface PeopleResponse {
-    data: Person[];
+    people: Person[];
     pagination: PaginationData;
 }
 
@@ -30,6 +19,7 @@ interface Filters {
     countries?: string;
     years?: string;
     gender?: string;
+    type?: 'actor' | 'director';
 }
 
 interface SortOption {
@@ -38,7 +28,6 @@ interface SortOption {
 }
 
 export const usePeople = (
-    personType: 'actor' | 'director',
     filters: Filters,
     page: number,
     sortOption: SortOption = { field: 'name', order: 'asc' }
@@ -51,37 +40,37 @@ export const usePeople = (
     const fetchPeople = useCallback(async () => {
         try {
             setLoading(true);
-            const queryParams = new URLSearchParams({
-                type: personType,
-                page: page.toString(),
-                per_page: '10',
-                ...filters,
-                sort_by: sortOption.field,
-                sort_order: sortOption.order
-            });
+            const queryParams = new URLSearchParams();
+
+            queryParams.append('page', page.toString());
+            queryParams.append('per_page', '10');
+
+            if (filters.name) queryParams.append('name', filters.name);
+            if (filters.countries) queryParams.append('countries', filters.countries);
+            if (filters.years) queryParams.append('years', filters.years);
+            if (filters.gender) queryParams.append('gender', filters.gender);
+            if (filters.type) queryParams.append('type', filters.type);
+
+            queryParams.append('sort_by', sortOption.field);
+            queryParams.append('sort_order', sortOption.order);
 
             const response = await fetch(`http://localhost:5000/api/people/filter?${queryParams}`);
 
             if (!response.ok) {
-                throw new Error('Nie udało się pobrać danych');
+                throw new Error('Nie udało się pobrać osób');
             }
 
             const data: PeopleResponse = await response.json();
+            console.log('API response:', data);
 
-            setPeople(data.data || []);
+            setPeople(data.people || []);
             setTotalPages(data.pagination?.total_pages || 1);
         } catch (err: any) {
             setError(err.message || 'Wystąpił błąd podczas pobierania danych');
-            const defaultData = {
-                actor: [],
-                director: []
-            };
-            setPeople(defaultData[personType]);
-
         } finally {
             setLoading(false);
         }
-    }, [personType, filters, page, sortOption]);
+    }, [filters, page, sortOption]);
 
     useEffect(() => {
         fetchPeople();
