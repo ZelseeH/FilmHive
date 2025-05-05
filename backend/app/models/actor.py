@@ -13,13 +13,15 @@ import enum
 from .movie import Movie
 from flask import url_for
 
+from app.extensions import db, Base
+
 
 class Gender(enum.Enum):
     M = "M"
     K = "K"
 
 
-class Actor(Base):
+class Actor(db.Model):
     __tablename__ = "actors"
 
     actor_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

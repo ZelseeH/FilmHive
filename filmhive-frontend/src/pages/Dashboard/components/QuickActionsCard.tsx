@@ -11,7 +11,6 @@ const QuickActionsCard: React.FC = () => {
         <div className={styles.statsCard}>
             <h2 className={styles.cardTitle}>Szybkie Akcje</h2>
             <div className={styles.quickActions}>
-                {/* Akcje dostępne dla wszystkich (admin i moderator) */}
                 <Link to="/dashboard/movies/add" className={styles.actionButton}>
                     <span className={styles.icon}>🎬</span> Dodaj nowy film
                 </Link>
@@ -24,7 +23,10 @@ const QuickActionsCard: React.FC = () => {
                     <span className={styles.icon}>🎥</span> Dodaj nowego reżysera
                 </Link>
 
-                {/* Akcje dostępne tylko dla administratorów */}
+                <Link to="/dashboard/genres" className={styles.actionButton}>
+                    <span className={styles.icon}>🏷️</span> Zarządzaj gatunkami
+                </Link>
+
                 {isAdmin() && (
                     <>
                         <Link to="/dashboard/users/add" className={styles.actionButton}>

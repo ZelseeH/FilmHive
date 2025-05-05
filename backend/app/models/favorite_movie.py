@@ -1,7 +1,8 @@
 from .base import Base, Mapped, mapped_column, ForeignKey, Integer, DateTime, datetime
+from app.extensions import db
 
 
-class FavoriteMovie(Base):
+class FavoriteMovie(db.Model):
     __tablename__ = "favorite_movies"
 
     user_id: Mapped[int] = mapped_column(

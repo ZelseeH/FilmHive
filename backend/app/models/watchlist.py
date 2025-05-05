@@ -8,9 +8,10 @@ from .base import (
     DateTime,
     datetime,
 )
+from app.extensions import db
 
 
-class Watchlist(Base):
+class Watchlist(db.Model):
     __tablename__ = "watchlist"
 
     user_id: Mapped[int] = mapped_column(

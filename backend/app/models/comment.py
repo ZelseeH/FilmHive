@@ -11,9 +11,10 @@ from .base import (
 )
 from .user import User
 from .movie import Movie
+from app.extensions import db
 
 
-class Comment(Base):
+class Comment(db.Model):
     __tablename__ = "comments"
 
     comment_id: Mapped[int] = mapped_column(

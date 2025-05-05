@@ -18,11 +18,12 @@ import AboutPage from './layouts/components/AboutPage';
 import ContactPage from './layouts/components/ContactPage';
 import TermsPage from './layouts/components/TermsPage';
 import PrivacyPage from './layouts/components/PrivacyPage';
-
-// Nowy wspólny dashboard
 import Dashboard from './pages/Dashboard/Dashboard';
 import UserManagement from './pages/Dashboard/components/UserManagement';
 import UserDetails from './pages/Dashboard/components/UserDetails/UserDetails';
+import GenresPage from './pages/Dashboard/components/GenresPanel/GenresPage';
+import PeopleListPage from './pages/PeopleList/PeopleListPage';
+
 
 const AppRoutes: React.FC = () => {
     const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/movies" element={<MovieListPage />} />
             <Route path="/movie/details/:movieTitle" element={<MovieDetail />} />
             <Route path="/actors" element={<ActorListPage />} />
+            <Route path="/people" element={<PeopleListPage personType="actor" />} />
             <Route path="/actor/details/:actorName" element={<ActorDetail />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
@@ -74,6 +76,11 @@ const AppRoutes: React.FC = () => {
                 <AdminRoute>
                     <UserDetails />
                 </AdminRoute>
+            } />
+            <Route path="/dashboard/genres" element={
+                <StaffRoute>
+                    <GenresPage />
+                </StaffRoute>
             } />
 
             <Route path="*" element={<Navigate to="/" replace />} />

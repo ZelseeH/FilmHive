@@ -1,11 +1,25 @@
-from .base import Base, Mapped, mapped_column, relationship, ForeignKey, Integer, String, DateTime, datetime
+from .base import (
+    Base,
+    Mapped,
+    mapped_column,
+    relationship,
+    ForeignKey,
+    Integer,
+    String,
+    DateTime,
+    datetime,
+)
 from .user import User
+from app.extensions import db
 
-class LoginActivity(Base):
+
+class LoginActivity(db.Model):
     __tablename__ = "login_activities"
 
     login_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True
+    )
     ip_address: Mapped[str] = mapped_column(String(50))
     login_timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     user_agent: Mapped[str] = mapped_column(String(255))
@@ -23,5 +37,5 @@ class LoginActivity(Base):
             "ip_address": self.ip_address,
             "login_timestamp": self.login_timestamp.isoformat(),
             "user_agent": self.user_agent,
-            "status": self.status
+            "status": self.status,
         }

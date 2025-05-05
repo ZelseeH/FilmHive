@@ -12,9 +12,10 @@ from flask import url_for
 from sqlalchemy import desc, func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property, deferred, joinedload
+from app.extensions import db
 
 
-class Movie(Base):
+class Movie(db.Model):
     __tablename__ = "movies"
 
     movie_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

@@ -2,8 +2,15 @@ from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-from app.services.database import db
+from flask_sqlalchemy import SQLAlchemy
 import os
+from dotenv import load_dotenv
+from app.extensions import db
+
+load_dotenv(".env")
+
+# Inicjalizacja SQLAlchemy
+db = SQLAlchemy()
 
 
 def create_app():
@@ -15,18 +22,27 @@ def create_app():
         expose_headers=["Authorization"],
     )
 
+    # Konfiguracja bazy danych
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         "postgresql+psycopg2://postgres:ZAQ!2wsx@localhost:5432/filmhive"
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["JWT_SECRET_KEY"] = (
-        "7d946d165f6b4c0c3290fa659403bd2d6db51bc95d64328a8d874aed8c481ec8"
-    )
+    app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 86400
 
-    jwt = JWTManager(app)
+    # Inicjalizacja rozszerzeń
+    from app.extensions import db, migrate, jwt
+
     db.init_app(app)
-    migrate = Migrate(app, db)
+    migrate.init_app(app, db)
+    jwt.init_app(app)
+
+    with app.app_context():
+        # Import modeli PO inicjalizacji db
+        from app.models.actor import Actor
+        from app.models.director import Director
+
+        db.create_all()
 
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
@@ -62,6 +78,7 @@ def create_app():
     from app.routes.comment_routes import comments_bp
     from app.routes.admin_routes import admin_bp
     from app.routes.ai_routes import ai_bp
+    from app.routes.people_routes import people_bp
 
     app.register_blueprint(movies_bp, url_prefix="/api/movies")
     app.register_blueprint(genres_bp, url_prefix="/api/genres")
@@ -74,6 +91,7 @@ def create_app():
     app.register_blueprint(comments_bp, url_prefix="/api/comments")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
     app.register_blueprint(ai_bp)
+    app.register_blueprint(people_bp)
 
     @app.before_request
     def handle_options():

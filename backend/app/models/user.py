@@ -14,9 +14,10 @@ from flask import url_for
 import os
 import json
 from flask import current_app
+from app.extensions import db
 
 
-class User(Base):
+class User(db.Model):
     __tablename__ = "users"
 
     user_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

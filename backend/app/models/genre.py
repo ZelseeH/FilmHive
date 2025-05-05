@@ -1,7 +1,9 @@
 from .base import Base, Mapped, mapped_column, relationship, String, Integer
 from .movie import Movie
+from app.extensions import db
 
-class Genre(Base):
+
+class Genre(db.Model):
     __tablename__ = "genres"
 
     genre_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -13,9 +15,6 @@ class Genre(Base):
 
     def __repr__(self):
         return f"<Genre(id={self.genre_id}, name='{self.genre_name}')>"
-    
+
     def serialize(self):
-        return {
-            "id": self.genre_id,
-            "name": self.genre_name
-        }
+        return {"id": self.genre_id, "name": self.genre_name}
