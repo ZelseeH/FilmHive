@@ -61,6 +61,7 @@ def create_app():
     from app.routes.watchlist_routes import watchlist_bp
     from app.routes.comment_routes import comments_bp
     from app.routes.admin_routes import admin_bp
+    from app.routes.ai_routes import ai_bp
 
     app.register_blueprint(movies_bp, url_prefix="/api/movies")
     app.register_blueprint(genres_bp, url_prefix="/api/genres")
@@ -72,6 +73,7 @@ def create_app():
     app.register_blueprint(watchlist_bp, url_prefix="/api/watchlist")
     app.register_blueprint(comments_bp, url_prefix="/api/comments")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
+    app.register_blueprint(ai_bp)
 
     @app.before_request
     def handle_options():

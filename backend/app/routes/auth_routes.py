@@ -90,9 +90,7 @@ def login():
     # Sprawdź, czy konto jest aktywne
     if not user.is_active:
         return (
-            jsonify(
-                {"error": "Konto zostało zawieszone. Skontaktuj się z administratorem."}
-            ),
+            jsonify({"error": "Konto zostało zawieszone. "}),
             403,
         )
 

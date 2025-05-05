@@ -6,7 +6,6 @@ interface EditableField<T> {
 }
 
 export function useInlineEdit<T extends Record<string, any>>(initialData: T) {
-    // Tworzymy jeden ref dla wszystkich pól
     const inputRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null>>({});
 
     const [fields, setFields] = useState<Record<keyof T, EditableField<any>>>(() => {

@@ -192,3 +192,59 @@
         transform: scale(1);
     }
 }
+
+@media (max-width: 500px) {
+    .chatbotContainer {
+        bottom: 1rem;
+        right: 1rem;
+    }
+
+    .toggleButton {
+        width: 48px;
+        height: 48px;
+        font-size: 1.5rem;
+    }
+
+    .chatWindow {
+        width: calc(100vw - 2rem);
+        height: 80vh;
+        right: 0;
+        bottom: 60px;
+        border-radius: 12px;
+    }
+
+    .header {
+        padding: 0.8rem;
+        font-size: 1rem;
+    }
+
+    .messagesContainer {
+        padding: 0.8rem;
+    }
+
+    .message {
+        max-width: 90%;
+        padding: 0.7rem 0.9rem;
+        font-size: 0.9rem;
+    }
+
+    .inputForm {
+        padding: 0.8rem;
+        gap: 0.5rem;
+    }
+
+    .inputForm input {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+    }
+
+    .sendButton {
+        padding: 0 1rem;
+    }
+
+    .welcomeMessage {
+        padding: 0.8rem;
+        font-size: 0.85rem;
+        margin: 0.8rem 0;
+    }
+}

@@ -1,14 +1,22 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.REACT_APP_GEMINI_API_KEY || '');
-
+// api/geminiModel.ts
 export const generateContent = async (prompt: string): Promise<string> => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const result = await model.generateContent(prompt);
-        return result.response.text();
+        const response = await fetch('/api/ask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question: prompt }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Błąd komunikacji z serwerem');
+        }
+
+        const data = await response.json();
+        return data.answer;
     } catch (error) {
-        console.error("Gemini API error:", error);
+        console.error("API error:", error);
         return "Wystąpił błąd podczas przetwarzania zapytania";
     }
 };

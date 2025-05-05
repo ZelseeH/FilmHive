@@ -1,5 +1,6 @@
 from app.models.genre import Genre
 
+
 class GenreRepository:
     def __init__(self, session):
         self.session = session

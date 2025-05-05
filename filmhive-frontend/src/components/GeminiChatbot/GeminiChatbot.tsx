@@ -23,18 +23,33 @@ const GeminiChatbot: React.FC = () => {
     // Lista słów kluczowych związanych z filmem i kinem
     const isFilmRelated = (query: string): boolean => {
         const filmKeywords = [
-            'film', 'kino', 'aktor', 'reżyser', 'scenariusz', 'premiera', 'obsada',
-            'serial', 'postać', 'rola', 'nagroda', 'oscar', 'kamera', 'montaż',
-            'efekty', 'box office', 'bilety', 'krytycy', 'recenzja', 'gatunek',
-            'komedia', 'dramat', 'horror', 'thriller', 'sci-fi', 'fantasy',
-            'animacja', 'dokument', 'soundtrack', 'muzyka', 'zwiastun', 'trailer',
-            'produkcja', 'studio', 'hollywood', 'kaskader', 'scenografia', 'kostiumy',
-            'charakteryzacja', 'nominacja', 'festiwal', 'kinematografia', 'operator',
-            'netflix', 'hbo', 'disney', 'amazon', 'streaming', 'vod', 'kamera'
+            'film', 'filmy', 'akcja', 'kino', 'aktor', 'aktorka', 'reżyser', 'scenariusz', 'scenarzysta',
+            'premiera', 'obsada', 'serial', 'seriale', 'sezon', 'odcinek', 'odcinki',
+            'postać', 'postacie', 'rola', 'role', 'nagroda', 'nagrody', 'oscar', 'oscary',
+            'kamera', 'montaż', 'efekty', 'specjalne efekty', 'box office', 'bilety',
+            'krytycy', 'recenzja', 'recenzje', 'gatunek', 'gatunki', 'komedia', 'dramat',
+            'horror', 'thriller', 'sci-fi', 'science fiction', 'fantasy', 'animacja',
+            'film animowany', 'dokument', 'dokumentalny', 'soundtrack', 'muzyka filmowa',
+            'zwiastun', 'trailer', 'produkcja', 'studio', 'wytwórnia', 'hollywood',
+            'kaskader', 'scenografia', 'kostiumy', 'charakteryzacja', 'nominacja',
+            'festiwal', 'festiwale', 'kinematografia', 'operator', 'zdjęcia', 'netflix',
+            'hbo', 'disney', 'disney+', 'amazon', 'prime video', 'streaming', 'vod',
+            'kino domowe', 'plakat', 'plakaty filmowe', 'napisy', 'lektor', 'dubbing',
+            'wydanie dvd', 'bluray', 'premiera kinowa', 'premiera telewizyjna', 'marvel',
+            'dc', 'pixar', 'dreamworks', 'studio ghibli', 'biografia filmowa', 'remake',
+            'reboot', 'spin-off', 'kontynuacja', 'adaptacja', 'book to movie', 'film akcji',
+            'film przygodowy', 'film wojenny', 'film romantyczny', 'film historyczny',
+            'serial kryminalny', 'miniserial', 'limited series'
         ];
 
-        const lowercaseQuery = query.toLowerCase();
-        return filmKeywords.some(keyword => lowercaseQuery.includes(keyword));
+        const lowerCaseQuery = query.toLowerCase();
+        return filmKeywords.some(keyword => lowerCaseQuery.includes(keyword));
+    };
+    const getLastUserMessage = (): string | null => {
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (!messages[i].isBot) return messages[i].content;
+        }
+        return null;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -48,8 +63,10 @@ const GeminiChatbot: React.FC = () => {
         setIsLoading(true);
 
         try {
-            // Sprawdź, czy pytanie dotyczy filmów
-            if (!isFilmRelated(inputMessage)) {
+            const isFirstUserMessage = messages.filter(m => !m.isBot).length === 0;
+
+            // Tylko przy pierwszym pytaniu sprawdzaj, czy jest filmowe
+            if (isFirstUserMessage && !isFilmRelated(inputMessage)) {
                 setMessages(prev => [...prev, {
                     content: "Przepraszam, ale mogę odpowiadać tylko na pytania związane z filmami, kinem, aktorami i serialami. Czy mogę pomóc Ci w znalezieniu informacji na temat świata filmu?",
                     isBot: true
@@ -58,19 +75,25 @@ const GeminiChatbot: React.FC = () => {
                 return;
             }
 
-            // Dodaj kontekst do zapytania
-            const contextualPrompt = `Kontekst: Jesteś asystentem filmowym FilmHive, który odpowiada WYŁĄCZNIE na pytania związane z filmami, serialami, aktorami, reżyserami i światem kina. Pytanie użytkownika: ${inputMessage}`;
+            // Stwórz historię rozmowy dla lepszego kontekstu
+            const conversationHistory = messages
+                .map(m => (m.isBot ? "Asystent: " : "Użytkownik: ") + m.content)
+                .join("\n") + `\nUżytkownik: ${inputMessage}`;
+
+            const contextualPrompt = `Kontekst: Jesteś asystentem filmowym FilmHive, który odpowiada WYŁĄCZNIE na pytania związane z filmami, serialami, aktorami, reżyserami i światem kina.\nRozmowa:\n${conversationHistory}`;
 
             const botResponse = await generateContent(contextualPrompt);
             setMessages(prev => [...prev, { content: botResponse, isBot: true }]);
         } catch (error) {
             setMessages(prev => [...prev, {
-                content: "Wystąpił błąd podczas komunikacji z AI",
+                content: "Wystąpił błąd podczas komunikacji z serwerem",
                 isBot: true
             }]);
         }
+
         setIsLoading(false);
     };
+
 
     return (
         <div className={styles.chatbotContainer}>

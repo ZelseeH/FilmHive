@@ -16,7 +16,7 @@ export const useUserMenuPosition = () => {
 
     return {
         isUserMenuOpen,
-        setIsUserMenuOpen, 
+        setIsUserMenuOpen,
         toggleUserMenu,
         closeUserMenu,
         userMenuRef,
