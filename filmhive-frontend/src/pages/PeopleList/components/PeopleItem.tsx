@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Person } from '../services/peopleService';
-import { getPersonInitials, getPersonSlug, getPersonTypeLabel } from '../utils/personUtils';
+import { getPersonInitials, getPersonSlug } from '../utils/personUtils';
 import styles from './PeopleItem.module.css';
 
 interface PersonItemProps {
@@ -20,8 +20,17 @@ const PersonItem: React.FC<PersonItemProps> = ({ person }) => {
         return { age, birthYear };
     };
 
+    const getPersonTypeLabel = (type: 'actor' | 'director', gender?: string | null): string => {
+        if (type === 'actor') {
+            return gender === 'K' ? 'Aktorka' : 'Aktor';
+        } else {
+            return gender === 'K' ? 'Reżyserka' : 'Reżyser';
+        }
+    };
+
+
     const ageInfo = calculateAge();
-    const personTypeLabel = getPersonTypeLabel(person.type);
+    const personTypeLabel = getPersonTypeLabel(person.type, person.gender);
 
     return (
         <div className={styles.personItem}>

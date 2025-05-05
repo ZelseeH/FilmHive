@@ -8,14 +8,7 @@
     --transition: all 0.2s ease;
 }
 
-html,
-body {
-    width: 100%;
-    background: var(--background);
-    font-family: 'Segoe UI', Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
+
 
 .container {
     max-width: 1100px;
@@ -238,6 +231,7 @@ body {
     text-align: left;
     white-space: normal;
     word-break: break-word;
+    color: var(--black);
 }
 
 .genresTable th {

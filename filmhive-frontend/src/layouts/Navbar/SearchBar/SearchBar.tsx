@@ -11,6 +11,7 @@ const SearchBar: React.FC = () => {
         if (e) e.preventDefault();
         if (search.trim()) {
             navigate(`/search?query=${encodeURIComponent(search.trim())}`);
+            setSearch("");
         }
     };
 
@@ -19,20 +20,15 @@ const SearchBar: React.FC = () => {
             <input
                 type="text"
                 className={styles["search-input"]}
-                placeholder="Szukaj filmów, aktorów, użytkowników..."
+                placeholder="Szukaj filmów, osób, użytkowników..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 aria-label="Szukaj"
-                onKeyDown={e => {
-                    if (e.key === "Enter") handleSubmit(e as any);
-                }}
             />
             <button
-                type="button"
-                className={styles["search-icon"]}
+                type="submit"
+                className={styles["search-button"]}
                 aria-label="Szukaj"
-                onClick={handleSubmit}
-                tabIndex={0}
             >
                 <FaSearch />
             </button>

@@ -1,7 +1,7 @@
 // src/features/people/components/PersonHeaderSection/PersonHeaderSection.tsx
 import React from 'react';
 import { Person } from '../../services/peopleService';
-import { handlePersonImageError, formatPersonBirthDate, calculateAge, getPersonTypeLabel } from '../../utils/personUtils';
+import { handlePersonImageError, formatPersonBirthDate, calculateAge } from '../../utils/personUtils';
 import styles from './PersonHeaderSection.module.css';
 
 interface PersonHeaderSectionProps {
@@ -10,7 +10,15 @@ interface PersonHeaderSectionProps {
 }
 
 const PersonHeaderSection: React.FC<PersonHeaderSectionProps> = ({ person, onShowFullBio }) => {
-    const personTypeLabel = getPersonTypeLabel(person.type);
+    const getPersonTypeLabel = (type: 'actor' | 'director', gender?: string | null): string => {
+        if (type === 'actor') {
+            return gender === 'K' ? 'Aktorka' : 'Aktor';
+        } else {
+            return gender === 'K' ? 'Reżyserka' : 'Reżyser';
+        }
+    };
+
+    const personTypeLabel = getPersonTypeLabel(person.type, person.gender);
 
     return (
         <div className={styles['person-header-section']}>

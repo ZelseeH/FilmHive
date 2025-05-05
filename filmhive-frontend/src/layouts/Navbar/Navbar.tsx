@@ -152,7 +152,7 @@ const Navbar: React.FC = () => {
             <Link to="/movies" className={styles['mobile-menu-link']} onClick={closeMobileMenu}>
               Filmy
             </Link>
-            <Link to="/actors" className={styles['mobile-menu-link']} onClick={closeMobileMenu}>
+            <Link to="/people" className={styles['mobile-menu-link']} onClick={closeMobileMenu}>
               Aktorzy
             </Link>
           </div>

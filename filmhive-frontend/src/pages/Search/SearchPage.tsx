@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { FaSearch } from "react-icons/fa";
 import { useSearchResults, Tab } from "./hooks/useSearchResults";
 import MovieItem from '../../pages/MovieList/components/MovieItem/MovieItem';
-import ActorItem from '../../pages/ActorList/components/ActorItem';
+import PersonItem from '../../pages/PeopleList/components/PeopleItem';
 import UserItem from './components/UserItem/UserItem';
 import Pagination from '../../components/ui/Pagination';
 import styles from './SearchPage.module.css';
@@ -10,32 +11,64 @@ import styles from './SearchPage.module.css';
 const SearchPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const query = searchParams.get("query") || "";
+    const [search, setSearch] = useState("");  // Inicjalizujemy jako pusty ciąg
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<Tab>("movies");
     const [moviePage, setMoviePage] = useState(1);
-    const [actorPage, setActorPage] = useState(1);
+    const [peoplePage, setPeoplePage] = useState(1);
     const [userPage, setUserPage] = useState(1);
 
     const currentPage =
         activeTab === "movies" ? moviePage :
-            activeTab === "actors" ? actorPage :
+            activeTab === "people" ? peoplePage :
                 userPage;
 
     const {
         loading,
-        movies, actors, users,
-        movieCount, actorCount, userCount,
-        moviePages, actorPages, userPages
+        movies, people, users,
+        movieCount, peopleCount, userCount,
+        moviePages, peoplePages, userPages
     } = useSearchResults(query, activeTab, currentPage);
 
     useEffect(() => {
         setMoviePage(1);
-        setActorPage(1);
+        setPeoplePage(1);
         setUserPage(1);
     }, [query, activeTab]);
+
+    // Usunięto efekt, który ustawiał wartość pola wyszukiwania na podstawie query
+
+    const handleSubmit = (e?: React.FormEvent | React.MouseEvent) => {
+        if (e) e.preventDefault();
+        if (search.trim()) {
+            navigate(`/search?query=${encodeURIComponent(search.trim())}`);
+            setSearch(""); // Czyszczenie pola wyszukiwania po wysłaniu
+        }
+    };
 
     return (
         <div className={styles.pageWrapper}>
             <div className={styles.container}>
+                <div className={styles.searchFormContainer}>
+                    <form className={styles.searchForm} onSubmit={handleSubmit} role="search" autoComplete="off">
+                        <input
+                            type="text"
+                            className={styles.searchInput}
+                            placeholder="Szukaj filmów, osób, użytkowników..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            aria-label="Szukaj"
+                        />
+                        <button
+                            type="submit"
+                            className={styles.searchButton}
+                            aria-label="Szukaj"
+                        >
+                            <FaSearch />
+                        </button>
+                    </form>
+                </div>
+
                 <h2 className={styles.pageTitle}>
                     Wyniki wyszukiwania dla: <span className={styles.query}>{query}</span>
                 </h2>
@@ -47,10 +80,10 @@ const SearchPage: React.FC = () => {
                         Filmy <span className={styles.tabCount}>({movieCount})</span>
                     </button>
                     <button
-                        className={`${styles.tabButton} ${activeTab === "actors" ? styles.active : ""}`}
-                        onClick={() => setActiveTab("actors")}
+                        className={`${styles.tabButton} ${activeTab === "people" ? styles.active : ""}`}
+                        onClick={() => setActiveTab("people")}
                     >
-                        Aktorzy <span className={styles.tabCount}>({actorCount})</span>
+                        Osoby <span className={styles.tabCount}>({peopleCount})</span>
                     </button>
                     <button
                         className={`${styles.tabButton} ${activeTab === "users" ? styles.active : ""}`}
@@ -83,20 +116,20 @@ const SearchPage: React.FC = () => {
                         </>
                     )}
 
-                    {!loading && activeTab === "actors" && (
+                    {!loading && activeTab === "people" && (
                         <>
-                            {actors.length === 0 ? (
-                                <div className={styles.noResults}>Brak aktorów pasujących do wyszukiwania.</div>
+                            {people.length === 0 ? (
+                                <div className={styles.noResults}>Brak osób pasujących do wyszukiwania.</div>
                             ) : (
-                                actors.map(actor => (
-                                    <ActorItem key={actor.id} actor={actor} />
+                                people.map(person => (
+                                    <PersonItem key={`${person.type}-${person.id}`} person={person} />
                                 ))
                             )}
-                            {actorPages > 1 && (
+                            {peoplePages > 1 && (
                                 <Pagination
-                                    currentPage={actorPage}
-                                    totalPages={actorPages}
-                                    onPageChange={setActorPage}
+                                    currentPage={peoplePage}
+                                    totalPages={peoplePages}
+                                    onPageChange={setPeoplePage}
                                 />
                             )}
                         </>
