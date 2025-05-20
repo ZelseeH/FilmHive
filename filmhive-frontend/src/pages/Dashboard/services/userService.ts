@@ -13,6 +13,16 @@ interface UserData {
     bio?: string;
 }
 
+interface CreateUserData {
+    username: string;
+    email: string;
+    password: string;
+    name?: string;
+    bio?: string;
+    role?: number;
+    is_active?: boolean;
+}
+
 // Funkcja pomocnicza do pobierania tokenu
 const getAuthToken = (): string | null => {
     return localStorage.getItem('accessToken');
@@ -147,6 +157,30 @@ export const userService = {
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.error || 'Nie udało się usunąć użytkownika');
+        }
+
+        return await response.json();
+    },
+
+    // Nowa funkcja do tworzenia użytkownika
+    async createUser(userData: CreateUserData): Promise<{ message: string; user: UserData }> {
+        const token = getAuthToken();
+        if (!token) {
+            throw new Error('Brak tokenu autoryzacyjnego');
+        }
+
+        const response = await fetch(`http://localhost:5000/api/admin/users`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(userData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Nie udało się utworzyć użytkownika');
         }
 
         return await response.json();

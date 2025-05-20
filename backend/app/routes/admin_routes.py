@@ -385,3 +385,66 @@ def delete_user(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+@admin_bp.route("/users", methods=["POST"])
+@admin_required
+def create_user():
+    try:
+        data = request.get_json()
+
+        # Sprawdzenie wymaganych pól
+        required_fields = ["username", "email", "password"]
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"Pole {field} jest wymagane"}), 400
+
+        # Sprawdzenie unikalności nazwy użytkownika i emaila
+        if user_repo.get_by_username(data["username"]):
+            return jsonify({"error": "Nazwa użytkownika jest już zajęta"}), 400
+
+        if user_repo.get_by_email(data["email"]):
+            return jsonify({"error": "Email jest już używany"}), 400
+
+        # Walidacja hasła
+        if len(data["password"]) < 8:
+            return jsonify({"error": "Hasło musi mieć co najmniej 8 znaków"}), 400
+
+        # Ustawienie domyślnych wartości
+        role = data.get("role", 3)  # Domyślnie zwykły użytkownik
+        is_active = data.get("is_active", True)
+
+        # Walidacja roli
+        if role not in [1, 2, 3]:
+            return jsonify({"error": "Nieprawidłowa rola"}), 400
+
+        # Tworzenie nowego użytkownika
+        new_user = User(
+            username=data["username"],
+            email=data["email"],
+            name=data.get("name", ""),
+            bio=data.get("bio", ""),
+            role=role,
+            is_active=is_active,
+        )
+
+        # Ustawienie hasła
+        new_user.set_password(data["password"])
+
+        # Zapisanie do bazy danych
+        db.session.add(new_user)
+        db.session.commit()
+
+        return (
+            jsonify(
+                {
+                    "message": "Użytkownik został pomyślnie utworzony",
+                    "user": new_user.serialize(),
+                }
+            ),
+            201,
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

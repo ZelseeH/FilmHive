@@ -256,22 +256,28 @@ const UserManagement: React.FC = () => {
                                     <tr
                                         key={user.id}
                                         className={`${!user.is_active ? styles.inactiveUser : ''} 
-                                                  ${user.role === 2 ? styles.moderatorRow : ''} 
-                                                  ${user.is_current_user ? styles.currentUserRow : ''}`}
+                ${user.role === 2 ? styles.moderatorRow : ''} 
+                ${user.is_current_user ? styles.currentUserRow : ''}`}
                                     >
-                                        <td>{user.id}</td>
+                                        <td><span className={styles.truncateText} title={user.id}>{user.id}</span></td>
                                         <td
                                             className={`${styles.usernameCell} ${styles.clickable}`}
                                             onClick={() => navigateToUserDetails(user)}
                                         >
-                                            {user.username}
-                                            {user.is_current_user && <span className={styles.currentUserBadge}> (Ty)</span>}
+                                            <span className={styles.truncateText} title={user.username}>
+                                                {user.username}
+                                                {user.is_current_user && <span className={styles.currentUserBadge}> (Ty)</span>}
+                                            </span>
                                         </td>
-                                        <td className={styles.emailCell}>{user.email}</td>
+                                        <td className={styles.emailCell}>
+                                            <span className={styles.truncateText} title={user.email}>{user.email}</span>
+                                        </td>
                                         <td>
                                             {user.is_current_user ? (
                                                 <div className={styles.roleText}>
-                                                    {getRoleName(user.role)}
+                                                    <span className={styles.truncateText} title={getRoleName(user.role)}>
+                                                        {getRoleName(user.role)}
+                                                    </span>
                                                     <span className={styles.tooltipText}>Nie możesz zmienić własnej roli</span>
                                                 </div>
                                             ) : (
@@ -291,9 +297,18 @@ const UserManagement: React.FC = () => {
                                                 {user.is_active ? 'Aktywny' : 'Nieaktywny'}
                                             </div>
                                         </td>
-                                        <td>{formatDate(user.registration_date)}</td>
-                                        <td>{formatDate(user.last_login)}</td>
                                         <td>
+                                            <span className={styles.truncateText} title={formatDate(user.registration_date)}>
+                                                {formatDate(user.registration_date)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={styles.truncateText} title={formatDate(user.last_login)}>
+                                                {formatDate(user.last_login)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {/* Przyciski akcji - tutaj nie potrzebujemy truncate */}
                                             {user.is_current_user ? (
                                                 <div className={styles.disabledButtonWrapper}>
                                                     <button
@@ -322,6 +337,7 @@ const UserManagement: React.FC = () => {
                                     </tr>
                                 ))}
                             </tbody>
+
                         </table>
                     </div>
 

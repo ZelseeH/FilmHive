@@ -1,0 +1,251 @@
+:root {
+    --yellow: #ffcc00;
+    --black: #1a1a1a;
+    --blue: #0055a4;
+    --background: #f5f5f5;
+    --text: #333;
+    --border: #e0e0e0;
+    --transition: all 0.2s ease;
+    --danger: #f44336;
+    --danger-hover: #d32f2f;
+    --success: #4caf50;
+    --success-hover: #388e3c;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 60px auto 20px;
+    padding: 5px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 12px;
+}
+
+.backButton {
+    background-color: var(--background);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+    border: #1a1a1a 0.5px solid;
+}
+
+.backButton:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--yellow);
+    margin: 0 auto;
+    text-align: center;
+}
+
+.formCard {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+.formGroup label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.input,
+.select,
+.textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(0, 85, 164, 0.1);
+    outline: none;
+}
+
+.inputError {
+    border-color: var(--danger);
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.errorMessage {
+    color: var(--danger);
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.checkboxGroup {
+    margin-top: 10px;
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--blue);
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.submitButton,
+.cancelButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.submitButton {
+    background-color: var(--yellow);
+    color: var(--black);
+}
+
+.submitButton:hover:not(:disabled) {
+    background-color: #ffdb4d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.submitButton:disabled {
+    background-color: #f0f0f0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.cancelButton {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.cancelButton:hover:not(:disabled) {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cancelButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Responsywność */
+@media (max-width: 900px) {
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .title {
+        margin: 0;
+    }
+
+    .backButton {
+        width: 100%;
+    }
+}
+
+@media (max-width: 700px) {
+    .container {
+        margin: 70px 10px 10px;
+        padding: 12px;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+
+    .formCard {
+        padding: 15px;
+    }
+
+    .formActions {
+        flex-direction: column;
+    }
+
+    .submitButton,
+    .cancelButton {
+        width: 100%;
+    }
+}
+
+@media (max-width: 500px) {
+    .title {
+        font-size: 20px;
+    }
+
+    .container {
+        margin: 70px 8px 8px;
+        padding: 10px;
+    }
+}

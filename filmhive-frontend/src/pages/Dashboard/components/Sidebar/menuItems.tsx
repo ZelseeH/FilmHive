@@ -14,7 +14,7 @@ export const menuItems: MenuItem[] = [
         adminOnly: true,
         subItems: [
             { label: 'Zarządzaj', path: '/dashboardpanel/users/manage', icon: <FaList /> },
-            { label: 'Dodaj nowego', path: '/dashboardpanel/users/add', icon: <FaUserPlus /> }
+            { label: 'Dodaj', path: '/dashboardpanel/users/add', icon: <FaUserPlus /> }
         ]
     },
     { label: 'Gatunki', icon: <FaTags />, path: '/dashboardpanel/genres' },
@@ -23,7 +23,7 @@ export const menuItems: MenuItem[] = [
         icon: <FaTheaterMasks />,
         subItems: [
             { label: 'Zarządzaj', path: '/dashboardpanel/actors/manage', icon: <FaList /> },
-            { label: 'Dodaj aktora', path: '/dashboardpanel/actors/add', icon: <FaPlus /> }
+            { label: 'Dodaj', path: '/dashboardpanel/actors/add', icon: <FaPlus /> }
         ]
     },
     {
@@ -31,7 +31,7 @@ export const menuItems: MenuItem[] = [
         icon: <FaChair />,
         subItems: [
             { label: 'Zarządzaj', path: '/dashboardpanel/directors/manage', icon: <FaList /> },
-            { label: 'Dodaj reżysera', path: '/dashboardpanel/directors/add', icon: <FaPlus /> }
+            { label: 'Dodaj', path: '/dashboardpanel/directors/add', icon: <FaPlus /> }
         ]
     },
     {
@@ -39,7 +39,7 @@ export const menuItems: MenuItem[] = [
         icon: <FaFilm />,
         subItems: [
             { label: 'Zarządzaj', path: '/dashboardpanel/movies/manage', icon: <FaList /> },
-            { label: 'Dodaj film', path: '/dashboardpanel/movies/add', icon: <FaPlus /> }
+            { label: 'Dodaj', path: '/dashboardpanel/movies/add', icon: <FaPlus /> }
         ]
     },
     { label: 'Ustawienia', icon: <FaCog />, path: '/dashboardpanel/settings' },

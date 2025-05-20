@@ -284,3 +284,7 @@ class UserRepository:
             .limit(limit)
             .all()
         )
+
+    def get_by_email(self, email):
+        """Pobierz użytkownika na podstawie adresu email"""
+        return self.session.query(User).filter(User.email == email).first()

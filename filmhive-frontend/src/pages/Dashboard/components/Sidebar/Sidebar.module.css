@@ -1,3 +1,8 @@
+.sidebarWrapper {
+    position: relative;
+    height: calc(100vh - 60px);
+}
+
 .sidebar {
     background: #000000;
     color: #ffffff;
@@ -11,7 +16,6 @@
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    overflow-x: hidden;
     overflow-y: auto;
 }
 
@@ -20,6 +24,9 @@
 }
 
 .toggleBtn {
+    position: fixed;
+    top: 70px;
+    left: 250px;
     background: #000000;
     border: none;
     color: #ffcc00;
@@ -30,18 +37,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
-    position: absolute;
-    left: 250px;
-    top: 70px;
     border-radius: 0 4px 4px 0;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
     z-index: 1001;
 }
 
-/* Gdy sidebar jest zwinięty */
 .sidebar.collapsed~.toggleBtn {
     left: 60px;
+}
+
+.toggleBtn:hover {
+    color: #ffffff;
 }
 
 .sidebarHeader {

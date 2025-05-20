@@ -53,7 +53,18 @@ export const useSidebar = (collapsed: boolean, toggleSidebar: () => void) => {
 
     const isActive = (path?: string) => {
         if (!path) return false;
-        return location.pathname === path || location.pathname.startsWith(path + '/');
+
+        // Dokładne dopasowanie dla głównej ścieżki dashboardu
+        if (path === '/dashboardpanel' && location.pathname === '/dashboardpanel') {
+            return true;
+        }
+
+        // Dla innych ścieżek sprawdź, czy zaczynają się od danej ścieżki, ale nie są główną ścieżką dashboardu
+        if (path !== '/dashboardpanel') {
+            return location.pathname.startsWith(path);
+        }
+
+        return false;
     };
 
     const isSubmenuActive = (subItems?: SubMenuItem[]) => {

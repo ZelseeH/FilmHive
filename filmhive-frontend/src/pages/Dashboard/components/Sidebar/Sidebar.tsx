@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
     });
 
     return (
-        <>
+        <div className={styles.sidebarWrapper}>
             <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${isMobile && !collapsed ? styles.open : ''}`}>
                 <div className={styles.sidebarHeader}>
                     <div className={styles.logo}>
@@ -62,9 +62,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
                             <li
                                 key={idx}
                                 className={`
-                  ${styles.menuItem} 
-                  ${isActive(item.path) || isSubmenuActive(item.subItems) ? styles.active : ''}
-                `}
+                                    ${styles.menuItem} 
+                                    ${isActive(item.path) || isSubmenuActive(item.subItems) ? styles.active : ''}
+                                `}
                             >
                                 {item.subItems ? (
                                     <>
@@ -116,10 +116,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
                 </div>
             </div>
 
-            {/* Przycisk toggle na zewnątrz sidebara */}
+            {/* Przycisk toggle poza sidebarem */}
             <button
                 className={styles.toggleBtn}
-                style={{ left: collapsed ? '60px' : '250px' }}
                 onClick={toggleSidebar}
                 aria-label="Toggle sidebar width"
             >
@@ -127,7 +126,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
             </button>
 
             {isMobile && !collapsed && <div className={styles.overlay} onClick={toggleSidebar}></div>}
-        </>
+        </div>
     );
 };
 

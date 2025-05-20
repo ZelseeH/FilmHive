@@ -9,7 +9,7 @@
 }
 
 .container {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 70px auto 20px;
     padding: 15px;
     background: white;
@@ -190,6 +190,15 @@
     text-align: left;
     padding: 12px;
     border-bottom: 1px solid var(--border);
+}
+
+.truncateText {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    /* Ważne dla działania text-overflow w komórkach tabeli */
 }
 
 .usersTable td {
