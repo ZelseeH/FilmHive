@@ -5,6 +5,10 @@ import { useAuth } from '../../../../contexts/AuthContext';
 import { userService } from '../../services/userService';
 import { useInlineEdit } from '../../hooks/useInlineEdit';
 import styles from './UserDetails.module.css';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Toast } from 'primereact/toast';
+import { useRef } from 'react';
+
 
 interface UserDetailsParams {
     id: string;
@@ -93,6 +97,7 @@ const UserDetailsContent: React.FC<UserDetailsContentProps> = ({
     const [passwordError, setPasswordError] = useState<string | null>(null);
     const [saveLoading, setSaveLoading] = useState<Record<string, boolean>>({});
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const toast = useRef<Toast>(null);
 
     const handleFieldSave = async (fieldName: string) => {
         try {
@@ -114,7 +119,41 @@ const UserDetailsContent: React.FC<UserDetailsContentProps> = ({
             setSaveLoading(prev => ({ ...prev, [fieldName]: false }));
         }
     };
-
+    const handleDeleteUser = async () => {
+        try {
+            setSaveLoading(prev => ({ ...prev, 'delete': true }));
+            await userService.deleteUser(userId);
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sukces',
+                detail: 'Użytkownik został pomyślnie usunięty',
+                life: 3000
+            });
+            // Przekieruj do listy użytkowników po usunięciu
+            navigate('/dashboardpanel/users/manage');
+        } catch (err: any) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Błąd',
+                detail: err.message || 'Nie udało się usunąć użytkownika',
+                life: 5000
+            });
+            console.error('Error deleting user:', err);
+        } finally {
+            setSaveLoading(prev => ({ ...prev, 'delete': false }));
+        }
+    };
+    const confirmDeleteUser = () => {
+        confirmDialog({
+            message: `Czy na pewno chcesz usunąć użytkownika "${userData.username}"? Ta operacja jest nieodwracalna.`,
+            header: 'Potwierdzenie usunięcia',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-danger',
+            acceptLabel: 'Tak, usuń',
+            rejectLabel: 'Anuluj',
+            accept: handleDeleteUser
+        });
+    };
     const handleRoleChange = async (newRole: number) => {
         try {
             setSaveLoading(prev => ({ ...prev, 'role': true }));
@@ -254,10 +293,12 @@ const UserDetailsContent: React.FC<UserDetailsContentProps> = ({
 
     return (
         <div className={styles.container}>
+            <Toast ref={toast} />
+            <ConfirmDialog />
             <div className={styles.header}>
                 <button
                     className={styles.backButton}
-                    onClick={() => navigate('/dashboard/users')}
+                    onClick={() => navigate('/dashboardpanel/users/manage')}
                 >
                     &larr; Powrót do listy
                 </button>
@@ -266,6 +307,7 @@ const UserDetailsContent: React.FC<UserDetailsContentProps> = ({
                     Szczegóły użytkownika: {userData.username}
                     {isCurrentUser && <span className={styles.currentUserBadge}> (Ty)</span>}
                 </h1>
+
             </div>
 
             {error && <div className={styles.errorMessage}>{error}</div>}
@@ -427,9 +469,24 @@ const UserDetailsContent: React.FC<UserDetailsContentProps> = ({
                                     Zmień hasło
                                 </button>
                             )}
+                            {/* Dodaj sekcję akcji na dole karty */}
+                            {!isCurrentUser && (
+                                <div className={styles.actionButtons}>
+                                    <button
+                                        className={styles.deleteButton}
+                                        onClick={confirmDeleteUser}
+                                        disabled={saveLoading['delete']}
+                                    >
+                                        {saveLoading['delete'] ? 'Usuwanie...' : 'Usuń użytkownika'}
+                                    </button>
+                                </div>
+                            )}
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
         </div>
     );

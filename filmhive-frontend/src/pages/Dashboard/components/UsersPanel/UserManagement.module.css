@@ -1,0 +1,529 @@
+:root {
+    --yellow: #ffcc00;
+    --black: #1a1a1a;
+    --blue: #0055a4;
+    --background: #f5f5f5;
+    --text: #333;
+    --border: #e0e0e0;
+    --transition: all 0.2s ease;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 70px auto 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+}
+
+.currentUserRow {
+    background-color: rgba(255, 204, 0, 0.1);
+}
+
+.currentUserBadge {
+    font-size: 0.8rem;
+    color: #666;
+    font-style: italic;
+}
+
+.disabledButton {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.disabledButtonWrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltipText {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+}
+
+.disabledButtonWrapper:hover .tooltipText,
+.roleText:hover .tooltipText {
+    visibility: visible;
+    opacity: 1;
+}
+
+.roleText {
+    position: relative;
+    display: inline-block;
+    padding: 0.5rem;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    color: #666;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--yellow);
+    margin: 0 0 8px 0;
+}
+
+.description {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.errorMessage {
+    background: rgba(255, 77, 77, 0.1);
+    color: #d32f2f;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border-left: 3px solid #d32f2f;
+    font-size: 13px;
+}
+
+.filtersContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.searchForm {
+    display: flex;
+    flex: 1;
+    min-width: 250px;
+    max-width: 500px;
+}
+
+.searchInput {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px 0 0 6px;
+    font-size: 13px;
+    outline: none;
+    transition: var(--transition);
+}
+
+.searchInput:focus {
+    border-color: var(--blue);
+}
+
+.searchButton {
+    padding: 8px 16px;
+    background: var(--yellow);
+    color: var(--black);
+    border: none;
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+}
+
+.searchButton:hover {
+    background: #ffdb4d;
+}
+
+.roleFilter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.roleFilter label {
+    font-size: 13px;
+    color: #555;
+}
+
+.select,
+.roleSelect {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.select:focus,
+.roleSelect:focus {
+    border-color: var(--blue);
+}
+
+.tableContainer {
+    overflow-x: auto;
+    background: white;
+    margin-bottom: 20px;
+}
+
+.usersTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.usersTable th {
+    background: var(--black);
+    color: var(--yellow);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.usersTable td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+}
+
+.usersTable tr:hover {
+    background: rgba(255, 204, 0, 0.1);
+}
+
+.inactiveUser {
+    background: #f9f9f9;
+    opacity: 0.85;
+}
+
+.moderatorRow {
+    background: #e6f0ff;
+    /* Light blue for Moderator rows */
+}
+
+.moderatorRow:hover {
+    background: rgba(255, 204, 0, 0.1);
+    /* Ensure hover effect is consistent */
+}
+
+.usernameCell {
+    font-weight: 600;
+    color: var(--blue);
+}
+
+.emailCell {
+    color: #666;
+}
+
+.usersTable td:nth-child(5) {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.activeStatus,
+.inactiveStatus {
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    height: 24px;
+    margin: 0 auto;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    line-height: 24px;
+}
+
+.activeStatus {
+    background: rgba(0, 204, 153, 0.2);
+    color: #008b66;
+    border: 1px solid rgba(0, 204, 153, 0.3);
+}
+
+.inactiveStatus {
+    background: rgba(255, 77, 77, 0.2);
+    color: #d32f2f;
+    border: 1px solid rgba(255, 77, 77, 0.3);
+}
+
+.activeStatus::before,
+.inactiveStatus::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.activeStatus::before {
+    background-color: #00cc99;
+    box-shadow: 0 0 4px #00cc99;
+}
+
+.inactiveStatus::before {
+    background-color: #ff4d4d;
+    box-shadow: 0 0 4px #ff4d4d;
+}
+
+.usersTable td:last-child {
+    text-align: center;
+    min-width: 110px;
+    vertical-align: middle;
+}
+
+.activateBtn,
+.deactivateBtn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    min-width: 90px;
+    margin: 0 auto;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.activateBtn {
+    background: var(--yellow);
+    color: var(--black);
+}
+
+.deactivateBtn {
+    background: #d32f2f;
+    color: white;
+}
+
+.activateBtn:hover {
+    background: #ffdb4d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.deactivateBtn:hover {
+    background: #e53935;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.activateBtn:active,
+.deactivateBtn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.paginationContainer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.userStats {
+    text-align: right;
+    font-size: 13px;
+    color: #666;
+}
+
+.statValue {
+    font-weight: 600;
+    color: var(--blue);
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    color: #666;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid var(--yellow);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Dodaj do istniejącego pliku UserManagement.module.css */
+.clickable {
+    cursor: pointer;
+    color: #1565c0;
+    text-decoration: underline;
+}
+
+.clickable:hover {
+    color: #0d47a1;
+}
+
+.detailsBtn {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+.detailsBtn:hover {
+    background-color: #bbdefb;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 900px) {
+    .filtersContainer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchForm {
+        max-width: 100%;
+    }
+
+    .roleFilter {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .usersTable th,
+    .usersTable td {
+        font-size: 12px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 700px) {
+    .container {
+        margin: 70px 10px 10px;
+        padding: 12px;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+
+    .description {
+        font-size: 13px;
+    }
+
+    .filtersContainer {
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .searchInput,
+    .searchButton,
+    .select,
+    .roleSelect {
+        font-size: 12px;
+        padding: 7px 10px;
+    }
+
+    .roleFilter label {
+        font-size: 12px;
+    }
+
+    .usersTable th,
+    .usersTable td {
+        font-size: 11px;
+        padding: 8px;
+    }
+
+    .usersTable th:nth-child(6),
+    .usersTable td:nth-child(6),
+    .usersTable th:nth-child(7),
+    .usersTable td:nth-child(7) {
+        display: none;
+    }
+
+    .activateBtn,
+    .deactivateBtn {
+        font-size: 11px;
+        padding: 5px 10px;
+        min-height: 26px;
+        min-width: 80px;
+    }
+
+    .activeStatus,
+    .inactiveStatus {
+        min-width: 70px;
+        height: 22px;
+    }
+
+    .errorMessage {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+
+    .userStats {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .usersTable th:nth-child(1),
+    .usersTable td:nth-child(1),
+    .usersTable th:nth-child(3),
+    .usersTable td:nth-child(3) {
+        display: none;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .container {
+        margin: 70px 8px 8px;
+        padding: 10px;
+    }
+
+    .usersTable th,
+    .usersTable td {
+        font-size: 10px;
+        padding: 6px;
+    }
+
+    .activeStatus,
+    .inactiveStatus {
+        min-width: 60px;
+        height: 20px;
+    }
+
+    .activateBtn,
+    .deactivateBtn {
+        min-width: 70px;
+    }
+}

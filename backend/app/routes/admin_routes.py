@@ -342,3 +342,46 @@ def get_admin_stats():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@admin_bp.route("/users/<int:user_id>", methods=["DELETE"])
+@admin_required
+def delete_user(user_id):
+    try:
+        user = user_repo.get_by_id(user_id)
+
+        if not user:
+            return jsonify({"error": "Użytkownik nie znaleziony"}), 404
+
+        from flask_jwt_extended import get_jwt_identity
+
+        current_user_id = int(get_jwt_identity())
+
+        # Nie można usunąć własnego konta
+        if user_id == current_user_id:
+            return jsonify({"error": "Nie możesz usunąć swojego własnego konta"}), 403
+
+        # Nie można usunąć innego administratora
+        if user.role == 1:
+            return (
+                jsonify({"error": "Nie możesz usunąć konta innego administratora"}),
+                403,
+            )
+
+        # Zapisz dane użytkownika przed usunięciem, aby zwrócić je w odpowiedzi
+        user_data = user.serialize()
+
+        # Usuń użytkownika
+        db.session.delete(user)
+        db.session.commit()
+
+        return (
+            jsonify(
+                {"message": "Użytkownik został pomyślnie usunięty", "user": user_data}
+            ),
+            200,
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

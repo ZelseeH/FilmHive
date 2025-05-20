@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useGenres } from '../../hooks/useGenres';
 import styles from './GenresPage.module.css';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Toast } from 'primereact/toast';
 
 interface Genre {
     id: number;
@@ -14,6 +16,7 @@ const GenresPage: React.FC = () => {
     const { getToken } = useAuth();
     const token = getToken() || '';
     const { genres, loading, error, loadGenres, add, update, remove } = useGenres(token);
+    const toast = useRef<Toast>(null);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -40,6 +43,7 @@ const GenresPage: React.FC = () => {
             add(newGenreName.trim());
             setNewGenreName('');
             setShowAddForm(false);
+            toast.current?.show({ severity: 'success', summary: 'Sukces', detail: 'Gatunek został dodany', life: 3000 });
         }
     };
 
@@ -48,24 +52,36 @@ const GenresPage: React.FC = () => {
         setEditingId(id);
         setEditingName(name);
     };
+
     const handleEditSave = (e: React.FormEvent) => {
         e.preventDefault();
         if (editingId !== null && editingName.trim()) {
             update(editingId, editingName.trim());
             setEditingId(null);
             setEditingName('');
+            toast.current?.show({ severity: 'success', summary: 'Sukces', detail: 'Gatunek został zaktualizowany', life: 3000 });
         }
     };
+
     const handleEditCancel = () => {
         setEditingId(null);
         setEditingName('');
     };
 
-    // Obsługa usuwania
-    const handleDeleteGenre = (id: number) => {
-        if (window.confirm('Na pewno usunąć gatunek?')) {
-            remove(id);
-        }
+    // Obsługa usuwania z potwierdzeniem
+    const confirmDeleteGenre = (id: number, name: string) => {
+        confirmDialog({
+            message: `Czy na pewno chcesz usunąć gatunek "${name}"?`,
+            header: 'Potwierdzenie usunięcia',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-danger',
+            acceptLabel: 'Tak, usuń',
+            rejectLabel: 'Anuluj',
+            accept: () => {
+                remove(id);
+                toast.current?.show({ severity: 'success', summary: 'Sukces', detail: 'Gatunek został usunięty', life: 3000 });
+            }
+        });
     };
 
     // Obsługa paginacji
@@ -75,6 +91,10 @@ const GenresPage: React.FC = () => {
 
     return (
         <div className={styles.container}>
+            {/* Dodaj komponenty Toast i ConfirmDialog */}
+            <Toast ref={toast} />
+            <ConfirmDialog />
+
             <div className={styles.header}>
                 <h1 className={styles.title}>Zarządzanie Gatunkami</h1>
                 <p className={styles.description}>
@@ -190,7 +210,7 @@ const GenresPage: React.FC = () => {
                                                 </button>
                                                 <button
                                                     className={styles.deleteButton}
-                                                    onClick={() => handleDeleteGenre(genre.id)}
+                                                    onClick={() => confirmDeleteGenre(genre.id, genre.name)}
                                                 >
                                                     Usuń
                                                 </button>

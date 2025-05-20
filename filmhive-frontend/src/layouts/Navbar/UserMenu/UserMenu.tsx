@@ -42,7 +42,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ username, onClose, onLogout, positi
             {/* Panel Administratora - tylko dla roli 1 (admin) */}
             {role === 1 && (
                 <Link
-                    to="/dashboard"
+                    to="/dashboardpanel"
                     className={styles['user-menu-item']}
                     onClick={onClose}
                 >
@@ -52,7 +52,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ username, onClose, onLogout, positi
             {/* Panel Moderatora - tylko dla roli 2 (moderator) */}
             {role === 2 && (
                 <Link
-                    to="/dashboard"
+                    to="/dashboardpanel"
                     className={styles['user-menu-item']}
                     onClick={onClose}
                 >

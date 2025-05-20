@@ -128,5 +128,27 @@ export const userService = {
         }
 
         return await response.json();
+    },
+
+    // Nowa funkcja do usuwania użytkownika
+    async deleteUser(userId: string): Promise<{ message: string; user: UserData }> {
+        const token = getAuthToken();
+        if (!token) {
+            throw new Error('Brak tokenu autoryzacyjnego');
+        }
+
+        const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Nie udało się usunąć użytkownika');
+        }
+
+        return await response.json();
     }
 };
