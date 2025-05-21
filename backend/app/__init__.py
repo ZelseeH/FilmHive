@@ -79,6 +79,7 @@ def create_app():
     from app.routes.admin_routes import admin_bp
     from app.routes.ai_routes import ai_bp
     from app.routes.people_routes import people_bp
+    from app.routes.director_routes import directors_bp
 
     app.register_blueprint(movies_bp, url_prefix="/api/movies")
     app.register_blueprint(genres_bp, url_prefix="/api/genres")
@@ -92,6 +93,7 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
     app.register_blueprint(ai_bp)
     app.register_blueprint(people_bp, url_prefix="/api/people")
+    app.register_blueprint(directors_bp, url_prefix="/api/directors")
 
     @app.before_request
     def handle_options():

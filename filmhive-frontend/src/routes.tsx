@@ -36,7 +36,8 @@ import DirectorsAddPage from './pages/Dashboard/components/DirectorsPanel/Direct
 import MoviesManagePage from './pages/Dashboard/components/MoviesPanel/MoviesManagePage';
 import MoviesAddPage from './pages/Dashboard/components/MoviesPanel/MoviesAddPage';
 import DashboardSettings from './pages/Dashboard/components/SettingsPanel/SettingsPage';
-
+import ActorsEditPage from './pages/Dashboard/components/ActorsPanel/ActorsEditPage';
+import DirectorsEditPage from './pages/Dashboard/components/DirectorsPanel/DirectorsEditPage';
 const AppRoutes: React.FC = () => {
     const { user, loading } = useAuth();
 
@@ -124,9 +125,11 @@ const AppRoutes: React.FC = () => {
 
                 <Route path="actors/manage" element={<ActorsManagePage />} />
                 <Route path="actors/add" element={<ActorsAddPage />} />
+                <Route path="actors/edit/:id" element={<ActorsEditPage />} />
 
                 <Route path="directors/manage" element={<DirectorsManagePage />} />
                 <Route path="directors/add" element={<DirectorsAddPage />} />
+                <Route path="directors/edit/:id" element={<DirectorsEditPage />} />
 
                 <Route path="movies/manage" element={<MoviesManagePage />} />
                 <Route path="movies/add" element={<MoviesAddPage />} />

@@ -331,7 +331,7 @@ const UserManagement: React.FC = () => {
                                                 onClick={() => navigateToUserDetails(user)}
                                                 className={styles.detailsBtn}
                                             >
-                                                Szczegóły
+                                                Edytuj
                                             </button>
                                         </td>
                                     </tr>

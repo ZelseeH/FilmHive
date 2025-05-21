@@ -1,5 +1,9 @@
 from flask import Blueprint, jsonify, request, current_app, make_response
 from app.services.actor_service import ActorService
+from app.services.auth_service import admin_required, staff_required
+from werkzeug.utils import secure_filename
+import os
+from datetime import datetime
 
 actors_bp = Blueprint("actors", __name__)
 actor_service = ActorService()
@@ -64,38 +68,196 @@ def search_actors():
 
 @actors_bp.route("/", methods=["POST", "OPTIONS"])
 @cors_headers
+@staff_required
 def add_actor():
     if request.method == "OPTIONS":
         return
 
-    data = request.json
-    actor = actor_service.add_actor(data)
-    return jsonify(actor.serialize()), 201
+    try:
+        actor_data = {}
+
+        if request.is_json:
+            json_data = request.get_json()
+            actor_data = {
+                "name": json_data.get("name"),
+                "birth_date": json_data.get("birth_date"),
+                "birth_place": json_data.get("birth_place", ""),
+                "biography": json_data.get("biography", ""),
+                "gender": json_data.get("gender"),
+            }
+        else:
+            actor_data = {
+                "name": request.form.get("name"),
+                "birth_date": request.form.get("birth_date"),
+                "birth_place": request.form.get("birth_place", ""),
+                "biography": request.form.get("biography", ""),
+                "gender": request.form.get("gender"),
+            }
+
+            photo_file = request.files.get("photo")
+            if photo_file:
+                filename = secure_filename(photo_file.filename)
+                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                filename = f"{timestamp}_{filename}"
+
+                upload_dir = os.path.join(current_app.static_folder, "actors")
+                os.makedirs(upload_dir, exist_ok=True)
+
+                file_path = os.path.join(upload_dir, filename)
+                photo_file.save(file_path)
+
+                actor_data["photo_url"] = filename
+
+        actor = actor_service.add_actor(actor_data)
+        return (
+            jsonify(
+                {"message": "Aktor został pomyślnie dodany", "actor": actor.serialize()}
+            ),
+            201,
+        )
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Error adding actor: {str(e)}")
+        return (
+            jsonify(
+                {"error": "Wystąpił błąd podczas dodawania aktora", "details": str(e)}
+            ),
+            500,
+        )
 
 
 @actors_bp.route("/<int:actor_id>", methods=["PUT", "OPTIONS"])
 @cors_headers
+@staff_required
 def update_actor(actor_id):
     if request.method == "OPTIONS":
         return
 
-    data = request.json
-    actor = actor_service.update_actor(actor_id, data)
-    if actor:
-        return jsonify(actor.serialize())
-    return jsonify({"error": "Actor not found"}), 404
+    try:
+        actor_data = {}
+
+        if request.is_json:
+            json_data = request.get_json()
+
+            if "name" in json_data:
+                actor_data["name"] = json_data.get("name")
+            if "birth_date" in json_data:
+                actor_data["birth_date"] = json_data.get("birth_date")
+            if "birth_place" in json_data:
+                actor_data["birth_place"] = json_data.get("birth_place")
+            if "biography" in json_data:
+                actor_data["biography"] = json_data.get("biography")
+            if "gender" in json_data:
+                actor_data["gender"] = json_data.get("gender")
+        else:
+            if "name" in request.form:
+                actor_data["name"] = request.form.get("name")
+            if "birth_date" in request.form:
+                actor_data["birth_date"] = request.form.get("birth_date")
+            if "birth_place" in request.form:
+                actor_data["birth_place"] = request.form.get("birth_place")
+            if "biography" in request.form:
+                actor_data["biography"] = request.form.get("biography")
+            if "gender" in request.form:
+                actor_data["gender"] = request.form.get("gender")
+
+            photo_file = request.files.get("photo")
+            if photo_file:
+                actor = actor_service.upload_actor_photo(actor_id, photo_file)
+                if not actor:
+                    return jsonify({"error": "Nie znaleziono aktora"}), 404
+
+        actor = actor_service.update_actor(actor_id, actor_data)
+        if not actor:
+            return jsonify({"error": "Nie znaleziono aktora"}), 404
+
+        return jsonify(
+            {
+                "message": "Aktor został pomyślnie zaktualizowany",
+                "actor": actor.serialize(),
+            }
+        )
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Error updating actor: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas aktualizacji aktora",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )
 
 
 @actors_bp.route("/<int:actor_id>", methods=["DELETE", "OPTIONS"])
 @cors_headers
+@staff_required
 def delete_actor(actor_id):
     if request.method == "OPTIONS":
         return
 
-    result = actor_service.delete_actor(actor_id)
-    if result:
-        return jsonify({"message": "Actor deleted successfully"})
-    return jsonify({"error": "Actor not found"}), 404
+    try:
+        result = actor_service.delete_actor(actor_id)
+        if result:
+            return jsonify({"message": "Aktor został pomyślnie usunięty"})
+        return jsonify({"error": "Nie znaleziono aktora"}), 404
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Error deleting actor: {str(e)}")
+        return (
+            jsonify(
+                {"error": "Wystąpił błąd podczas usuwania aktora", "details": str(e)}
+            ),
+            500,
+        )
+
+
+@actors_bp.route("/<int:actor_id>/photo", methods=["POST", "OPTIONS"])
+@cors_headers
+@staff_required
+def upload_photo(actor_id):
+    if request.method == "OPTIONS":
+        return
+
+    try:
+        if "photo" not in request.files:
+            return jsonify({"error": "Nie przesłano pliku"}), 400
+
+        photo_file = request.files["photo"]
+        if photo_file.filename == "":
+            return jsonify({"error": "Nie wybrano pliku"}), 400
+
+        actor = actor_service.upload_actor_photo(actor_id, photo_file)
+        if actor:
+            return jsonify(
+                {
+                    "message": "Zdjęcie zostało pomyślnie przesłane",
+                    "actor": actor.serialize(),
+                }
+            )
+        return jsonify({"error": "Nie znaleziono aktora"}), 404
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Error uploading photo: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas przesyłania zdjęcia",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )
 
 
 @actors_bp.route("/<int:actor_id>/movies", methods=["GET", "OPTIONS"])
@@ -174,32 +336,3 @@ def get_birthplaces():
 
     birthplaces = actor_service.get_unique_birthplaces()
     return jsonify({"birthplaces": birthplaces})
-
-
-actor_service = ActorService()
-
-
-@actors_bp.route("/search", methods=["GET"])
-def search_actors_route():
-    try:
-        query = request.args.get("q", "")
-        page = request.args.get("page", 1, type=int)
-        per_page = request.args.get("per_page", 10, type=int)
-
-        result = actor_service.search_actors(query, page=page, per_page=per_page)
-
-        return (
-            jsonify({"results": result["actors"], "pagination": result["pagination"]}),
-            200,
-        )
-    except Exception as e:
-        current_app.logger.error(f"Error in search_actors_route: {str(e)}")
-        return (
-            jsonify(
-                {
-                    "error": "Wystąpił błąd podczas wyszukiwania aktorów",
-                    "details": str(e),
-                }
-            ),
-            500,
-        )

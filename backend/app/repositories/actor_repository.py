@@ -33,6 +33,9 @@ class ActorRepository:
     def get_by_id(self, actor_id):
         return self.session.query(Actor).filter(Actor.actor_id == actor_id).first()
 
+    def get_by_name(self, name):
+        return self.session.query(Actor).filter(Actor.actor_name == name).first()
+
     def search(self, query, page=1, per_page=10):
         search_query = f"%{query}%"
         total = (
@@ -74,12 +77,35 @@ class ActorRepository:
 
     def add(self, actor_data):
         try:
+            # Sprawdź, czy aktor o takiej nazwie już istnieje
+            existing_actor = (
+                self.session.query(Actor)
+                .filter(Actor.actor_name == actor_data.get("name"))
+                .first()
+            )
+            if existing_actor:
+                raise ValueError(
+                    f"Aktor o nazwie '{actor_data.get('name')}' już istnieje"
+                )
+
+            # Konwersja płci na enum
+            gender = None
+            if "gender" in actor_data and actor_data["gender"]:
+                from app.models.actor import Gender
+
+                gender_value = actor_data["gender"]
+                if gender_value == "M":
+                    gender = Gender.M
+                elif gender_value == "K":
+                    gender = Gender.K
+
             actor = Actor(
                 actor_name=actor_data.get("name"),
                 birth_date=actor_data.get("birth_date"),
-                birth_place=actor_data.get("birth_place"),
-                biography=actor_data.get("biography"),
+                birth_place=actor_data.get("birth_place", ""),
+                biography=actor_data.get("biography", ""),
                 photo_url=actor_data.get("photo_url"),
+                gender=gender,
             )
             self.session.add(actor)
             self.session.commit()
@@ -89,11 +115,25 @@ class ActorRepository:
             raise e
 
     def update(self, actor_id, actor_data):
+        """Aktualizuje dane aktora o podanym ID"""
         try:
             actor = self.get_by_id(actor_id)
             if not actor:
                 return None
 
+            # Sprawdź, czy nowa nazwa nie koliduje z istniejącym aktorem
+            if "name" in actor_data and actor_data["name"] != actor.actor_name:
+                existing_actor = (
+                    self.session.query(Actor)
+                    .filter(Actor.actor_name == actor_data["name"])
+                    .first()
+                )
+                if existing_actor and existing_actor.actor_id != actor_id:
+                    raise ValueError(
+                        f"Aktor o nazwie '{actor_data['name']}' już istnieje"
+                    )
+
+            # Aktualizacja pól
             if "name" in actor_data:
                 actor.actor_name = actor_data["name"]
             if "birth_date" in actor_data:
@@ -105,6 +145,18 @@ class ActorRepository:
             if "photo_url" in actor_data:
                 actor.photo_url = actor_data["photo_url"]
 
+            # Aktualizacja płci
+            if "gender" in actor_data:
+                from app.models.actor import Gender
+
+                gender_value = actor_data["gender"]
+                if gender_value == "M":
+                    actor.gender = Gender.M
+                elif gender_value == "K":
+                    actor.gender = Gender.K
+                else:
+                    actor.gender = None
+
             self.session.commit()
             return actor
         except SQLAlchemyError as e:
@@ -112,10 +164,17 @@ class ActorRepository:
             raise e
 
     def delete(self, actor_id):
+        """Usuwa aktora o podanym ID"""
         try:
             actor = self.get_by_id(actor_id)
             if not actor:
                 return False
+
+            # Sprawdź, czy aktor ma powiązane filmy
+            if actor.movies:
+                raise ValueError(
+                    f"Nie można usunąć aktora '{actor.actor_name}', ponieważ jest powiązany z filmami"
+                )
 
             self.session.delete(actor)
             self.session.commit()

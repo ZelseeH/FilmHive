@@ -192,7 +192,7 @@ const Navbar: React.FC = () => {
                 {/* Panel Administratora - tylko dla roli 1 (admin) */}
                 {user.role === 1 && (
                   <Link
-                    to="/dashboard"
+                    to="/dashboardpanel"
                     className={styles['mobile-menu-link']}
                     onClick={closeMobileMenu}
                   >
@@ -203,7 +203,7 @@ const Navbar: React.FC = () => {
                 {/* Panel Moderatora - tylko dla roli 2 (moderator) */}
                 {user.role === 2 && (
                   <Link
-                    to="/dashboard"
+                    to="/dashboardpanel"
                     className={styles['mobile-menu-link']}
                     onClick={closeMobileMenu}
                   >
