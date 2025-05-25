@@ -269,3 +269,89 @@ class MovieRepository:
             sort_order="asc",
             user_id=user_id,
         )
+
+    def get_all_with_title_filter(self, title_filter=None, page=1, per_page=10):
+        try:
+            query = self.session.query(Movie).options(
+                joinedload(Movie.genres),
+                selectinload(Movie.actors),
+                selectinload(Movie.directors),
+            )
+
+            if title_filter and title_filter.strip():
+                query = query.filter(Movie.title.ilike(f"%{title_filter}%"))
+
+            query = query.order_by(Movie.title.asc())
+
+            total = query.count()
+            movies = query.offset((page - 1) * per_page).limit(per_page).all()
+
+            total_pages = (total + per_page - 1) // per_page
+
+            return {
+                "movies": movies,
+                "pagination": {
+                    "page": page,
+                    "per_page": per_page,
+                    "total": total,
+                    "total_pages": total_pages,
+                    "has_next": page < total_pages,
+                    "has_prev": page > 1,
+                },
+            }
+        except Exception as e:
+            print(f"Error in get_all_with_title_filter: {str(e)}")
+            return {
+                "movies": [],
+                "pagination": {
+                    "page": 1,
+                    "per_page": per_page,
+                    "total": 0,
+                    "total_pages": 0,
+                    "has_next": False,
+                    "has_prev": False,
+                },
+            }
+
+    def update(self, movie_id, data):
+        try:
+            movie = self.session.query(Movie).filter(Movie.movie_id == movie_id).first()
+            if not movie:
+                return None
+
+            # Aktualizuj pola jeśli są podane
+            if "title" in data:
+                movie.title = data["title"]
+            if "description" in data:
+                movie.description = data["description"]
+            if "release_date" in data:
+                movie.release_date = data["release_date"]
+            if "duration_minutes" in data:
+                movie.duration_minutes = data["duration_minutes"]
+            if "country" in data:
+                movie.country = data["country"]
+            if "original_language" in data:
+                movie.original_language = data["original_language"]
+            if "trailer_url" in data:
+                movie.trailer_url = data["trailer_url"]
+            if "poster_url" in data:
+                movie.poster_url = data["poster_url"]
+
+            self.session.commit()
+            return movie
+        except Exception as e:
+            self.session.rollback()
+            raise e
+
+    def update_poster(self, movie_id, poster_url):
+        try:
+            movie = self.session.query(Movie).filter(Movie.movie_id == movie_id).first()
+            if not movie:
+                return None
+
+            movie.poster_url = poster_url
+            self.session.commit()
+            return movie
+        except Exception as e:
+            self.session.rollback()
+            raise e

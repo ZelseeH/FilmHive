@@ -1,0 +1,708 @@
+.actorModal {
+    font-family: inherit;
+}
+
+.actorModal .p-dialog {
+    width: 85% !important;
+    max-width: 1200px !important;
+    max-height: 85vh !important;
+}
+
+.actorModal .p-dialog .p-dialog-content {
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.scrollableContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    max-height: 70vh;
+}
+
+.modalHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.modalHeader h3 {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.searchContainer {
+    width: 100%;
+}
+
+.searchInput {
+    width: 100% !important;
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+}
+
+.searchInput:focus {
+    border-color: #0055a4 !important;
+    box-shadow: 0 0 0 2px rgba(0, 85, 164, 0.2) !important;
+}
+
+.modalContent {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    min-height: min-content;
+}
+
+.errorMessage {
+    background: rgba(255, 77, 77, 0.1);
+    color: #d32f2f;
+    padding: 12px 16px;
+    border-radius: 6px;
+    border-left: 3px solid #d32f2f;
+    font-size: 14px;
+}
+
+.actorsGrid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    max-height: calc(3 * (140px + 12px));
+    overflow-y: auto;
+    width: 100%;
+}
+
+.actorCard {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.actorCard:hover {
+    border-color: #0055a4;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.15);
+}
+
+.actorCard.selected {
+    border-color: #0055a4;
+    background: #e3f2fd;
+    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.2);
+}
+
+.actorCardContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    position: relative;
+}
+
+.actorPhoto {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.actorPhotoPlaceholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #666;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.actorInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+}
+
+.actorName {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.2;
+    word-break: break-word;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.actorYear {
+    font-size: 12px;
+    color: #666;
+    font-weight: normal;
+}
+
+.actorPlace {
+    font-size: 11px;
+    color: #888;
+    font-style: italic;
+    line-height: 1.2;
+    word-break: break-word;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.selectedBadge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #0055a4;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.loadingMore {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e0e0e0;
+    border-top: 2px solid #ffcc00;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.noResults {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-style: italic;
+}
+
+.selectedActorsSection {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.selectedActorsSection h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.selectedActorsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.selectedActorItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.selectedActorInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 150px;
+}
+
+.selectedActorPhoto {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.addButton {
+    padding: 12px 16px;
+    background: var(--yellow);
+    color: var(--black);
+    border: 2px dashed transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--transition);
+    text-align: center;
+    margin-top: 8px;
+}
+
+.removeButton {
+    padding: 6px 12px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.saveButton {
+    padding: 8px 16px;
+    background: var(--yellow);
+    color: var(--black);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cancelButton {
+    padding: 8px 16px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.selectedActorPhotoPlaceholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #666;
+}
+
+.selectedActorName {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.roleInputContainer {
+    flex: 1;
+}
+
+.roleInput {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+}
+
+.roleInput:focus {
+    border-color: #0055a4 !important;
+    box-shadow: 0 0 0 2px rgba(0, 85, 164, 0.2) !important;
+}
+
+.removeActorButton {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.removeActorButton:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+/* Scrollbar styling */
+.scrollableContent::-webkit-scrollbar,
+.actorsGrid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollableContent::-webkit-scrollbar-track,
+.actorsGrid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb,
+.actorsGrid::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb:hover,
+.actorsGrid::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+    .actorsGrid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .actorModal .p-dialog {
+        width: 90% !important;
+    }
+
+    .actorsGrid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (max-width: 900px) {
+    .actorModal .p-dialog {
+        width: 95% !important;
+    }
+
+    .scrollableContent {
+        max-height: 65vh;
+    }
+
+
+
+    .actorCard {
+        padding: 10px;
+        min-height: 120px;
+    }
+
+    .actorPhoto,
+    .actorPhotoPlaceholder {
+        width: 50px;
+        height: 50px;
+    }
+
+    .actorPhotoPlaceholder {
+        font-size: 20px;
+    }
+
+    .actorName {
+        font-size: 13px;
+    }
+
+    .actorYear {
+        font-size: 11px;
+    }
+
+    .actorPlace {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modalHeader h3 {
+        font-size: 18px;
+    }
+
+    .addButton {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .removeButton {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .saveButton,
+    .cancelButton {
+        padding: 7px 14px;
+        font-size: 12px;
+    }
+
+    .scrollableContent {
+        max-height: 60vh;
+        padding: 16px;
+    }
+
+    .modalContent {
+        gap: 16px;
+    }
+
+    .actorsGrid {
+        grid-template-columns: repeat(3, 1fr);
+        max-height: calc(3 * (120px + 8px));
+    }
+
+    .selectedActorItem {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .selectedActorInfo {
+        min-width: auto;
+        justify-content: center;
+    }
+
+    .removeActorButton {
+        align-self: center;
+        width: 32px;
+        height: 32px;
+    }
+
+    .roleInputContainer {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .actorModal .p-dialog {
+        width: 98% !important;
+        max-width: none !important;
+    }
+
+    .addButton {
+        padding: 8px 12px;
+        font-size: 12px;
+        width: 100%;
+    }
+
+    .removeButton {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+
+    .saveButton,
+    .cancelButton {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    .scrollableContent {
+        max-height: 55vh;
+        padding: 12px;
+    }
+
+    .modalContent {
+        gap: 12px;
+    }
+
+    .actorsGrid {
+        gap: 6px;
+    }
+
+    .selectedActorsSection {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modalHeader {
+        gap: 12px;
+    }
+
+    .modalHeader h3 {
+        font-size: 16px;
+    }
+
+    .searchInput {
+        padding: 8px 10px !important;
+        font-size: 13px !important;
+    }
+
+    .scrollableContent {
+        max-height: 50vh;
+        padding: 8px;
+    }
+
+    .actorsGrid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        max-height: calc(3 * (100px + 4px));
+    }
+
+    .actorCard {
+        padding: 6px;
+        min-height: 100px;
+    }
+
+    .actorPhoto,
+    .actorPhotoPlaceholder {
+        width: 40px;
+        height: 40px;
+    }
+
+    .actorPhotoPlaceholder {
+        font-size: 16px;
+    }
+
+    .actorName {
+        font-size: 12px;
+    }
+
+    .actorYear,
+    .actorPlace {
+        font-size: 9px;
+    }
+
+    .selectedBadge {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        top: -6px;
+        right: -6px;
+    }
+
+    .selectedActorsSection h4 {
+        font-size: 14px;
+    }
+
+    .selectedActorPhoto,
+    .selectedActorPhotoPlaceholder {
+        width: 28px;
+        height: 28px;
+    }
+
+    .selectedActorName {
+        font-size: 13px;
+    }
+
+    .roleInput {
+        padding: 6px 8px !important;
+        font-size: 12px !important;
+    }
+
+    .removeActorButton {
+        width: 28px;
+        height: 28px;
+        font-size: 10px;
+    }
+}
+
+/* Bardzo małe ekrany */
+@media (max-width: 360px) {
+    .actorsGrid {
+        grid-template-columns: 1fr 1fr;
+        max-height: calc(3 * (90px + 4px));
+    }
+
+    .actorCard {
+        min-height: 80px;
+        padding: 4px;
+    }
+
+    .actorPhoto,
+    .actorPhotoPlaceholder {
+        width: 35px;
+        height: 35px;
+    }
+
+    .actorName {
+        font-size: 11px;
+    }
+
+    .scrollableContent {
+        max-height: 45vh;
+    }
+
+    .addButton {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .removeButton {
+        padding: 3px 6px;
+        font-size: 9px;
+    }
+
+    .saveButton,
+    .cancelButton {
+        padding: 5px 10px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 300px) {
+    .actorsGrid {
+        max-height: calc(2 * (100px + 4px));
+        grid-template-columns: repeat(1, 1fr);
+    }
+}

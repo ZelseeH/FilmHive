@@ -1,0 +1,274 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f5f5f5;
+    min-height: 100vh;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.backButton {
+    padding: 10px 16px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.backButton:hover {
+    background: #5a6268;
+}
+
+.title {
+    margin: 0;
+    color: #333;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.formCard {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.formHeader {
+    padding: 30px;
+    background: linear-gradient(135deg, #0055a4 0%, #003d75 100%);
+    color: white;
+}
+
+.formHeader h2 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.formDescription {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+.formContent {
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 40px;
+}
+
+.posterSection h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.posterContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.posterPreview {
+    width: 200px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.posterPlaceholder {
+    width: 200px;
+    height: 300px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    background: #f9f9f9;
+}
+
+.posterPlaceholder p {
+    margin: 10px 0 0 0;
+    font-size: 14px;
+}
+
+.posterActions {
+    display: flex;
+    gap: 10px;
+}
+
+.selectPosterButton {
+    padding: 8px 16px;
+    background: #ffcc00;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.selectPosterButton:hover {
+    background: #ffdb4d;
+}
+
+.removePosterButton {
+    padding: 8px 16px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.removePosterButton:hover {
+    background: #c82333;
+}
+
+.formFields {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.formField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.fieldLabel {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.formInput {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.formInput:focus {
+    outline: none;
+    border-color: #0055a4;
+    box-shadow: 0 0 0 2px rgba(0, 85, 164, 0.2);
+}
+
+.inputError {
+    border-color: #dc3545;
+}
+
+.inputError:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+.fieldHint {
+    font-size: 12px;
+    color: #666;
+}
+
+.fieldError {
+    font-size: 12px;
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.formFooter {
+    padding: 30px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cancelButton {
+    padding: 12px 24px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+    background: #5a6268;
+}
+
+.nextButton {
+    padding: 12px 24px;
+    background: #0055a4;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.nextButton:hover {
+    background: #003d75;
+}
+
+.nextButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .formContent {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .posterContainer {
+        align-items: flex-start;
+    }
+
+    .posterPreview,
+    .posterPlaceholder {
+        width: 150px;
+        height: 225px;
+    }
+
+    .formFooter {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .cancelButton,
+    .nextButton {
+        width: 100%;
+    }
+}

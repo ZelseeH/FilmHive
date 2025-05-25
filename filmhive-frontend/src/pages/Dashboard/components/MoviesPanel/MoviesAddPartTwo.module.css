@@ -1,0 +1,219 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f5f5f5;
+    min-height: 100vh;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.title {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid #0055a4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.errorMessage {
+    background: rgba(255, 77, 77, 0.1);
+    color: #d32f2f;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #d32f2f;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.movieCard {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.movieHeader {
+    padding: 30px;
+    background: linear-gradient(135deg, #0055a4 0%, #003d75 100%);
+    color: white;
+}
+
+.movieInfo {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.moviePoster {
+    width: 120px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.moviePosterPlaceholder {
+    width: 120px;
+    height: 180px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.movieDetails {
+    flex: 1;
+}
+
+.movieDetails h2 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.movieMeta {
+    margin: 0 0 15px 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.movieDescription {
+    margin: 0;
+    opacity: 0.9;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.relationsContent {
+    padding: 30px;
+}
+
+.progressInfo {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #e3f2fd;
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+}
+
+.progressInfo h3 {
+    margin: 0 0 10px 0;
+    color: #1976d2;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.progressInfo p {
+    margin: 0;
+    color: #1565c0;
+    font-size: 14px;
+}
+
+.actionsFooter {
+    padding: 30px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.cancelButton {
+    padding: 12px 24px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+    background: #c82333;
+}
+
+.cancelButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.finishButton {
+    padding: 12px 24px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.finishButton:hover {
+    background: #218838;
+}
+
+.finishButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .movieInfo {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .actionsFooter {
+        flex-direction: column;
+    }
+
+    .cancelButton,
+    .finishButton {
+        width: 100%;
+    }
+}

@@ -29,19 +29,38 @@ class Movie(db.Model):
     trailer_url: Mapped[str] = mapped_column(String(255), nullable=True)
 
     genres = relationship(
-        "Genre", secondary="movies_genres", back_populates="movies", lazy="joined"
+        "Genre",
+        secondary="movies_genres",
+        back_populates="movies",
+        lazy="joined",
+        cascade="all, delete",
     )
 
     actors = relationship(
-        "Actor", secondary="movie_actors", back_populates="movies", lazy="select"
+        "Actor",
+        secondary="movie_actors",
+        back_populates="movies",
+        lazy="select",
+        cascade="all, delete",
     )
     directors = relationship(
-        "Director", secondary="movie_directors", back_populates="movies", lazy="select"
+        "Director",
+        secondary="movie_directors",
+        back_populates="movies",
+        lazy="select",
+        cascade="all, delete",
     )
-    ratings = relationship("Rating", back_populates="movie", lazy="select")
-    comments = relationship("Comment", back_populates="movie", lazy="select")
+    ratings = relationship(
+        "Rating",
+        back_populates="movie",
+        lazy="select",
+        cascade="all, delete",
+    )
+    comments = relationship(
+        "Comment", back_populates="movie", lazy="select", cascade="all, delete"
+    )
     recommendations: Mapped[list["Recommendation"]] = relationship(
-        "Recommendation", back_populates="movie", lazy="select"
+        "Recommendation", back_populates="movie", lazy="select", cascade="all, delete"
     )
 
     _average_rating = None
@@ -177,7 +196,19 @@ class Movie(db.Model):
 
         if include_directors:
             result["directors"] = [
-                {"id": director.director_id, "name": director.director_name}
+                {
+                    "id": director.director_id,
+                    "name": director.director_name,
+                    "photo_url": (
+                        url_for(
+                            "static",
+                            filename=f"directors/{director.photo_url}",
+                            _external=True,
+                        )
+                        if director.photo_url
+                        else None
+                    ),
+                }
                 for director in self.directors
             ]
 

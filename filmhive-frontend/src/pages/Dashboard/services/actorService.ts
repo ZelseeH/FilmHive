@@ -8,7 +8,12 @@ export interface Actor {
     gender?: 'M' | 'K' | null;
     movies?: { id: number; title: string }[];
 }
-
+export interface MovieActor {
+    id: number;
+    name: string;
+    photo_url?: string;
+    role?: string; // Rola w konkretnym filmie
+}
 interface ActorsResponse {
     actors: Actor[];
     pagination: {

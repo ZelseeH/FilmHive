@@ -194,3 +194,58 @@ def search_movies(query, page=1, per_page=10, user_id=None):
     except Exception as e:
         logger.error(f"Error in search_movies: {str(e)}")
         raise Exception(f"Błąd podczas wyszukiwania filmów: {str(e)}")
+
+
+def get_all_movies_with_title_filter(title_filter=None, page=1, per_page=10):
+    try:
+        result = movie_repo.get_all_with_title_filter(
+            title_filter=title_filter, page=page, per_page=per_page
+        )
+
+        serialized_movies = [
+            movie.serialize(
+                include_genres=True, include_actors=True, include_directors=True
+            )
+            for movie in result["movies"]
+        ]
+
+        return {"movies": serialized_movies, "pagination": result["pagination"]}
+    except Exception as e:
+        logger.error(f"Error in get_all_movies_with_title_filter: {str(e)}")
+        raise Exception(f"Błąd podczas pobierania filmów z filtrowaniem: {str(e)}")
+
+
+def update_movie(movie_id, data):
+    """
+    Aktualizuje film - dla panelu administratora
+    """
+    try:
+        updated_movie = movie_repo.update(movie_id, data)
+        if not updated_movie:
+            return None
+
+        return updated_movie.serialize(
+            include_genres=True, include_actors=True, include_directors=True
+        )
+    except Exception as e:
+        logger.error(f"Error in update_movie: {str(e)}")
+        raise Exception(f"Błąd podczas aktualizacji filmu o ID {movie_id}: {str(e)}")
+
+
+def update_movie_poster(movie_id, poster_url):
+    """
+    Aktualizuje plakat filmu
+    """
+    try:
+        updated_movie = movie_repo.update_poster(movie_id, poster_url)
+        if not updated_movie:
+            return None
+
+        return updated_movie.serialize(
+            include_genres=True, include_actors=True, include_directors=True
+        )
+    except Exception as e:
+        logger.error(f"Error in update_movie_poster: {str(e)}")
+        raise Exception(
+            f"Błąd podczas aktualizacji plakatu filmu o ID {movie_id}: {str(e)}"
+        )

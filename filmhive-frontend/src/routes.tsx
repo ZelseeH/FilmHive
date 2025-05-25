@@ -38,6 +38,10 @@ import MoviesAddPage from './pages/Dashboard/components/MoviesPanel/MoviesAddPag
 import DashboardSettings from './pages/Dashboard/components/SettingsPanel/SettingsPage';
 import ActorsEditPage from './pages/Dashboard/components/ActorsPanel/ActorsEditPage';
 import DirectorsEditPage from './pages/Dashboard/components/DirectorsPanel/DirectorsEditPage';
+import MoviesEditPage from './pages/Dashboard/components/MoviesPanel/MoviesEditPage';
+import MoviesAddPartTwo from './pages/Dashboard/components/MoviesPanel/MoviesAddPartTwo'; // DODAJ IMPORT
+
+
 const AppRoutes: React.FC = () => {
     const { user, loading } = useAuth();
 
@@ -133,6 +137,10 @@ const AppRoutes: React.FC = () => {
 
                 <Route path="movies/manage" element={<MoviesManagePage />} />
                 <Route path="movies/add" element={<MoviesAddPage />} />
+                <Route path="movies/edit/:id" element={<MoviesEditPage />} />
+                <Route path="movies/add/:id/relations" element={<MoviesAddPartTwo />} />
+
+                {/* Ustawienia dashboarda */}
 
                 <Route path="settings" element={<DashboardSettings />} />
             </Route>
