@@ -9,19 +9,23 @@ import { useMobileMenu } from './hooks/useMobileMenu';
 import { handleLogout } from './services/navbarService';
 import logo from './FilmHiveLogo.png';
 import SearchBar from './SearchBar/SearchBar';
-import LoginModal from '../../components/LoginModal/LoginModal';
 import UserMenu from './UserMenu/UserMenu';
 import UserAvatar from './UserAvatar/UserAvatar';
 import styles from './Navbar.module.css';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
-  const { user, logout, isLoginModalOpen, openLoginModal, closeLoginModal } = useAuth();
+  const { user, logout } = useAuth();
   const { show } = useNavbarVisibility();
   const { mobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useMobileMenu();
   const { showUserMenu, menuPosition, avatarRef, toggleUserMenu, closeUserMenu } = useUserMenu();
 
   const onLogout = () => handleLogout(logout, closeUserMenu, navigate);
+
+  // Funkcja przekierowania do strony logowania
+  const handleLoginRedirect = () => {
+    navigate('/login');
+  };
 
   useEffect(() => {
     let scrollPosition = 0;
@@ -54,32 +58,6 @@ const Navbar: React.FC = () => {
       window.scrollTo(0, scrollPosition);
     };
   }, [mobileMenuOpen]);
-
-  useEffect(() => {
-    let scrollPosition = 0;
-
-    if (isLoginModalOpen) {
-      scrollPosition = window.scrollY;
-      document.body.classList.add('modal-open');
-      document.documentElement.classList.add('modal-open');
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    } else {
-      document.body.classList.remove('modal-open');
-      document.documentElement.classList.remove('modal-open');
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-      window.scrollTo(0, scrollPosition);
-    }
-
-    return () => {
-      document.body.classList.remove('modal-open');
-      document.documentElement.classList.remove('modal-open');
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-      window.scrollTo(0, scrollPosition);
-    };
-  }, [isLoginModalOpen]);
 
   return (
     <div className={`${styles['navbar-container']} ${show ? '' : styles.hidden}`}>
@@ -117,7 +95,7 @@ const Navbar: React.FC = () => {
               </div>
             </div>
           ) : (
-            <button className={styles['login-btn']} onClick={openLoginModal}>
+            <button className={styles['login-btn']} onClick={handleLoginRedirect}>
               Zaloguj się
             </button>
           )}
@@ -179,9 +157,6 @@ const Navbar: React.FC = () => {
                 >
                   Mój Profil
                 </Link>
-
-
-
                 <Link
                   to="/settings"
                   className={styles['mobile-menu-link']}
@@ -216,7 +191,6 @@ const Navbar: React.FC = () => {
                     onLogout();
                     closeMobileMenu();
                   }}
-
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -242,14 +216,13 @@ const Navbar: React.FC = () => {
                 className={styles.mobileLoginBtn}
                 onClick={() => {
                   closeMobileMenu();
-                  openLoginModal();
+                  handleLoginRedirect();
                 }}
               >
                 Zaloguj się
               </button>
             )}
           </div>
-
         </div>
       </Menu>
 
@@ -259,11 +232,9 @@ const Navbar: React.FC = () => {
           onClose={closeUserMenu}
           onLogout={onLogout}
           position={menuPosition}
-          role={user.role} // Przekazujemy rolę użytkownika
+          role={user.role}
         />
       )}
-
-      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
     </div>
   );
 };

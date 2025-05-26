@@ -4,7 +4,7 @@ import { useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
 import StaffRoute from './StaffRoute';
-
+import LoginPage from './pages/Login/LoginPage';
 import HomePage from './pages/Home/HomePage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import ProfilePage from './pages/Profile/ProfilePage';
@@ -39,7 +39,8 @@ import DashboardSettings from './pages/Dashboard/components/SettingsPanel/Settin
 import ActorsEditPage from './pages/Dashboard/components/ActorsPanel/ActorsEditPage';
 import DirectorsEditPage from './pages/Dashboard/components/DirectorsPanel/DirectorsEditPage';
 import MoviesEditPage from './pages/Dashboard/components/MoviesPanel/MoviesEditPage';
-import MoviesAddPartTwo from './pages/Dashboard/components/MoviesPanel/MoviesAddPartTwo'; // DODAJ IMPORT
+import MoviesAddPartTwo from './pages/Dashboard/components/MoviesPanel/MoviesAddPartTwo';
+
 
 
 const AppRoutes: React.FC = () => {
@@ -53,13 +54,13 @@ const AppRoutes: React.FC = () => {
         <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/movies" element={<MovieListPage />} />
-            # <Route path="/movie/details/:movieTitle" element={<MovieDetail />} />
+            <Route path="/movie/details/:movieTitle" element={<MovieDetail />} />
             <Route path="/people" element={<PeopleListPage />} />
             <Route path="/people/:personType/:personName" element={<PeopleDetails />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
-            <Route path="/login"></Route>
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/terms" element={<TermsPage />} />
@@ -98,7 +99,6 @@ const AppRoutes: React.FC = () => {
                 </StaffRoute>
             } />
 
-            {/* Nowy DashboardPanel z zagnieżdżonymi ścieżkami */}
             <Route path="/dashboardpanel" element={
                 <StaffRoute>
                     <DashboardPanel />

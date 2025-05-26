@@ -14,16 +14,18 @@ import { useLocation } from 'react-router-dom';
 const App: React.FC = () => {
   const location = useLocation();
   const isDashboardPanel = location.pathname.startsWith('/dashboardpanel');
+  const isLoginPage = location.pathname === '/login';
 
   return (
     <AuthProvider>
       <div className={styles.app}>
-        <Navbar />
+        {!isLoginPage && <Navbar />}
+
         <div className={styles.content}>
           <AppRoutes />
         </div>
-        {!isDashboardPanel && <Footer />}
-        {!isDashboardPanel && <GeminiChatbot />}
+        {!isDashboardPanel && !isLoginPage && <Footer />}
+        {!isDashboardPanel && !isLoginPage && <GeminiChatbot />}
       </div>
     </AuthProvider>
   );

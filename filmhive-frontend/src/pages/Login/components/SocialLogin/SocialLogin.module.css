@@ -1,0 +1,70 @@
+/* SocialLogin.module.css */
+.container {
+    margin: 20px 0;
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.divider:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+}
+
+.divider span {
+    background: white;
+    padding: 0 15px;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.socialButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.socialButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 600;
+    gap: 12px;
+}
+
+.socialButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: var(--yellow);
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+}
+
+.google:hover {
+    border-color: var(--yellow);
+}
+
+.facebook:hover {
+    border-color: var(--yellow);
+}
+
+.github:hover {
+    border-color: var(--yellow);
+}
