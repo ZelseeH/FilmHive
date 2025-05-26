@@ -1,19 +1,147 @@
 :root {
   --navbar-height: 60px;
+
+  /* Light Theme Variables */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #f8f9fa;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --yellow: #ffcc00;
+  --blue: #0055a4;
+  --success: #2ed573;
+  --warning: #ffa502;
+  --error: #ff4757;
+}
+
+/* Dark Theme - zamiana wszystkich białych tła na czarne */
+[data-theme="dark"] {
+  --bg-primary: #1a1a1a;
+  /* białe na czarne */
+  --bg-secondary: #0d0d0d;
+  /* jasne szare na bardzo ciemne */
+  --bg-tertiary: #262626;
+  /* średnie szare na ciemne szare */
+  --text-primary: #ffffff;
+  /* czarne na białe */
+  --text-secondary: #cccccc;
+  /* ciemne szare na jasne szare */
+  --border-color: #404040;
+  /* jasne bordery na ciemne */
+  --shadow: rgba(255, 255, 255, 0.1);
+  /* cienie na jasne */
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body {
   font-family: 'Arial', sans-serif;
-  color: #fff;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* WSZYSTKIE BIAŁE TŁA W DARK MODE - OPRÓCZ SIDEBARA */
+[data-theme="dark"] {
+  background-color: var(--bg-secondary) !important;
+}
 
+/* Wszystkie elementy z białym tłem - OPRÓCZ SIDEBARA */
+[data-theme="dark"] *:not(.sidebar):not(.sidebar *):not(.toggleBtn) {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Dashboard specyficzne elementy */
+[data-theme="dark"] .container,
+[data-theme="dark"] .wrapper,
+[data-theme="dark"] .content,
+[data-theme="dark"] .dashboardCard,
+[data-theme="dark"] .settingsCard,
+[data-theme="dark"] .card,
+[data-theme="dark"] .panel,
+[data-theme="dark"] .modal,
+[data-theme="dark"] .header,
+[data-theme="dark"] .actions {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Wszystkie elementy formularzy - OPRÓCZ SIDEBARA */
+[data-theme="dark"] input:not(.sidebar input),
+[data-theme="dark"] select:not(.sidebar select),
+[data-theme="dark"] textarea:not(.sidebar textarea),
+[data-theme="dark"] button:not(.sidebar button):not(.toggleBtn) {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Wszystkie tabele i listy - OPRÓCZ SIDEBARA */
+[data-theme="dark"] table:not(.sidebar table),
+[data-theme="dark"] th:not(.sidebar th),
+[data-theme="dark"] td:not(.sidebar td),
+[data-theme="dark"] ul:not(.sidebar ul):not(.menu),
+[data-theme="dark"] ol:not(.sidebar ol),
+[data-theme="dark"] li:not(.sidebar li):not(.menuItem):not(.submenuItem) {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Wszystkie teksty - OPRÓCZ SIDEBARA */
+[data-theme="dark"] h1:not(.sidebar h1),
+[data-theme="dark"] h2:not(.sidebar h2),
+[data-theme="dark"] h3:not(.sidebar h3),
+[data-theme="dark"] h4:not(.sidebar h4),
+[data-theme="dark"] h5:not(.sidebar h5),
+[data-theme="dark"] h6:not(.sidebar h6),
+[data-theme="dark"] p:not(.sidebar p),
+[data-theme="dark"] span:not(.sidebar span):not(.icon):not(.label):not(.userRole),
+[data-theme="dark"] label:not(.sidebar label) {
+  color: var(--text-primary) !important;
+}
+
+/* SIDEBAR - ZACHOWAJ ORYGINALNE KOLORY */
+/* Sidebar pozostaje bez zmian w dark mode */
+[data-theme="dark"] .sidebar {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Zachowaj żółte napisy w sidebarze */
+[data-theme="dark"] .sidebar .icon,
+[data-theme="dark"] .sidebar .label,
+[data-theme="dark"] .sidebar .userRole,
+[data-theme="dark"] .sidebar .userName,
+[data-theme="dark"] .sidebar .logo,
+[data-theme="dark"] .sidebar .menuItem a,
+[data-theme="dark"] .sidebar .menuItemWithSubmenu,
+[data-theme="dark"] .sidebar .submenuItem a,
+[data-theme="dark"] .sidebar .arrow,
+[data-theme="dark"] .sidebar .subIcon,
+[data-theme="dark"] .sidebar .logoutBtn {
+  color: #ffcc00 !important;
+}
+
+/* Toggle button - zachowaj oryginalne kolory */
+[data-theme="dark"] .toggleBtn {
+  background: #000000 !important;
+  color: #ffcc00 !important;
+}
+
+[data-theme="dark"] .toggleBtn:hover {
+  color: #ffffff !important;
+}
+
+/* Burger Menu Styles */
 .bm-menu {
   background: #1a1a1a;
   padding: 0;
@@ -45,10 +173,36 @@ body {
   background: rgba(0, 0, 0, 0.7) !important;
 }
 
+/* Scrollbar dla dark theme */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+}
 
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-tertiary) !important;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--border-color) !important;
+  border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #777 !important;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   :root {
     --navbar-height: 50px;
+  }
+
+  .bm-menu-wrap {
+    top: 50px;
+  }
+
+  .bm-overlay {
+    top: 50px;
   }
 }
 
@@ -56,10 +210,26 @@ body {
   :root {
     --navbar-height: 60px;
   }
+
+  .bm-menu-wrap {
+    top: 60px;
+  }
+
+  .bm-overlay {
+    top: 60px;
+  }
 }
 
 @media (max-width: 360px) {
   :root {
     --navbar-height: 55px;
+  }
+
+  .bm-menu-wrap {
+    top: 55px;
+  }
+
+  .bm-overlay {
+    top: 55px;
   }
 }

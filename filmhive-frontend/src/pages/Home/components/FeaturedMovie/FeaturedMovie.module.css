@@ -70,6 +70,7 @@
 .featured-movie-info span {
     padding: 3px 6px;
     background-color: transparent;
+    color: white;
 }
 
 .featured-movie-ratings {

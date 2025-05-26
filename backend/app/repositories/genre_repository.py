@@ -31,3 +31,21 @@ class GenreRepository:
         genre.genre_name = genre_name
         self.session.commit()
         return genre
+
+    def get_basic_statistics(self):
+        """Pobiera podstawowe statystyki gatunków - tylko zliczanie"""
+        try:
+            total_genres = self.session.query(Genre).count()
+            return {"total_genres": total_genres}
+        except Exception as e:
+            print(f"Błąd podczas pobierania statystyk gatunków: {e}")
+            return {"total_genres": 0}
+
+    def get_dashboard_data(self):
+        """Pobiera dane dashboard dla gatunków - tylko podstawowe"""
+        try:
+            basic_stats = self.get_basic_statistics()
+            return {"statistics": basic_stats}
+        except Exception as e:
+            print(f"Błąd dashboard gatunków: {e}")
+            return {"statistics": {"total_genres": 0}}

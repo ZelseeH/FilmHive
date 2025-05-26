@@ -101,3 +101,23 @@ class DirectorService:
         except Exception as e:
             current_app.logger.error(f"Error uploading director photo: {str(e)}")
             raise Exception("Failed to upload director photo")
+
+    def get_basic_statistics(self):
+        """Pobiera podstawowe statystyki reżyserów"""
+        try:
+            stats = self.director_repository.get_basic_statistics()
+            current_app.logger.info("Retrieved basic directors statistics")
+            return stats
+        except Exception as e:
+            current_app.logger.error(f"Error getting basic statistics: {str(e)}")
+            raise Exception(f"Nie udało się pobrać statystyk: {str(e)}")
+
+    def get_dashboard_data(self):
+        """Pobiera dane dashboard dla reżyserów"""
+        try:
+            dashboard_data = self.director_repository.get_dashboard_data()
+            current_app.logger.info("Retrieved directors dashboard data")
+            return dashboard_data
+        except Exception as e:
+            current_app.logger.error(f"Error getting dashboard data: {str(e)}")
+            raise Exception(f"Nie udało się pobrać danych dashboard: {str(e)}")

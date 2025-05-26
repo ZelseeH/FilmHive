@@ -1,6 +1,6 @@
 .sidebarWrapper {
     position: relative;
-    height: calc(100vh - 60px);
+    height: calc(100vh);
 }
 
 .sidebar {
@@ -8,10 +8,9 @@
     color: #ffffff;
     width: 250px;
     transition: all 0.3s ease;
-    height: calc(100vh - 60px);
+    height: calc(100vh);
     position: fixed;
     left: 0;
-    top: 60px;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
@@ -25,7 +24,7 @@
 
 .toggleBtn {
     position: fixed;
-    top: 70px;
+    top: 10px;
     left: 250px;
     background: #000000;
     border: none;
@@ -267,7 +266,7 @@
 .overlay {
     display: block;
     position: fixed;
-    top: 60px;
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;
@@ -284,7 +283,7 @@
         height: 40px;
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
         position: fixed;
-        top: 70px;
+        top: 10px;
         z-index: 1001;
     }
 

@@ -1,0 +1,97 @@
+.chartCard {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+}
+
+.chartTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 20px 0;
+    text-align: center;
+}
+
+.chartContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pieChart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
+
+.donut {
+    width: 200px;
+    height: 200px;
+    transform: rotate(-90deg);
+}
+
+.donutSegment {
+    transition: all 0.3s ease;
+}
+
+.donutSegment:hover {
+    stroke-width: 4;
+}
+
+.chartLegend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 250px;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.legendItem:hover {
+    background: #f8f9fa;
+}
+
+.legendColor {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legendLabel {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chartCard {
+        padding: 15px;
+    }
+
+    .donut {
+        width: 150px;
+        height: 150px;
+    }
+
+    .chartTitle {
+        font-size: 14px;
+    }
+
+    .legendLabel {
+        font-size: 13px;
+    }
+}

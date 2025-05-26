@@ -28,7 +28,9 @@ class User(db.Model):
     email: Mapped[str] = mapped_column(
         String(100), unique=True, nullable=False, index=True
     )
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[str] = mapped_column(
+        String(255), nullable=True
+    )  # Nullable dla OAuth
     role: Mapped[int] = mapped_column(
         Integer, default=3, nullable=False
     )  # 1=admin, 2=moderator, 3=user
@@ -40,6 +42,25 @@ class User(db.Model):
     profile_picture: Mapped[str] = mapped_column(String(255), nullable=True)
     background_image: Mapped[str] = mapped_column(String(255), nullable=True)
     bio: Mapped[str] = mapped_column(String(500), nullable=True)
+
+    # OAuth provider IDs
+    google_id: Mapped[str] = mapped_column(
+        String(100), nullable=True, unique=True, index=True
+    )
+    facebook_id: Mapped[str] = mapped_column(
+        String(100), nullable=True, unique=True, index=True
+    )
+    github_id: Mapped[str] = mapped_column(
+        String(100), nullable=True, unique=True, index=True
+    )
+
+    # OAuth metadata
+    oauth_provider: Mapped[str] = mapped_column(
+        String(20), nullable=True
+    )  # 'google', 'facebook', 'github'
+    oauth_created: Mapped[bool] = mapped_column(
+        Boolean, default=False
+    )  # czy konto utworzone przez OAuth
 
     ratings: Mapped[list["Rating"]] = relationship("Rating", back_populates="user")
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user")
@@ -61,10 +82,13 @@ class User(db.Model):
 
     def set_password(self, password):
         """Ustawia zahashowane hasło dla użytkownika"""
-        self.password_hash = generate_password_hash(password)
+        if password:  # Sprawdź czy hasło nie jest None/puste
+            self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         """Sprawdza, czy podane hasło jest poprawne"""
+        if not self.password_hash:  # Konto OAuth bez hasła
+            return False
         return check_password_hash(self.password_hash, password)
 
     @property
@@ -75,8 +99,32 @@ class User(db.Model):
     def is_moderator(self):
         return self.role <= 2
 
+    @property
+    def has_password(self):
+        """Sprawdza czy użytkownik ma ustawione hasło (nie jest tylko OAuth)"""
+        return bool(self.password_hash)
+
+    @property
+    def is_oauth_user(self):
+        """Sprawdza czy użytkownik loguje się przez OAuth"""
+        return self.oauth_created or bool(
+            self.google_id or self.facebook_id or self.github_id
+        )
+
     def update_last_login(self):
         self.last_login = datetime.utcnow()
+
+    def link_oauth_account(self, provider, provider_id):
+        """Łączy istniejące konto z OAuth providerem"""
+        if provider == "google":
+            self.google_id = provider_id
+        elif provider == "facebook":
+            self.facebook_id = provider_id
+        elif provider == "github":
+            self.github_id = provider_id
+
+        if not self.oauth_provider:
+            self.oauth_provider = provider
 
     def serialize(
         self,
@@ -136,6 +184,10 @@ class User(db.Model):
             ),
             "background_position": background_position,
             "bio": self.bio,
+            "oauth_provider": self.oauth_provider,
+            "oauth_created": self.oauth_created,
+            "has_password": self.has_password,
+            "is_oauth_user": self.is_oauth_user,
         }
         print(
             f"Zwracany obiekt zawiera background_position: {result['background_position']}"

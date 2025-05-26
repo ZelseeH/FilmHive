@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar/Sidebar';
+import DashboardOverview from './components/DashboardOverview/DashboardOverview';
+import { ThemeProvider } from '../../contexts/ThemeContext';
 import styles from './DashboardPanel.module.css';
 import { useAuth } from '../../contexts/AuthContext';
 
-const DashboardPanel: React.FC<React.PropsWithChildren<{}>> = () => {
+const DashboardPanelContent: React.FC = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const { isAdmin, isModerator } = useAuth();
+    const location = useLocation();
 
     useEffect(() => {
         const handleResize = () => {
@@ -27,13 +30,16 @@ const DashboardPanel: React.FC<React.PropsWithChildren<{}>> = () => {
 
     const panelType = isAdmin() ? "Administrator" : isModerator() ? "Moderator" : "Użytkownik";
 
+    // Sprawdź czy jesteśmy na głównej stronie dashboard
+    const isDashboardHome = location.pathname === '/dashboardpanel' || location.pathname === '/dashboardpanel/';
+
     return (
         <div className={styles.wrapper}>
             <Sidebar collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
 
             <div className={`${styles.mainContent} ${sidebarCollapsed ? styles.expanded : ''}`}>
                 <main className={styles.content}>
-                    <Outlet />
+                    {isDashboardHome ? <DashboardOverview /> : <Outlet />}
                 </main>
 
                 <footer className={styles.footer}>
@@ -42,7 +48,16 @@ const DashboardPanel: React.FC<React.PropsWithChildren<{}>> = () => {
                     </div>
                 </footer>
             </div>
-        </div >
+        </div>
+    );
+};
+
+// Główny komponent owinięty w ThemeProvider
+const DashboardPanel: React.FC<React.PropsWithChildren<{}>> = () => {
+    return (
+        <ThemeProvider>
+            <DashboardPanelContent />
+        </ThemeProvider>
     );
 };
 

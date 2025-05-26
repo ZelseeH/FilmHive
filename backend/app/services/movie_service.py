@@ -249,3 +249,29 @@ def update_movie_poster(movie_id, poster_url):
         raise Exception(
             f"Błąd podczas aktualizacji plakatu filmu o ID {movie_id}: {str(e)}"
         )
+
+
+def get_basic_statistics():
+    """Pobiera podstawowe statystyki filmów"""
+    try:
+        from app.repositories.movie_repository import MovieRepository
+        from app.services.database import db
+
+        movie_repo = MovieRepository(db.session)
+        stats = movie_repo.get_basic_statistics()
+        return stats
+    except Exception as e:
+        raise Exception(f"Nie udało się pobrać statystyk: {str(e)}")
+
+
+def get_dashboard_data():
+    """Pobiera dane dashboard dla filmów"""
+    try:
+        from app.repositories.movie_repository import MovieRepository
+        from app.services.database import db
+
+        movie_repo = MovieRepository(db.session)
+        dashboard_data = movie_repo.get_dashboard_data()
+        return dashboard_data
+    except Exception as e:
+        raise Exception(f"Nie udało się pobrać danych dashboard: {str(e)}")

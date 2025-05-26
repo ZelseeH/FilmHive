@@ -25,6 +25,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
         isSubmenuActive
     } = useSidebar(collapsed, toggleSidebar);
 
+    // Funkcja do wylogowania z przeładowaniem
+    const handleLogout = () => {
+        window.location.href = '/';
+    };
+
     // Filtrowanie elementów menu w zależności od roli
     const filteredMenuItems = menuItems.filter(item => {
         if (item.adminOnly && !isAdmin()) {
@@ -109,10 +114,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
                 </div>
 
                 <div className={styles.logout}>
-                    <Link to="/logout" className={styles.logoutBtn}>
+                    <a href="#" onClick={handleLogout} className={styles.logoutBtn}>
                         <span className={styles.icon}><FaSignOutAlt /></span>
                         {!collapsed && <span>Wyjdź</span>}
-                    </Link>
+                    </a>
                 </div>
             </div>
 

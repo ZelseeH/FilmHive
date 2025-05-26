@@ -242,3 +242,78 @@ class ActorService:
         serialized_actors = [actor.serialize() for actor in actors]
 
         return {"actors": serialized_actors, "pagination": pagination}
+
+        # STATISTICS & DASHBOARD METHODS
+
+    def get_actors_statistics(self):
+        """Pobiera statystyki aktorów"""
+        try:
+            stats = self.actor_repository.get_actors_statistics()
+            current_app.logger.info("Retrieved actors statistics")
+            return stats
+        except Exception as e:
+            current_app.logger.error(f"Error getting actors statistics: {str(e)}")
+            raise Exception(f"Nie udało się pobrać statystyk aktorów: {str(e)}")
+
+    def get_dashboard_overview(self):
+        """Pobiera kompletny przegląd dla dashboard"""
+        try:
+            dashboard_data = self.actor_repository.get_dashboard_data()
+            current_app.logger.info("Retrieved actors dashboard overview")
+            return dashboard_data
+        except Exception as e:
+            current_app.logger.error(f"Error getting dashboard overview: {str(e)}")
+            raise Exception(f"Nie udało się pobrać przeglądu dashboard: {str(e)}")
+
+    def get_popular_actors(self, limit=10):
+        """Pobiera najpopularniejszych aktorów"""
+        try:
+            if limit < 1:
+                limit = 10
+            if limit > 50:
+                limit = 50
+
+            popular_actors = self.actor_repository.get_popular_actors(limit)
+            current_app.logger.info(f"Retrieved {len(popular_actors)} popular actors")
+            return {"actors": popular_actors, "total_returned": len(popular_actors)}
+        except Exception as e:
+            current_app.logger.error(f"Error getting popular actors: {str(e)}")
+            raise Exception(f"Nie udało się pobrać popularnych aktorów: {str(e)}")
+
+    def get_actors_by_country(self):
+        """Pobiera statystyki według krajów"""
+        try:
+            country_stats = self.actor_repository.get_actors_by_country()
+            current_app.logger.info("Retrieved actors statistics by country")
+            return {"countries": country_stats, "total_countries": len(country_stats)}
+        except Exception as e:
+            current_app.logger.error(f"Error getting actors by country: {str(e)}")
+            raise Exception(f"Nie udało się pobrać statystyk według krajów: {str(e)}")
+
+    def get_age_distribution(self):
+        """Pobiera rozkład wieku aktorów"""
+        try:
+            age_distribution = self.actor_repository.get_age_distribution()
+            current_app.logger.info("Retrieved actors age distribution")
+            return {
+                "age_ranges": age_distribution,
+                "total_with_age_data": sum(item["count"] for item in age_distribution),
+            }
+        except Exception as e:
+            current_app.logger.error(f"Error getting age distribution: {str(e)}")
+            raise Exception(f"Nie udało się pobrać rozkładu wieku: {str(e)}")
+
+    def get_recent_actors(self, limit=5):
+        """Pobiera ostatnio dodanych aktorów"""
+        try:
+            if limit < 1:
+                limit = 5
+            if limit > 20:
+                limit = 20
+
+            recent_actors = self.actor_repository.get_recent_actors(limit)
+            current_app.logger.info(f"Retrieved {len(recent_actors)} recent actors")
+            return {"actors": recent_actors, "total_returned": len(recent_actors)}
+        except Exception as e:
+            current_app.logger.error(f"Error getting recent actors: {str(e)}")
+            raise Exception(f"Nie udało się pobrać ostatnich aktorów: {str(e)}")

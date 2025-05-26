@@ -277,3 +277,38 @@ def get_director_movies(director_id):
     if result:
         return jsonify(result)
     return jsonify({"error": "Director not found"}), 404
+
+
+# STATISTICS & DASHBOARD ENDPOINTS
+
+
+@directors_bp.route("/statistics", methods=["GET", "OPTIONS"])
+@cors_headers
+@staff_required
+def get_directors_statistics():
+    """Pobiera podstawowe statystyki reżyserów"""
+    if request.method == "OPTIONS":
+        return
+
+    try:
+        stats = director_service.get_basic_statistics()
+        return jsonify(stats), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting directors statistics: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania statystyk reżyserów"}), 500
+
+
+@directors_bp.route("/dashboard", methods=["GET", "OPTIONS"])
+@cors_headers
+@staff_required
+def get_directors_dashboard():
+    """Pobiera dane dashboard dla reżyserów"""
+    if request.method == "OPTIONS":
+        return
+
+    try:
+        dashboard_data = director_service.get_dashboard_data()
+        return jsonify(dashboard_data), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting directors dashboard: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania dashboard reżyserów"}), 500

@@ -1,0 +1,377 @@
+:root {
+    --yellow: #ffcc00;
+    --black: #1a1a1a;
+    --blue: #0055a4;
+    --background: #f5f5f5;
+    --text: #333;
+    --border: #e0e0e0;
+    --transition: all 0.2s ease;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0px auto 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--yellow);
+    margin: 0 0 8px 0;
+}
+
+.description {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.errorMessage {
+    background: rgba(255, 77, 77, 0.1);
+    color: #d32f2f;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border-left: 3px solid #d32f2f;
+    font-size: 13px;
+}
+
+.filtersContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.searchForm {
+    display: flex;
+    flex: 1;
+    min-width: 250px;
+    max-width: 600px;
+}
+
+.searchInput {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px 0 0 6px;
+    font-size: 13px;
+    outline: none;
+    transition: var(--transition);
+}
+
+.searchInput:focus {
+    border-color: var(--blue);
+}
+
+.searchButton {
+    padding: 8px 16px;
+    background: var(--yellow);
+    color: var(--black);
+    border: none;
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+}
+
+.searchButton:hover {
+    background: #ffdb4d;
+}
+
+.dateFilters {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.dateFilter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dateFilter label {
+    font-size: 13px;
+    color: #555;
+    min-width: 30px;
+}
+
+.dateInput {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+    transition: var(--transition);
+}
+
+.dateInput:focus {
+    border-color: var(--blue);
+}
+
+.sortControls {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.sortFilter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sortFilter label {
+    font-size: 13px;
+    color: #555;
+}
+
+.select {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.select:focus {
+    border-color: var(--blue);
+}
+
+.tableContainer {
+    overflow-x: auto;
+    background: white;
+    margin-bottom: 20px;
+}
+
+.commentsTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.commentsTable th {
+    background: var(--black);
+    color: var(--yellow);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.commentsTable td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+}
+
+.commentsTable tr:hover {
+    background: rgba(255, 204, 0, 0.1);
+}
+
+.truncateText {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.userInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.userAvatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.commentText {
+    display: block;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+}
+
+.actionButtons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.editBtn,
+.deleteBtn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: var(--transition);
+    min-width: 60px;
+}
+
+.editBtn {
+    background: var(--blue);
+    color: white;
+}
+
+.editBtn:hover {
+    background: #0066cc;
+    transform: translateY(-1px);
+}
+
+.deleteBtn {
+    background: #d32f2f;
+    color: white;
+}
+
+.deleteBtn:hover {
+    background: #e53935;
+    transform: translateY(-1px);
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    color: #666;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid var(--yellow);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.paginationContainer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.commentStats {
+    text-align: right;
+    font-size: 13px;
+    color: #666;
+}
+
+.statValue {
+    font-weight: 600;
+    color: var(--blue);
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+
+    .commentsTable th:nth-child(1),
+    .commentsTable td:nth-child(1) {
+        display: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .filtersContainer {
+        padding: 12px;
+    }
+
+    .searchForm {
+        max-width: 100%;
+    }
+
+    .dateFilters,
+    .sortControls {
+        justify-content: space-between;
+    }
+
+    .commentsTable th,
+    .commentsTable td {
+        font-size: 12px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 700px) {
+    .container {
+        margin: 70px 10px 10px;
+        padding: 12px;
+    }
+
+    .commentsTable th:nth-child(5),
+    .commentsTable td:nth-child(5) {
+        display: none;
+    }
+
+    .actionButtons {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .editBtn,
+    .deleteBtn {
+        font-size: 11px;
+        padding: 5px 8px;
+        min-width: 50px;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .commentsTable th:nth-child(3),
+    .commentsTable td:nth-child(3) {
+        display: none;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .filtersContainer {
+        gap: 12px;
+    }
+
+    .dateFilters,
+    .sortControls {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

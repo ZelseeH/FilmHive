@@ -548,3 +548,34 @@ def upload_movie_poster_endpoint(id):
             ),
             500,
         )
+
+
+# STATISTICS & DASHBOARD ENDPOINTS
+
+
+@movies_bp.route("/statistics", methods=["GET"])
+@staff_required
+def get_movies_statistics():
+    """Pobiera podstawowe statystyki filmów"""
+    try:
+        from app.services.movie_service import get_basic_statistics
+
+        stats = get_basic_statistics()
+        return jsonify(stats), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting movies statistics: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania statystyk filmów"}), 500
+
+
+@movies_bp.route("/dashboard", methods=["GET"])
+@staff_required
+def get_movies_dashboard():
+    """Pobiera dane dashboard dla filmów"""
+    try:
+        from app.services.movie_service import get_dashboard_data
+
+        dashboard_data = get_dashboard_data()
+        return jsonify(dashboard_data), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting movies dashboard: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania dashboard filmów"}), 500

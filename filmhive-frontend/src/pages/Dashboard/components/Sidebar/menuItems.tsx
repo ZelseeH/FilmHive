@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     FaHome, FaChartBar, FaUsers, FaTags, FaTheaterMasks,
-    FaChair, FaFilm, FaCog, FaList, FaUserPlus, FaPlus
+    FaChair, FaFilm, FaCog, FaList, FaUserPlus, FaPlus, FaComments
 } from 'react-icons/fa';
 import { MenuItem } from '../../hooks/types';
 
@@ -41,6 +41,11 @@ export const menuItems: MenuItem[] = [
             { label: 'Zarządzaj', path: '/dashboardpanel/movies/manage', icon: <FaList /> },
             { label: 'Dodaj', path: '/dashboardpanel/movies/add', icon: <FaPlus /> }
         ]
+    },
+    {
+        label: 'Komentarze',
+        icon: <FaComments />,
+        path: '/dashboardpanel/comments/manage'
     },
     { label: 'Ustawienia', icon: <FaCog />, path: '/dashboardpanel/settings' },
 ];

@@ -40,7 +40,7 @@ import ActorsEditPage from './pages/Dashboard/components/ActorsPanel/ActorsEditP
 import DirectorsEditPage from './pages/Dashboard/components/DirectorsPanel/DirectorsEditPage';
 import MoviesEditPage from './pages/Dashboard/components/MoviesPanel/MoviesEditPage';
 import MoviesAddPartTwo from './pages/Dashboard/components/MoviesPanel/MoviesAddPartTwo';
-
+import CommentsManagePage from './pages/Dashboard/components/CommentsPanel/CommentsManagePage';
 
 
 const AppRoutes: React.FC = () => {
@@ -139,6 +139,7 @@ const AppRoutes: React.FC = () => {
                 <Route path="movies/add" element={<MoviesAddPage />} />
                 <Route path="movies/edit/:id" element={<MoviesEditPage />} />
                 <Route path="movies/add/:id/relations" element={<MoviesAddPartTwo />} />
+                <Route path="comments/manage" element={<CommentsManagePage />} />
 
                 {/* Ustawienia dashboarda */}
 

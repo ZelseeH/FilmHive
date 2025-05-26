@@ -389,3 +389,240 @@ class ActorRepository:
                 "total_pages": total_pages,
             },
         }
+        # STATISTICS & DASHBOARD METHODS
+
+    def get_actors_statistics(self):
+        """Pobiera podstawowe statystyki aktorów"""
+        try:
+            from sqlalchemy import func, extract
+            from datetime import datetime, timedelta
+
+            # Podstawowe statystyki
+            total_actors = self.session.query(Actor).count()
+
+            # Aktorzy z ostatnich 30 dni
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            recent_actors = (
+                self.session.query(Actor)
+                .filter(Actor.created_at >= thirty_days_ago)
+                .count()
+                if hasattr(Actor, "created_at")
+                else 0
+            )
+
+            # Aktorzy według płci
+            male_count = self.session.query(Actor).filter(Actor.gender == "M").count()
+            female_count = self.session.query(Actor).filter(Actor.gender == "K").count()
+            unknown_gender = total_actors - male_count - female_count
+
+            # Aktorzy ze zdjęciami
+            with_photos = (
+                self.session.query(Actor).filter(Actor.photo_url.isnot(None)).count()
+            )
+            without_photos = total_actors - with_photos
+
+            # Średni wiek (jeśli mamy daty urodzenia)
+            actors_with_birth_date = (
+                self.session.query(Actor).filter(Actor.birth_date.isnot(None)).all()
+            )
+
+            average_age = 0
+            if actors_with_birth_date:
+                current_year = datetime.utcnow().year
+                ages = []
+                for actor in actors_with_birth_date:
+                    if actor.birth_date:
+                        age = current_year - actor.birth_date.year
+                        if 0 <= age <= 120:  # Realistyczne granice wieku
+                            ages.append(age)
+                average_age = sum(ages) / len(ages) if ages else 0
+
+            return {
+                "total_actors": total_actors,
+                "recent_actors_30_days": recent_actors,
+                "gender_distribution": {
+                    "male": male_count,
+                    "female": female_count,
+                    "unknown": unknown_gender,
+                },
+                "photo_statistics": {
+                    "with_photos": with_photos,
+                    "without_photos": without_photos,
+                    "photo_percentage": (
+                        round((with_photos / total_actors * 100), 2)
+                        if total_actors > 0
+                        else 0
+                    ),
+                },
+                "average_age": round(average_age, 1) if average_age > 0 else None,
+            }
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania statystyk aktorów: {e}")
+            raise
+
+    def get_actors_by_country(self):
+        """Pobiera statystyki aktorów według krajów"""
+        try:
+            from sqlalchemy import func
+
+            country_stats = (
+                self.session.query(
+                    Actor.birth_place, func.count(Actor.actor_id).label("count")
+                )
+                .filter(Actor.birth_place.isnot(None))
+                .group_by(Actor.birth_place)
+                .order_by(func.count(Actor.actor_id).desc())
+                .limit(10)
+                .all()
+            )
+
+            return [
+                {"country": country, "count": count} for country, count in country_stats
+            ]
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania statystyk według krajów: {e}")
+            raise
+
+    def get_age_distribution(self):
+        """Pobiera rozkład wieku aktorów"""
+        try:
+            from datetime import datetime
+
+            actors_with_birth_date = (
+                self.session.query(Actor).filter(Actor.birth_date.isnot(None)).all()
+            )
+
+            age_ranges = {
+                "0-20": 0,
+                "21-30": 0,
+                "31-40": 0,
+                "41-50": 0,
+                "51-60": 0,
+                "61-70": 0,
+                "71+": 0,
+            }
+
+            current_year = datetime.utcnow().year
+
+            for actor in actors_with_birth_date:
+                if actor.birth_date:
+                    age = current_year - actor.birth_date.year
+
+                    if 0 <= age <= 20:
+                        age_ranges["0-20"] += 1
+                    elif 21 <= age <= 30:
+                        age_ranges["21-30"] += 1
+                    elif 31 <= age <= 40:
+                        age_ranges["31-40"] += 1
+                    elif 41 <= age <= 50:
+                        age_ranges["41-50"] += 1
+                    elif 51 <= age <= 60:
+                        age_ranges["51-60"] += 1
+                    elif 61 <= age <= 70:
+                        age_ranges["61-70"] += 1
+                    elif age > 70:
+                        age_ranges["71+"] += 1
+
+            return [
+                {"age_range": age_range, "count": count}
+                for age_range, count in age_ranges.items()
+            ]
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania rozkładu wieku: {e}")
+            raise
+
+    def get_popular_actors(self, limit=10):
+        """Pobiera najpopularniejszych aktorów (według liczby filmów)"""
+        try:
+            from sqlalchemy import func
+
+            # Zakładając, że masz tabelę movie_actors łączącą aktorów z filmami
+            popular_actors = (
+                self.session.query(Actor, func.count().label("movie_count"))
+                .outerjoin(Actor.movies)  # Zakładając relationship 'movies'
+                .group_by(Actor.actor_id)
+                .order_by(func.count().desc())
+                .limit(limit)
+                .all()
+            )
+
+            return [
+                {
+                    "id": actor.actor_id,
+                    "name": actor.actor_name,  # POPRAWKA: actor_name zamiast name
+                    "photo_url": actor.photo_url,
+                    "movie_count": movie_count,
+                    "birth_place": actor.birth_place,
+                }
+                for actor, movie_count in popular_actors
+            ]
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania popularnych aktorów: {e}")
+            # Fallback - zwróć po prostu pierwszych N aktorów
+            actors = self.session.query(Actor).limit(limit).all()
+            return [
+                {
+                    "id": actor.actor_id,
+                    "name": actor.actor_name,  # POPRAWKA: actor_name zamiast name
+                    "photo_url": actor.photo_url,
+                    "movie_count": 0,
+                    "birth_place": actor.birth_place,
+                }
+                for actor in actors
+            ]
+
+    def get_recent_actors(self, limit=5):
+        """Pobiera ostatnio dodanych aktorów"""
+        try:
+            # Jeśli masz pole created_at
+            if hasattr(Actor, "created_at"):
+                recent_actors = (
+                    self.session.query(Actor)
+                    .order_by(Actor.created_at.desc())
+                    .limit(limit)
+                    .all()
+                )
+            else:
+                # Fallback - sortuj po ID (zakładając że wyższe ID = nowsze)
+                recent_actors = (
+                    self.session.query(Actor)
+                    .order_by(Actor.actor_id.desc())
+                    .limit(limit)
+                    .all()
+                )
+
+            return [
+                {
+                    "id": actor.actor_id,
+                    "name": actor.actor_name,  # POPRAWKA: actor_name zamiast name
+                    "photo_url": actor.photo_url,
+                    "birth_place": actor.birth_place,
+                    "birth_date": (
+                        actor.birth_date.isoformat() if actor.birth_date else None
+                    ),
+                }
+                for actor in recent_actors
+            ]
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania ostatnich aktorów: {e}")
+            raise
+
+    def get_dashboard_data(self):
+        """Pobiera wszystkie dane potrzebne do dashboard"""
+        try:
+            return {
+                "statistics": self.get_actors_statistics(),
+                "country_distribution": self.get_actors_by_country(),
+                "age_distribution": self.get_age_distribution(),
+                "popular_actors": self.get_popular_actors(5),
+                "recent_actors": self.get_recent_actors(5),
+            }
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania danych dashboard: {e}")
+            raise

@@ -17,7 +17,9 @@ const LoginPage: React.FC = () => {
     const [username, setUsername] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
+    const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
     // Sprawdzenie czy użytkownik jest zalogowany (zamiast isAuthenticated)
@@ -38,7 +40,19 @@ const LoginPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setConfirmPasswordError('');
         setLoading(true);
+
+        // Walidacja potwierdzenia hasła dla rejestracji
+        if (!isLoginMode) {
+            if (password !== confirmPassword) {
+                setConfirmPasswordError('Hasła nie są takie same');
+                setLoading(false);
+                return;
+            } else {
+                setConfirmPasswordError('');
+            }
+        }
 
         try {
             let data;
@@ -57,7 +71,7 @@ const LoginPage: React.FC = () => {
             const loginSuccess = login(data.user, data.access_token, refreshToken);
 
             if (loginSuccess) {
-                navigate('/', { replace: true }); // Przekierowanie na stronę główną
+                navigate('/', { replace: true });
             }
         } catch (err: any) {
             console.error("Auth error:", err);
@@ -80,9 +94,11 @@ const LoginPage: React.FC = () => {
     const toggleMode = () => {
         setIsLoginMode(!isLoginMode);
         setError('');
+        setConfirmPasswordError('');
         setUsername('');
         setEmail('');
         setPassword('');
+        setConfirmPassword('');
         setShowForgotPassword(false);
     };
 
@@ -185,7 +201,6 @@ const LoginPage: React.FC = () => {
                                 <div className={styles.logo}>
                                     <img src={logo} alt="FilmHive Logo" className={styles.logoImage} />
                                     <h2 className={styles.serviceName}>FilmHive</h2>
-
                                 </div>
                             </motion.div>
                         )}
@@ -215,7 +230,6 @@ const LoginPage: React.FC = () => {
                                 <div className={styles.logo}>
                                     <img src={logo} alt="FilmHive Logo" className={styles.logoImage} />
                                     <h2 className={styles.serviceName}>FilmHive</h2>
-
                                 </div>
                             </motion.div>
                         ) : (
@@ -268,6 +282,21 @@ const LoginPage: React.FC = () => {
                                             className={styles.input}
                                         />
                                         <PasswordStrengthMeter password={password} />
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label htmlFor="reg-confirm-password">Potwierdź hasło</label>
+                                        <input
+                                            type="password"
+                                            id="reg-confirm-password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                            className={styles.input}
+                                        />
+                                        {confirmPasswordError && (
+                                            <div className={styles.errorMessage}>{confirmPasswordError}</div>
+                                        )}
                                     </div>
 
                                     <button
@@ -355,6 +384,23 @@ const LoginPage: React.FC = () => {
                                     />
                                     {!isLoginMode && <PasswordStrengthMeter password={password} />}
                                 </div>
+
+                                {!isLoginMode && (
+                                    <div className={styles.formGroup}>
+                                        <label htmlFor="mobile-confirm-password">Potwierdź hasło</label>
+                                        <input
+                                            type="password"
+                                            id="mobile-confirm-password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                            className={styles.input}
+                                        />
+                                        {confirmPasswordError && (
+                                            <div className={styles.errorMessage}>{confirmPasswordError}</div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {isLoginMode && (
                                     <button

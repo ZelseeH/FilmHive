@@ -162,3 +162,29 @@ def search_users(query, page=1, per_page=10):
         return {"users": serialized_users, "pagination": pagination}
     except Exception as e:
         raise Exception(f"Błąd podczas wyszukiwania użytkowników: {str(e)}")
+
+
+def get_basic_statistics():
+    """Pobiera podstawowe statystyki użytkowników"""
+    try:
+        from app.repositories.user_repository import UserRepository
+        from app.services.database import db
+
+        user_repo = UserRepository(db.session)
+        stats = user_repo.get_basic_statistics()
+        return stats
+    except Exception as e:
+        raise Exception(f"Nie udało się pobrać statystyk: {str(e)}")
+
+
+def get_dashboard_data():
+    """Pobiera dane dashboard dla użytkowników"""
+    try:
+        from app.repositories.user_repository import UserRepository
+        from app.services.database import db
+
+        user_repo = UserRepository(db.session)
+        dashboard_data = user_repo.get_dashboard_data()
+        return dashboard_data
+    except Exception as e:
+        raise Exception(f"Nie udało się pobrać danych dashboard: {str(e)}")

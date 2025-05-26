@@ -288,3 +288,257 @@ class UserRepository:
     def get_by_email(self, email):
         """Pobierz użytkownika na podstawie adresu email"""
         return self.session.query(User).filter(User.email == email).first()
+
+        # OAUTH METHODS - dodaj na końcu klasy UserRepository
+
+    def get_by_google_id(self, google_id):
+        """Znajdź użytkownika po Google ID"""
+        return self.session.query(User).filter_by(google_id=google_id).first()
+
+    def get_by_facebook_id(self, facebook_id):
+        """Znajdź użytkownika po Facebook ID"""
+        return self.session.query(User).filter_by(facebook_id=facebook_id).first()
+
+    def get_by_github_id(self, github_id):
+        """Znajdź użytkownika po GitHub ID"""
+        return self.session.query(User).filter_by(github_id=github_id).first()
+
+    def get_by_oauth_provider(self, provider, provider_id):
+        """Uniwersalna metoda do znajdowania użytkownika po OAuth provider"""
+        if provider == "google":
+            return self.get_by_google_id(provider_id)
+        elif provider == "facebook":
+            return self.get_by_facebook_id(provider_id)
+        elif provider == "github":
+            return self.get_by_github_id(provider_id)
+        return None
+
+    def get_basic_statistics(self):
+        """Pobiera podstawowe statystyki użytkowników"""
+        try:
+            from sqlalchemy import func
+            from datetime import datetime, timedelta
+
+            # Podstawowe liczby użytkowników
+            total_users = self.session.query(User).count()
+
+            # Użytkownicy według ról
+            admins_count = (
+                self.session.query(User).filter(User.role == 1).count()
+            )  # Admin
+            moderators_count = (
+                self.session.query(User).filter(User.role == 2).count()
+            )  # Moderator
+            regular_users_count = (
+                self.session.query(User).filter(User.role == 3).count()
+            )  # Regular user
+
+            # Aktywne konta
+            active_users = (
+                self.session.query(User).filter(User.is_active == True).count()
+            )
+            inactive_users = (
+                self.session.query(User).filter(User.is_active == False).count()
+            )
+
+            # Użytkownicy OAuth vs zwykli
+            oauth_users = (
+                self.session.query(User).filter(User.oauth_created == True).count()
+            )
+            regular_login_users = (
+                self.session.query(User).filter(User.oauth_created == False).count()
+            )
+
+            # Użytkownicy z ostatnich 30 dni
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            recent_users = (
+                self.session.query(User)
+                .filter(User.registration_date >= thirty_days_ago)
+                .count()
+            )
+
+            # Użytkownicy z ostatnich 7 dni
+            week_ago = datetime.utcnow() - timedelta(days=7)
+            weekly_users = (
+                self.session.query(User)
+                .filter(User.registration_date >= week_ago)
+                .count()
+            )
+
+            # Użytkownicy z profilowymi zdjęciami
+            with_profile_pictures = (
+                self.session.query(User)
+                .filter(User.profile_picture.isnot(None))
+                .count()
+            )
+
+            # Użytkownicy z bio
+            with_bio = (
+                self.session.query(User)
+                .filter(User.bio.isnot(None), User.bio != "")
+                .count()
+            )
+
+            return {
+                "total_users": total_users,
+                "role_distribution": {
+                    "admins": admins_count,
+                    "moderators": moderators_count,
+                    "regular_users": regular_users_count,
+                },
+                "account_status": {
+                    "active_users": active_users,
+                    "inactive_users": inactive_users,
+                    "active_percentage": (
+                        round((active_users / total_users * 100), 2)
+                        if total_users > 0
+                        else 0
+                    ),
+                },
+                "authentication_types": {
+                    "oauth_users": oauth_users,
+                    "regular_login_users": regular_login_users,
+                    "oauth_percentage": (
+                        round((oauth_users / total_users * 100), 2)
+                        if total_users > 0
+                        else 0
+                    ),
+                },
+                "registration_trends": {
+                    "recent_users_30_days": recent_users,
+                    "weekly_users": weekly_users,
+                },
+                "profile_completion": {
+                    "with_profile_pictures": with_profile_pictures,
+                    "with_bio": with_bio,
+                    "profile_picture_percentage": (
+                        round((with_profile_pictures / total_users * 100), 2)
+                        if total_users > 0
+                        else 0
+                    ),
+                    "bio_percentage": (
+                        round((with_bio / total_users * 100), 2)
+                        if total_users > 0
+                        else 0
+                    ),
+                },
+            }
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania podstawowych statystyk: {e}")
+            raise
+
+    def get_dashboard_data(self):
+        """Pobiera dane dashboard dla użytkowników"""
+        try:
+            from sqlalchemy import func, extract
+            from datetime import datetime, timedelta
+
+            # Podstawowe statystyki
+            basic_stats = self.get_basic_statistics()
+
+            # Rejestracje według miesięcy (ostatnie 12 miesięcy)
+            monthly_registrations = []
+            for i in range(12):
+                month_start = datetime.utcnow().replace(day=1) - timedelta(days=30 * i)
+                month_end = (month_start + timedelta(days=32)).replace(
+                    day=1
+                ) - timedelta(days=1)
+
+                count = (
+                    self.session.query(User)
+                    .filter(
+                        User.registration_date >= month_start,
+                        User.registration_date <= month_end,
+                    )
+                    .count()
+                )
+
+                monthly_registrations.append(
+                    {"month": month_start.strftime("%Y-%m"), "count": count}
+                )
+
+            # Ostatnie logowania (aktywność użytkowników)
+            last_login_stats = []
+            time_ranges = [
+                ("last_24h", timedelta(hours=24)),
+                ("last_7_days", timedelta(days=7)),
+                ("last_30_days", timedelta(days=30)),
+                ("last_90_days", timedelta(days=90)),
+            ]
+
+            for label, delta in time_ranges:
+                threshold = datetime.utcnow() - delta
+                count = (
+                    self.session.query(User)
+                    .filter(User.last_login >= threshold)
+                    .count()
+                )
+                last_login_stats.append({"period": label, "active_users": count})
+
+            # Najaktywniejsze konta (według ostatniego logowania)
+            most_active_users = (
+                self.session.query(User)
+                .filter(User.last_login.isnot(None))
+                .order_by(User.last_login.desc())
+                .limit(10)
+                .all()
+            )
+
+            # Ostatnio zarejestrowani użytkownicy
+            recent_users = (
+                self.session.query(User)
+                .order_by(User.registration_date.desc())
+                .limit(10)
+                .all()
+            )
+
+            # Rozkład według dostawców OAuth
+            oauth_providers = []
+            providers = ["google", "facebook", "github"]
+            for provider in providers:
+                count = (
+                    self.session.query(User)
+                    .filter(User.oauth_provider == provider)
+                    .count()
+                )
+                if count > 0:
+                    oauth_providers.append({"provider": provider, "count": count})
+
+            return {
+                "statistics": basic_stats,
+                "monthly_registrations": list(reversed(monthly_registrations)),
+                "user_activity": last_login_stats,
+                "oauth_providers": oauth_providers,
+                "most_active_users": [
+                    {
+                        "id": user.user_id,
+                        "username": user.username,
+                        "last_login": (
+                            user.last_login.isoformat() if user.last_login else None
+                        ),
+                        "role": user.role,
+                        "profile_picture": user.profile_picture,
+                    }
+                    for user in most_active_users
+                ],
+                "recent_users": [
+                    {
+                        "id": user.user_id,
+                        "username": user.username,
+                        "registration_date": (
+                            user.registration_date.isoformat()
+                            if user.registration_date
+                            else None
+                        ),
+                        "role": user.role,
+                        "oauth_provider": user.oauth_provider,
+                        "profile_picture": user.profile_picture,
+                    }
+                    for user in recent_users
+                ],
+            }
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania danych dashboard: {e}")
+            raise

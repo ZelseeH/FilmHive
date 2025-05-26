@@ -355,3 +355,251 @@ class MovieRepository:
         except Exception as e:
             self.session.rollback()
             raise e
+
+    def get_basic_statistics(self):
+        """Pobiera podstawowe statystyki filmów"""
+        try:
+            from sqlalchemy import func
+            from datetime import datetime, timedelta
+
+            # Podstawowe liczby
+            total_movies = self.session.query(Movie).count()
+
+            # Filmy z ostatnich 30 dni (jeśli masz pole created_at)
+            if hasattr(Movie, "created_at"):
+                thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+                recent_movies = (
+                    self.session.query(Movie)
+                    .filter(Movie.created_at >= thirty_days_ago)
+                    .count()
+                )
+            else:
+                recent_movies = 0
+
+            # POPRAWKA - Średnia ocena z tabeli ratings
+            try:
+                from app.models.rating import Rating
+
+                avg_rating = self.session.query(func.avg(Rating.rating)).scalar()
+            except:
+                # Fallback - jeśli nie ma tabeli ratings
+                avg_rating = 0
+
+            # Filmy z plakatami
+            with_posters = (
+                self.session.query(Movie).filter(Movie.poster_url.isnot(None)).count()
+            )
+            without_posters = total_movies - with_posters
+
+            # POPRAWKA - Sprawdź czy duration_minutes to kolumna czy property
+            try:
+                longest_movie = self.session.query(
+                    func.max(Movie.duration_minutes)
+                ).scalar()
+                shortest_movie = self.session.query(
+                    func.min(Movie.duration_minutes)
+                ).scalar()
+                avg_duration = self.session.query(
+                    func.avg(Movie.duration_minutes)
+                ).scalar()
+            except:
+                # Fallback jeśli duration_minutes to property
+                longest_movie = 0
+                shortest_movie = 0
+                avg_duration = 0
+
+            return {
+                "total_movies": total_movies,
+                "recent_movies_30_days": recent_movies,
+                "average_rating": round(avg_rating, 2) if avg_rating else 0,
+                "poster_statistics": {
+                    "with_posters": with_posters,
+                    "without_posters": without_posters,
+                    "poster_percentage": (
+                        round((with_posters / total_movies * 100), 2)
+                        if total_movies > 0
+                        else 0
+                    ),
+                },
+                "duration_statistics": {
+                    "average_duration": round(avg_duration, 1) if avg_duration else 0,
+                    "longest_movie": longest_movie or 0,
+                    "shortest_movie": shortest_movie or 0,
+                },
+            }
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania podstawowych statystyk: {e}")
+            # Zwróć podstawowe dane w przypadku błędu
+            total_movies = self.session.query(Movie).count()
+            return {
+                "total_movies": total_movies,
+                "recent_movies_30_days": 0,
+                "average_rating": 0,
+                "poster_statistics": {
+                    "with_posters": 0,
+                    "without_posters": total_movies,
+                    "poster_percentage": 0,
+                },
+                "duration_statistics": {
+                    "average_duration": 0,
+                    "longest_movie": 0,
+                    "shortest_movie": 0,
+                },
+            }
+
+    def get_dashboard_data(self):
+        """Pobiera dane dashboard dla filmów"""
+        try:
+            from sqlalchemy import func, extract
+            from datetime import datetime
+
+            # Podstawowe statystyki
+            basic_stats = self.get_basic_statistics()
+
+            # POPRAWKA - Top 10 najlepiej ocenianych filmów
+            # Nie możemy użyć Movie.average_rating w SQL, bo to property
+            # Musimy obliczyć średnią bezpośrednio z tabeli ratings
+            try:
+                from app.models.rating import Rating
+
+                # Subquery do obliczenia średniej oceny
+                avg_rating_subq = (
+                    self.session.query(
+                        Rating.movie_id, func.avg(Rating.rating).label("avg_rating")
+                    )
+                    .group_by(Rating.movie_id)
+                    .subquery()
+                )
+
+                # Join z subquery i sortowanie
+                top_rated_movies_query = (
+                    self.session.query(Movie, avg_rating_subq.c.avg_rating)
+                    .join(avg_rating_subq, Movie.movie_id == avg_rating_subq.c.movie_id)
+                    .order_by(avg_rating_subq.c.avg_rating.desc())
+                    .limit(10)
+                    .all()
+                )
+
+                top_rated_movies = [
+                    {
+                        "id": movie.movie_id,
+                        "title": movie.title,
+                        "rating": float(avg_rating) if avg_rating else 0,
+                        "poster_url": (
+                            f"http://localhost:5000/static/posters/{movie.poster_url}"
+                            if movie.poster_url
+                            else None
+                        ),  # POPRAWKA URL
+                    }
+                    for movie, avg_rating in top_rated_movies_query
+                ]
+            except Exception as e:
+                print(f"Błąd w top_rated_movies: {e}")
+                # Fallback - zwróć po prostu pierwsze 10 filmów
+                movies = self.session.query(Movie).limit(10).all()
+                top_rated_movies = [
+                    {
+                        "id": movie.movie_id,
+                        "title": movie.title,
+                        "rating": 0,
+                        "poster_url": (
+                            f"http://localhost:5000/static/posters/{movie.poster_url}"
+                            if movie.poster_url
+                            else None
+                        ),  # POPRAWKA URL
+                    }
+                    for movie in movies
+                ]
+
+            # Filmy według lat (ostatnie 10 lat)
+            current_year = datetime.utcnow().year
+            movies_by_year = []
+            for year in range(current_year - 9, current_year + 1):
+                count = (
+                    self.session.query(Movie)
+                    .filter(extract("year", Movie.release_date) == year)
+                    .count()
+                )
+                movies_by_year.append({"year": year, "count": count})
+
+            # Top 5 gatunków (jeśli masz relationship z gatunkami)
+            try:
+                from app.models.genre import Genre
+
+                top_genres = (
+                    self.session.query(
+                        Genre.genre_name,  # POPRAWKA: genre_name zamiast name
+                        func.count(Movie.movie_id).label("movie_count"),
+                    )
+                    .join(Movie.genres)  # Zakładając many-to-many relationship
+                    .group_by(Genre.genre_id, Genre.genre_name)  # POPRAWKA: genre_name
+                    .order_by(func.count(Movie.movie_id).desc())
+                    .limit(5)
+                    .all()
+                )
+                genre_distribution = [
+                    {"genre": name, "movie_count": count} for name, count in top_genres
+                ]
+            except Exception as e:
+                print(f"Błąd w genre_distribution: {e}")
+                genre_distribution = []
+
+            # POPRAWKA - Rozkład ocen
+            # Nie możemy użyć Movie.average_rating w SQL
+            try:
+                from app.models.rating import Rating
+
+                rating_distribution = []
+                for rating in [1, 2, 3, 4, 5]:
+                    count = (
+                        self.session.query(Rating)
+                        .filter(
+                            Rating.rating >= rating,
+                            Rating.rating < rating + 1,
+                        )
+                        .count()
+                    )
+                    rating_distribution.append(
+                        {"rating_range": f"{rating}-{rating+1}", "count": count}
+                    )
+            except Exception as e:
+                print(f"Błąd w rating_distribution: {e}")
+                rating_distribution = []
+
+            # Ostatnio dodane filmy
+            recent_movies = (
+                self.session.query(Movie)
+                .order_by(Movie.movie_id.desc())  # Lub Movie.created_at jeśli masz
+                .limit(5)
+                .all()
+            )
+
+            return {
+                "statistics": basic_stats,
+                "top_rated_movies": top_rated_movies,
+                "movies_by_year": movies_by_year,
+                "genre_distribution": genre_distribution,
+                "rating_distribution": rating_distribution,
+                "recent_movies": [
+                    {
+                        "id": movie.movie_id,
+                        "title": movie.title,
+                        "release_date": (
+                            movie.release_date.isoformat()
+                            if movie.release_date
+                            else None
+                        ),
+                        "poster_url": (
+                            f"http://localhost:5000/static/posters/{movie.poster_url}"
+                            if movie.poster_url
+                            else None
+                        ),  # POPRAWKA URL
+                    }
+                    for movie in recent_movies
+                ],
+            }
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania danych dashboard: {e}")
+            raise

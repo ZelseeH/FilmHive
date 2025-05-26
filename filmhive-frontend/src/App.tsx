@@ -19,7 +19,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <div className={styles.app}>
-        {!isLoginPage && <Navbar />}
+        {!isDashboardPanel && !isLoginPage && <Navbar />}
 
         <div className={styles.content}>
           <AppRoutes />

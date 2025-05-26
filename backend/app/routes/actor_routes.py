@@ -336,3 +336,107 @@ def get_birthplaces():
 
     birthplaces = actor_service.get_unique_birthplaces()
     return jsonify({"birthplaces": birthplaces})
+
+
+# STATISTICS & DASHBOARD ENDPOINTS
+
+
+@actors_bp.route("/statistics", methods=["GET", "OPTIONS"])
+@cors_headers
+@staff_required
+def get_actors_statistics():
+    """Pobiera podstawowe statystyki aktorów"""
+    if request.method == "OPTIONS":
+        return
+
+    try:
+        stats = actor_service.get_actors_statistics()
+        return jsonify(stats), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting actors statistics: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania statystyk aktorów"}), 500
+
+
+@actors_bp.route("/dashboard", methods=["GET", "OPTIONS"])
+@cors_headers
+@staff_required
+def get_actors_dashboard():
+    """Pobiera kompletne dane dashboard dla aktorów"""
+    if request.method == "OPTIONS":
+        return
+
+    try:
+        dashboard_data = actor_service.get_dashboard_overview()
+        return jsonify(dashboard_data), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting actors dashboard: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania dashboard aktorów"}), 500
+
+
+@actors_bp.route("/analytics/popular", methods=["GET", "OPTIONS"])
+@cors_headers
+@staff_required
+def get_popular_actors():
+    """Pobiera najpopularniejszych aktorów"""
+    if request.method == "OPTIONS":
+        return
+
+    try:
+        limit = request.args.get("limit", 10, type=int)
+        popular_actors = actor_service.get_popular_actors(limit)
+        return jsonify(popular_actors), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting popular actors: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania popularnych aktorów"}), 500
+
+
+@actors_bp.route("/analytics/by-country", methods=["GET", "OPTIONS"])
+@cors_headers
+@staff_required
+def get_actors_by_country():
+    """Pobiera statystyki aktorów według krajów"""
+    if request.method == "OPTIONS":
+        return
+
+    try:
+        country_stats = actor_service.get_actors_by_country()
+        return jsonify(country_stats), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting actors by country: {str(e)}")
+        return (
+            jsonify({"error": "Błąd podczas pobierania statystyk według krajów"}),
+            500,
+        )
+
+
+@actors_bp.route("/analytics/age-distribution", methods=["GET", "OPTIONS"])
+@cors_headers
+@staff_required
+def get_actors_age_distribution():
+    """Pobiera rozkład wieku aktorów"""
+    if request.method == "OPTIONS":
+        return
+
+    try:
+        age_distribution = actor_service.get_age_distribution()
+        return jsonify(age_distribution), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting age distribution: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania rozkładu wieku"}), 500
+
+
+@actors_bp.route("/recent", methods=["GET", "OPTIONS"])
+@cors_headers
+@staff_required
+def get_recent_actors():
+    """Pobiera ostatnio dodanych aktorów"""
+    if request.method == "OPTIONS":
+        return
+
+    try:
+        limit = request.args.get("limit", 5, type=int)
+        recent_actors = actor_service.get_recent_actors(limit)
+        return jsonify(recent_actors), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting recent actors: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania ostatnich aktorów"}), 500

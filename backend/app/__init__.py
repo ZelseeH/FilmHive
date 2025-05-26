@@ -3,14 +3,57 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from authlib.integrations.flask_client import OAuth
 import os
 from dotenv import load_dotenv
 from app.extensions import db
 
 load_dotenv(".env")
 
-# Inicjalizacja SQLAlchemy
+# Inicjalizacja SQLAlchemy i OAuth
 db = SQLAlchemy()
+oauth = OAuth()
+
+
+def init_oauth(app):
+    """Inicjalizacja OAuth providerów"""
+    oauth.init_app(app)
+
+    # Google OAuth
+    if app.config.get("GOOGLE_CLIENT_ID") and app.config.get("GOOGLE_CLIENT_SECRET"):
+        oauth.register(
+            name="google",
+            client_id=app.config["GOOGLE_CLIENT_ID"],
+            client_secret=app.config["GOOGLE_CLIENT_SECRET"],
+            server_metadata_url="https://accounts.google.com/.well-known/openid_configuration",
+            client_kwargs={"scope": "openid email profile"},
+        )
+
+    # Facebook OAuth
+    if app.config.get("FACEBOOK_CLIENT_ID") and app.config.get(
+        "FACEBOOK_CLIENT_SECRET"
+    ):
+        oauth.register(
+            name="facebook",
+            client_id=app.config["FACEBOOK_CLIENT_ID"],
+            client_secret=app.config["FACEBOOK_CLIENT_SECRET"],
+            access_token_url="https://graph.facebook.com/oauth/access_token",
+            authorize_url="https://www.facebook.com/dialog/oauth",
+            api_base_url="https://graph.facebook.com/",
+            client_kwargs={"scope": "email"},
+        )
+
+    # GitHub OAuth
+    if app.config.get("GITHUB_CLIENT_ID") and app.config.get("GITHUB_CLIENT_SECRET"):
+        oauth.register(
+            name="github",
+            client_id=app.config["GITHUB_CLIENT_ID"],
+            client_secret=app.config["GITHUB_CLIENT_SECRET"],
+            access_token_url="https://github.com/login/oauth/access_token",
+            authorize_url="https://github.com/login/oauth/authorize",
+            api_base_url="https://api.github.com/",
+            client_kwargs={"scope": "user:email"},
+        )
 
 
 def create_app():
@@ -30,12 +73,23 @@ def create_app():
     app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 86400
 
+    # OAuth Configuration
+    app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
+    app.config["GOOGLE_CLIENT_SECRET"] = os.environ.get("GOOGLE_CLIENT_SECRET")
+    app.config["FACEBOOK_CLIENT_ID"] = os.environ.get("FACEBOOK_CLIENT_ID")
+    app.config["FACEBOOK_CLIENT_SECRET"] = os.environ.get("FACEBOOK_CLIENT_SECRET")
+    app.config["GITHUB_CLIENT_ID"] = os.environ.get("GITHUB_CLIENT_ID")
+    app.config["GITHUB_CLIENT_SECRET"] = os.environ.get("GITHUB_CLIENT_SECRET")
+
     # Inicjalizacja rozszerzeń
     from app.extensions import db, migrate, jwt
 
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+
+    # Inicjalizacja OAuth
+    init_oauth(app)
 
     with app.app_context():
         # Import modeli PO inicjalizacji db
@@ -115,5 +169,8 @@ def create_app():
             return send_from_directory(app.static_folder, path)
         else:
             return send_from_directory(app.static_folder, "index.html")
+
+    # Udostępnij oauth dla innych modułów
+    app.oauth = oauth
 
     return app

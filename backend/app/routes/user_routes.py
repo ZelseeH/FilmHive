@@ -14,6 +14,7 @@ from app.services.user_service import (
 )
 from werkzeug.exceptions import BadRequest
 import os
+from app.services.auth_service import admin_required, staff_required
 
 user_bp = Blueprint("user", __name__)
 
@@ -250,3 +251,34 @@ def search_users_route():
             ),
             500,
         )
+
+
+# STATISTICS & DASHBOARD ENDPOINTS
+
+
+@user_bp.route("/statistics", methods=["GET"])
+@staff_required
+def get_users_statistics():
+    """Pobiera podstawowe statystyki użytkowników"""
+    try:
+        from app.services.user_service import get_basic_statistics
+
+        stats = get_basic_statistics()
+        return jsonify(stats), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting users statistics: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania statystyk użytkowników"}), 500
+
+
+@user_bp.route("/dashboard", methods=["GET"])
+@staff_required
+def get_users_dashboard():
+    """Pobiera dane dashboard dla użytkowników"""
+    try:
+        from app.services.user_service import get_dashboard_data
+
+        dashboard_data = get_dashboard_data()
+        return jsonify(dashboard_data), 200
+    except Exception as e:
+        current_app.logger.error(f"Error getting users dashboard: {str(e)}")
+        return jsonify({"error": "Błąd podczas pobierania dashboard użytkowników"}), 500
