@@ -53,7 +53,7 @@ export const getPersonSlug = (name: string): string => {
 
 export const handlePersonImageError = (
     e: React.SyntheticEvent<HTMLImageElement, Event>,
-    type: 'actor' | 'director',
+    type: 'actor' | 'director' = 'actor',
     fallbackSrc?: string
 ): void => {
     const target = e.target as HTMLImageElement;

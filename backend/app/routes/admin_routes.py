@@ -3,6 +3,11 @@ from app.services.database import db
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import admin_required, staff_required
 from app.models.user import User
+from app.services.user_activity_service import (
+    log_role_change,
+    log_account_block,
+    log_account_unblock,
+)
 
 admin_bp = Blueprint("admin", __name__)
 user_repo = UserRepository(db.session)
@@ -261,8 +266,14 @@ def change_user_role(user_id):
                 403,
             )
 
+        # 🔥 ZAPISZ STARĄ ROLĘ PRZED ZMIANĄ
+        old_role = user.role
+
         user.role = new_role
         db.session.commit()
+
+        # 🔥 LOGUJ ZMIANĘ ROLI
+        log_role_change(user_id, old_role, new_role)
 
         return (
             jsonify(
@@ -299,8 +310,18 @@ def change_user_status(user_id):
         if not user:
             return jsonify({"error": "Użytkownik nie znaleziony"}), 404
 
+        from flask_jwt_extended import get_jwt_identity
+
+        current_user_id = int(get_jwt_identity())
+
         user.is_active = is_active
         db.session.commit()
+
+        # 🔥 LOGUJ BLOKOWANIE/ODBLOKOWANIE KONTA
+        if is_active:
+            log_account_unblock(user_id, current_user_id)
+        else:
+            log_account_block(user_id, current_user_id)
 
         status_text = "aktywowane" if is_active else "dezaktywowane"
 
@@ -354,33 +375,122 @@ def delete_user(user_id):
             return jsonify({"error": "Użytkownik nie znaleziony"}), 404
 
         from flask_jwt_extended import get_jwt_identity
+        from sqlalchemy import text
 
         current_user_id = int(get_jwt_identity())
 
-        # Nie można usunąć własnego konta
+        # Sprawdzenia bezpieczeństwa
         if user_id == current_user_id:
             return jsonify({"error": "Nie możesz usunąć swojego własnego konta"}), 403
 
-        # Nie można usunąć innego administratora
         if user.role == 1:
             return (
                 jsonify({"error": "Nie możesz usunąć konta innego administratora"}),
                 403,
             )
 
-        # Zapisz dane użytkownika przed usunięciem, aby zwrócić je w odpowiedzi
         user_data = user.serialize()
 
-        # Usuń użytkownika
-        db.session.delete(user)
-        db.session.commit()
+        # KASKADOWE USUWANIE - każde polecenie w osobnej try-except
+        try:
+            # 1. Usuń ratings
+            try:
+                result = db.session.execute(
+                    text("DELETE FROM ratings WHERE user_id = :user_id"),
+                    {"user_id": user_id},
+                )
+                print(f"Usunięto {result.rowcount} ocen")
+            except Exception as e:
+                print(f"Błąd ratings: {e}")
+                db.session.rollback()  # Rollback tylko tej operacji
 
-        return (
-            jsonify(
-                {"message": "Użytkownik został pomyślnie usunięty", "user": user_data}
-            ),
-            200,
-        )
+            # 2. Usuń comments
+            try:
+                result = db.session.execute(
+                    text("DELETE FROM comments WHERE user_id = :user_id"),
+                    {"user_id": user_id},
+                )
+                print(f"Usunięto {result.rowcount} komentarzy")
+            except Exception as e:
+                print(f"Błąd comments: {e}")
+                db.session.rollback()
+
+            # 3. Usuń favorite_movies
+            try:
+                result = db.session.execute(
+                    text("DELETE FROM favorite_movies WHERE user_id = :user_id"),
+                    {"user_id": user_id},
+                )
+                print(f"Usunięto {result.rowcount} ulubionych")
+            except Exception as e:
+                print(f"Błąd favorite_movies: {e}")
+                db.session.rollback()
+
+            # 4. Usuń watchlist
+            try:
+                result = db.session.execute(
+                    text("DELETE FROM watchlist WHERE user_id = :user_id"),
+                    {"user_id": user_id},
+                )
+                print(f"Usunięto {result.rowcount} z watchlist")
+            except Exception as e:
+                print(f"Błąd watchlist: {e}")
+                db.session.rollback()
+
+            # 5. Usuń activity_logs
+            try:
+                result = db.session.execute(
+                    text("DELETE FROM activity_logs WHERE user_id = :user_id"),
+                    {"user_id": user_id},
+                )
+                print(f"Usunięto {result.rowcount} logów aktywności")
+            except Exception as e:
+                print(f"Błąd activity_logs: {e}")
+                db.session.rollback()
+
+            # 6. Usuń login_activities
+            try:
+                result = db.session.execute(
+                    text("DELETE FROM login_activities WHERE user_id = :user_id"),
+                    {"user_id": user_id},
+                )
+                print(f"Usunięto {result.rowcount} logów logowania")
+            except Exception as e:
+                print(f"Błąd login_activities: {e}")
+                db.session.rollback()
+
+            # 7. Na końcu usuń użytkownika - to MUSI się powieść
+            try:
+                db.session.execute(
+                    text("DELETE FROM users WHERE user_id = :user_id"),
+                    {"user_id": user_id},
+                )
+                db.session.commit()  # Commit tylko jeśli user został usunięty
+
+                return (
+                    jsonify(
+                        {
+                            "message": "Użytkownik został pomyślnie usunięty",
+                            "user": user_data,
+                        }
+                    ),
+                    200,
+                )
+            except Exception as e:
+                db.session.rollback()
+                return (
+                    jsonify({"error": f"Błąd podczas usuwania użytkownika: {str(e)}"}),
+                    500,
+                )
+
+        except Exception as delete_error:
+            db.session.rollback()
+            return (
+                jsonify(
+                    {"error": f"Ogólny błąd podczas usuwania: {str(delete_error)}"}
+                ),
+                500,
+            )
 
     except Exception as e:
         db.session.rollback()

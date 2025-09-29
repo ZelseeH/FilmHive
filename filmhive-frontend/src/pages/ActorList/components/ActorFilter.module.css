@@ -1,6 +1,8 @@
 .filterForm {
-    height: 100%;
+    /* Usuń height: 100%, by formularz mógł się naturalnie rozszerzać */
     overflow-y: auto;
+    max-height: 100vh;
+    /* Opcjonalnie ogranicz max wysokość formularza */
 }
 
 .filterContent {
@@ -11,8 +13,6 @@
     position: relative;
     margin-bottom: 10px;
 }
-
-
 
 .searchInput {
     width: 100%;
@@ -158,6 +158,51 @@
 
 .closeFilterButtonLarge:hover {
     background-color: #e6b800;
+}
+
+/* Specyficzne style dla CountryFilter - lista krajów */
+.countryList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+    max-height: 150px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease;
+}
+
+.countryList.expanded {
+    max-height: none;
+    /* usuwa ograniczenie wysokości */
+    overflow-y: visible;
+    /* usuwa pasek przewijania */
+}
+
+.countryItem {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.countryItem:hover {
+    background-color: #444;
+}
+
+.countryItem.selected {
+    background-color: #ffcc00;
+    color: #000;
+    border-color: #ffcc00;
+}
+
+.loading {
+    color: #888;
+    font-style: italic;
+    padding: 8px 0;
 }
 
 @media (max-width: 576px) {

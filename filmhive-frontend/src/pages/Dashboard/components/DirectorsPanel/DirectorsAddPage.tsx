@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { createDirector } from '../../services/directorService';
+import ImageSelector from '../ImgSelector/ImageSelector';
 import styles from './DirectorsAddPage.module.css';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog } from 'primereact/confirmdialog';
@@ -10,7 +11,6 @@ const DirectorsAddPage: React.FC = () => {
     const navigate = useNavigate();
     const { isStaff } = useAuth();
     const toast = useRef<Toast>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [loading, setLoading] = useState<boolean>(false);
     const [formData, setFormData] = useState({
@@ -21,7 +21,10 @@ const DirectorsAddPage: React.FC = () => {
         gender: '' as '' | 'M' | 'K'
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // ImageSelector state
     const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
     // Sprawdzenie uprawnień
@@ -38,8 +41,6 @@ const DirectorsAddPage: React.FC = () => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-
-        // Walidacja w trakcie wpisywania
         validateField(name, value);
     };
 
@@ -95,27 +96,19 @@ const DirectorsAddPage: React.FC = () => {
         setErrors(newErrors);
     };
 
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setPhotoFile(file);
+    // ImageSelector handlers
+    const handleImageChange = (file: File | null, url: string | null) => {
+        setPhotoFile(file);
+        setPhotoUrl(url);
 
-            // Tworzenie podglądu zdjęcia
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-
-            // Wyczyść błąd po wybraniu zdjęcia
+        // Wyczyść błąd zdjęcia gdy coś zostało wybrane
+        if (file || url) {
             setErrors(prev => ({ ...prev, photo: '' }));
         }
     };
 
-    const triggerPhotoUpload = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
+    const handlePreviewChange = (preview: string | null) => {
+        setPhotoPreview(preview);
     };
 
     const validateForm = (): boolean => {
@@ -127,15 +120,13 @@ const DirectorsAddPage: React.FC = () => {
 
         // Sprawdź, czy zdjęcie zostało wybrane
         const newErrors = { ...errors };
-        if (!photoFile) {
+        if (!photoFile && !photoUrl) {
             newErrors.photo = 'Zdjęcie jest wymagane';
         } else {
             delete newErrors.photo;
         }
 
         setErrors(newErrors);
-
-        // Sprawdź, czy są jakiekolwiek błędy
         return Object.keys(newErrors).length === 0;
     };
 
@@ -166,11 +157,42 @@ const DirectorsAddPage: React.FC = () => {
 
             directorFormData.append('gender', formData.gender);
 
+            // DEBUGOWANIE - sprawdź co wysyłasz
+            console.log('🔍 PRZED WYSŁANIEM REŻYSERA:');
+            console.log('Photo file:', photoFile);
+            console.log('Photo URL:', photoUrl);
+
+            // Dodaj zdjęcie - plik lokalny lub URL
             if (photoFile) {
+                console.log('📁 Wysyłam plik reżysera:', photoFile.name, photoFile.size);
                 directorFormData.append('photo', photoFile);
+            } else if (photoUrl) {
+                console.log('🔗 Wysyłam URL reżysera:', photoUrl);
+                directorFormData.append('photo_url', photoUrl.trim());
+            } else {
+                console.log('❌ Brak zdjęcia reżysera!');
             }
 
+            // DEBUG FormData - POPRAWIONA WERSJA
+            console.log('📋 FormData reżysera zawiera:');
+            const formDataEntries = Array.from(directorFormData.entries());
+            formDataEntries.forEach(([key, value]) => {
+                if (value instanceof File) {
+                    console.log(`${key}: [File] ${value.name} (${value.size} bytes)`);
+                } else {
+                    console.log(`${key}: ${value}`);
+                }
+            });
+
             const result = await createDirector(directorFormData);
+            console.log('✅ Odpowiedź serwera (reżyser):', result);
+
+            // Sprawdź czy photo_url zostało zapisane
+            if (result.photo_url) {
+                console.log('🎉 Photo URL reżysera zapisane w bazie:', result.photo_url);
+            } else {
+                console.log('⚠️ Photo URL reżysera NIE zostało zapisane!');
+            }
 
             toast.current?.show({
                 severity: 'success',
@@ -179,12 +201,12 @@ const DirectorsAddPage: React.FC = () => {
                 life: 3000
             });
 
-            // Przekieruj do listy reżyserów po krótkim opóźnieniu
             setTimeout(() => {
                 navigate('/dashboardpanel/directors/manage');
             }, 1500);
 
         } catch (err: any) {
+            console.error('❌ BŁĄD TWORZENIA REŻYSERA:', err);
             const errorMessage = err.message || 'Wystąpił błąd podczas dodawania reżysera';
             toast.current?.show({
                 severity: 'error',
@@ -192,7 +214,6 @@ const DirectorsAddPage: React.FC = () => {
                 detail: errorMessage,
                 life: 5000
             });
-            console.error('Error adding director:', err);
         } finally {
             setLoading(false);
         }
@@ -220,34 +241,17 @@ const DirectorsAddPage: React.FC = () => {
                 <form onSubmit={handleSubmit}>
                     <div className={styles.directorHeader}>
                         <div className={styles.photoContainer}>
-                            {photoPreview ? (
-                                <img src={photoPreview} alt="Podgląd zdjęcia" className={styles.directorPhoto} />
-                            ) : (
-                                <div
-                                    className={`${styles.directorPhotoPlaceholder} ${errors.photo ? styles.photoError : ''}`}
-                                    onClick={triggerPhotoUpload}
-                                >
-                                    +
-                                </div>
-                            )}
-
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handlePhotoChange}
-                                accept="image/*"
-                                style={{ display: 'none' }}
+                            <ImageSelector
+                                onImageChange={handleImageChange}
+                                onPreviewChange={handlePreviewChange}
+                                label="Zdjęcie reżysera"
+                                placeholder="Brak zdjęcia"
+                                maxFileSize={5}
+                                required={true}
+                                error={errors.photo}
+                                disabled={loading}
+                                className={styles.directorImageSelector}
                             />
-
-                            <button
-                                type="button"
-                                className={styles.changePhotoButton}
-                                onClick={triggerPhotoUpload}
-                            >
-                                {photoPreview ? 'Zmień zdjęcie' : 'Dodaj zdjęcie*'}
-                            </button>
-
-                            {errors.photo && <div className={styles.fieldError}>{errors.photo}</div>}
                         </div>
 
                         <div className={styles.directorInfo}>
@@ -273,6 +277,7 @@ const DirectorsAddPage: React.FC = () => {
                                     onChange={handleInputChange}
                                     className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
                                     maxLength={100}
+                                    disabled={loading}
                                     required
                                 />
                                 <div className={styles.fieldHint}>
@@ -290,6 +295,7 @@ const DirectorsAddPage: React.FC = () => {
                                     value={formData.birth_date}
                                     onChange={handleInputChange}
                                     className={`${styles.input} ${errors.birth_date ? styles.inputError : ''}`}
+                                    disabled={loading}
                                     required
                                 />
                                 {errors.birth_date && <div className={styles.fieldError}>{errors.birth_date}</div>}
@@ -305,6 +311,7 @@ const DirectorsAddPage: React.FC = () => {
                                     onChange={handleInputChange}
                                     placeholder="np. Warszawa, Polska"
                                     className={`${styles.input} ${errors.birth_place ? styles.inputError : ''}`}
+                                    disabled={loading}
                                     required
                                 />
                                 {errors.birth_place && <div className={styles.fieldError}>{errors.birth_place}</div>}
@@ -318,6 +325,7 @@ const DirectorsAddPage: React.FC = () => {
                                     value={formData.gender}
                                     onChange={handleInputChange}
                                     className={`${styles.input} ${errors.gender ? styles.inputError : ''}`}
+                                    disabled={loading}
                                     required
                                 >
                                     <option value="">Wybierz płeć</option>
@@ -337,6 +345,7 @@ const DirectorsAddPage: React.FC = () => {
                                     className={styles.textarea}
                                     rows={4}
                                     placeholder="Opcjonalnie"
+                                    disabled={loading}
                                 />
                             </div>
                         </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import ProfileHeader from './components/ProfileHeader/ProfileHeader';
 import { useProfileData } from './hooks/useProfileData';
 import { useRecentRatedMovies } from './hooks/useRecentRatedMovies';
@@ -53,11 +53,22 @@ const ProfilePage: React.FC = () => {
 
       <div className={styles['profile-content']}>
         <div className={styles['profile-section']}>
-          <h2>Aktywność</h2>
+          {/* DODANY HEADER Z PRZYCISKIEM */}
+          <div className={styles['section-header']}>
+            <h2>Aktywność</h2>
+            <Link
+              to={`/profile/${username}/activity`}
+              className={styles['view-all-button']}
+            >
+              Zobacz wszystkie →
+            </Link>
+          </div>
+
           <RecentRatedMovies
             movies={recentRatedMovies}
             loading={ratingsLoading}
             error={ratingsError}
+            isOwnProfile={isOwnProfile} // DODAJ ten prop
           />
           <RecentFavoriteMovies
             movies={recentFavoriteMovies}

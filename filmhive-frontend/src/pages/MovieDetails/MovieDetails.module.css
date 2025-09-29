@@ -199,3 +199,66 @@
         font-size: 0.875rem;
     }
 }
+
+/* ================================ */
+/* NOWE STYLE DLA SEKCJI KOMENTARZY */
+/* ================================ */
+
+/* Sekcje komentarzy */
+.user-comment-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #fafafa;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.user-comment-section .section-title {
+    font-size: clamp(1.125rem, 2.5vw, 1.25rem);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e0e0e0;
+    color: #1a1a1a;
+}
+
+.all-comments-section {
+    margin-top: 1.5rem;
+}
+
+/* Responsywność dla sekcji komentarzy */
+@media (max-width: 992px) {
+    .user-comment-section {
+        padding: 1.25rem;
+        margin-bottom: 1.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-comment-section {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .user-comment-section .section-title {
+        font-size: 1.125rem;
+        margin-bottom: 0.875rem;
+    }
+
+    .all-comments-section {
+        margin-top: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-comment-section {
+        padding: 0.875rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .user-comment-section .section-title {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+}

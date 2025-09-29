@@ -8,10 +8,13 @@ export interface Movie {
     description?: string;
     duration_minutes?: number;
     genres?: { id: number; name: string }[];
-    actors?: { id: number; name: string }[]; // Dodaj id!
-    directors?: { id: number; name: string }[]; // Dodaj id!
+    actors?: { id: number; name: string }[];
+    directors?: { id: number; name: string }[];
     country?: string;
+    original_language?: string;  // ✅ Też brakuje!
+    trailer_url?: string;        // ✅ DODAJ TO POLE!
 }
+
 
 interface MoviesResponse {
     movies: Movie[];

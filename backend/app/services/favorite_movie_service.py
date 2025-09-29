@@ -218,3 +218,33 @@ class FavoriteMovieService:
                 f"Unexpected error getting recent favorite movies: {str(e)}"
             )
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
+
+    def get_all_favorite_movies(self, user_id):
+        """Pobierz wszystkie ulubione filmy użytkownika (bez limitu)"""
+        try:
+            user = db.session.get(User, user_id)
+            if not user:
+                raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
+
+            movies = self.favorite_repository.get_all_favorite_movies(user_id)
+            current_app.logger.info(
+                f"Pobrano wszystkie {len(movies)} ulubione filmy użytkownika {user_id}"
+            )
+            return movies
+        except ValueError as e:
+            current_app.logger.error(
+                f"ValueError getting all favorite movies: {str(e)}"
+            )
+            raise
+        except SQLAlchemyError as e:
+            current_app.logger.error(
+                f"SQLAlchemyError getting all favorite movies: {str(e)}"
+            )
+            raise Exception(
+                f"Nie udało się pobrać wszystkich ulubionych filmów: {str(e)}"
+            )
+        except Exception as e:
+            current_app.logger.error(
+                f"Unexpected error getting all favorite movies: {str(e)}"
+            )
+            raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")

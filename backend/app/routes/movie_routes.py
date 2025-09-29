@@ -18,6 +18,8 @@ from app.services.movie_service import (
     get_all_movies_with_title_filter,
     update_movie,
     update_movie_poster,
+    get_upcoming_movies_by_month,
+    get_upcoming_premieres,
 )
 
 movies_bp = Blueprint("movies", __name__)
@@ -55,6 +57,7 @@ def get_current_user_id():
 @movies_bp.route("/", methods=["GET"])
 @cached_response(timeout=60)
 def get_movies_list():
+    """Pobiera wszystkie filmy z paginacją - przeszłe i przyszłe"""
     try:
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 10, type=int)
@@ -63,6 +66,7 @@ def get_movies_list():
 
         per_page = min(per_page, 20)
 
+        # ✅ Zwraca wszystkie filmy bez filtrowania dat
         result = get_movies_paginated(page, per_page, genre_id, user_id=user_id)
 
         response = jsonify(result)
@@ -81,10 +85,12 @@ def get_movies_list():
 @movies_bp.route("/all", methods=["GET"])
 @cached_response(timeout=300)
 def get_all_movies_list():
+    """Pobiera wszystkie filmy - przeszłe i przyszłe"""
     try:
         user_id = get_current_user_id()
         serialize_basic = request.args.get("basic", "false").lower() == "true"
 
+        # ✅ Zwraca wszystkie filmy bez filtrowania dat
         movies = get_all_movies(serialize_basic=serialize_basic, user_id=user_id)
 
         response = jsonify(movies)
@@ -102,10 +108,12 @@ def get_all_movies_list():
 
 @movies_bp.route("/<int:id>", methods=["GET"])
 def get_movie(id):
+    """Pobiera pojedynczy film - bez względu na datę premiery"""
     try:
         include_roles = request.args.get("include_roles", "false").lower() == "true"
         user_id = get_current_user_id()
 
+        # ✅ Zwraca film bez filtrowania po dacie
         movie = get_movie_by_id(id, include_actors_roles=include_roles, user_id=user_id)
         if not movie:
             return jsonify({"error": "Film o podanym ID nie istnieje"}), 404
@@ -125,6 +133,7 @@ def get_movie(id):
 
 @movies_bp.route("/top-rated", methods=["GET"])
 def get_top_rated_movies_route():
+    """Pobiera najlepiej oceniane filmy - wszystkie bez względu na datę premiery"""
     try:
         limit = request.args.get("limit", 10, type=int)
         include_user_rating = (
@@ -132,8 +141,9 @@ def get_top_rated_movies_route():
         )
         user_id = get_current_user_id() if include_user_rating else None
 
-        limit = min(limit, 50)  # Ograniczenie maksymalnej liczby filmów
+        limit = min(limit, 50)
 
+        # ✅ Zwraca wszystkie filmy bez filtrowania dat
         movies = get_top_rated_movies(limit, user_id=user_id)
 
         response = jsonify(movies)
@@ -147,12 +157,14 @@ def get_top_rated_movies_route():
 @movies_bp.route("/", methods=["POST"])
 @jwt_required()
 def add_movie():
+    """Dodaje nowy film - przyszłe daty premiery są dozwolone"""
     data = request.get_json()
 
     if not data or "title" not in data or "release_date" not in data:
         return jsonify({"error": "Brak wymaganych pól: title i release_date"}), 400
 
     try:
+        # ✅ Bez ograniczenia dat - można dodawać filmy z przyszłą premierą
         new_movie = create_movie(data)
         return jsonify(new_movie), 201
     except Exception as e:
@@ -168,6 +180,7 @@ def add_movie():
 @movies_bp.route("/<int:id>", methods=["DELETE"])
 @jwt_required()
 def remove_movie(id):
+    """Usuwa film - bez względu na datę premiery"""
     try:
         success = delete_movie(id)
         if success:
@@ -186,6 +199,7 @@ def remove_movie(id):
 
 @movies_bp.route("/filter", methods=["GET"])
 def filter_movies_route():
+    """Filtruje filmy - wszystkie bez ograniczenia dat premiery"""
     try:
         filters = {
             key: request.args.get(key)
@@ -216,6 +230,7 @@ def filter_movies_route():
         per_page = request.args.get("per_page", 10, type=int)
         per_page = min(per_page, 20)
 
+        # ✅ Filtruje wszystkie filmy bez ograniczenia dat
         result = filter_movies(
             filters,
             page=page,
@@ -244,6 +259,7 @@ def filter_movies_route():
 @movies_bp.route("/filter-options", methods=["GET"])
 @cached_response(timeout=3600)
 def get_filter_options_route():
+    """Pobiera opcje filtrów - wszystkie filmy"""
     try:
         options = get_movie_filter_options()
 
@@ -266,6 +282,7 @@ def get_filter_options_route():
 @movies_bp.route("/<int:id>/rate", methods=["POST"])
 @jwt_required()
 def rate_movie(id):
+    """Ocenia film - bez względu na datę premiery"""
     try:
         user_id = get_jwt_identity()
         rating_data = request.get_json()
@@ -290,6 +307,7 @@ def rate_movie(id):
 @movies_bp.route("/<int:id>/rate", methods=["DELETE"])
 @jwt_required()
 def remove_rating(id):
+    """Usuwa ocenę filmu"""
     try:
         user_id = get_jwt_identity()
         from app.services.rating_service import delete_rating
@@ -307,6 +325,7 @@ def remove_rating(id):
 
 @movies_bp.route("/search", methods=["GET"])
 def search_movies_route():
+    """Wyszukuje filmy - wszystkie bez ograniczenia dat"""
     try:
         query = request.args.get("q", "")
         page = request.args.get("page", 1, type=int)
@@ -315,6 +334,7 @@ def search_movies_route():
 
         per_page = min(per_page, 20)
 
+        # ✅ Wyszukuje wszystkie filmy bez filtrowania dat
         result = search_movies(query, page=page, per_page=per_page, user_id=user_id)
 
         response = jsonify(
@@ -337,6 +357,7 @@ def search_movies_route():
 
 @movies_bp.route("/getall", methods=["GET"])
 def get_all_movies_with_filter():
+    """Pobiera wszystkie filmy z filtrem tytułu - przeszłe i przyszłe"""
     try:
         title_filter = request.args.get("title", "").strip()
         page = request.args.get("page", 1, type=int)
@@ -344,6 +365,7 @@ def get_all_movies_with_filter():
 
         per_page = min(per_page, 50)
 
+        # ✅ Pobiera wszystkie filmy bez filtrowania dat
         result = get_all_movies_with_title_filter(
             title_filter=title_filter if title_filter else None,
             page=page,
@@ -369,7 +391,7 @@ def get_all_movies_with_filter():
 @staff_required
 def update_movie_endpoint(id):
     """
-    Endpoint do edycji filmu - tylko dla staff
+    ✅ POPRAWIONY Endpoint do edycji filmu - DOZWALA przyszłych dat premiery
     """
     try:
         # Pobierz dane z formularza
@@ -409,24 +431,20 @@ def update_movie_endpoint(id):
             except ValueError:
                 return jsonify({"error": "Czas trwania musi być liczbą"}), 400
 
-        # Walidacja daty premiery
+        # ✅ POPRAWIONA Walidacja daty premiery - DOZWALA przyszłych dat
         if "release_date" in data and data["release_date"]:
             try:
                 from datetime import datetime
 
-                release_date = datetime.strptime(data["release_date"], "%Y-%m-%d")
-                today = datetime.now()
-                if release_date > today:
-                    return (
-                        jsonify(
-                            {
-                                "error": "Data premiery nie może być późniejsza niż dzisiejsza"
-                            }
-                        ),
-                        400,
-                    )
+                # Sprawdź tylko poprawność formatu daty - bez ograniczenia przyszłych dat
+                datetime.strptime(data["release_date"], "%Y-%m-%d")
             except ValueError:
-                return jsonify({"error": "Nieprawidłowy format daty"}), 400
+                return (
+                    jsonify(
+                        {"error": "Nieprawidłowy format daty (wymagany: YYYY-MM-DD)"}
+                    ),
+                    400,
+                )
 
         # Aktualizuj film
         updated_movie = update_movie(id, data)
@@ -453,6 +471,7 @@ def update_movie_endpoint(id):
 @jwt_required()
 @staff_required
 def upload_movie_poster_endpoint(id):
+    """Upload plakatu filmu"""
     try:
         movie_data = get_movie_by_id(id)
         if not movie_data:
@@ -556,7 +575,7 @@ def upload_movie_poster_endpoint(id):
 @movies_bp.route("/statistics", methods=["GET"])
 @staff_required
 def get_movies_statistics():
-    """Pobiera podstawowe statystyki filmów"""
+    """Pobiera podstawowe statystyki filmów - wszystkich"""
     try:
         from app.services.movie_service import get_basic_statistics
 
@@ -570,7 +589,7 @@ def get_movies_statistics():
 @movies_bp.route("/dashboard", methods=["GET"])
 @staff_required
 def get_movies_dashboard():
-    """Pobiera dane dashboard dla filmów"""
+    """Pobiera dane dashboard dla filmów - wszystkich"""
     try:
         from app.services.movie_service import get_dashboard_data
 
@@ -579,3 +598,81 @@ def get_movies_dashboard():
     except Exception as e:
         current_app.logger.error(f"Error getting movies dashboard: {str(e)}")
         return jsonify({"error": "Błąd podczas pobierania dashboard filmów"}), 500
+
+
+@movies_bp.route("/upcoming/<int:year>/<int:month>", methods=["GET"])
+@cached_response(timeout=300)
+def get_upcoming_movies_by_month_route(year, month):
+    """
+    ✅ Pobiera filmy z premierami w danym miesiącu i roku - WSZYSTKIE
+    """
+    try:
+        from app.services.movie_service import get_upcoming_movies_by_month
+
+        # ✅ Pobiera filmy z premierami w danym miesiącu (przeszłe i przyszłe)
+        result = get_upcoming_movies_by_month(year, month)
+
+        current_app.logger.info(
+            f"Pobrano {result['total_count']} filmów z premierami w {month:02d}/{year}"
+        )
+
+        response = jsonify(result)
+        response.headers["Cache-Control"] = "public, max-age=300"
+        return response, 200
+
+    except ValueError as e:
+        current_app.logger.error(
+            f"Błąd walidacji w get_upcoming_movies_by_month_route: {str(e)}"
+        )
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(
+            f"Error in get_upcoming_movies_by_month_route: {str(e)}"
+        )
+        return (
+            jsonify(
+                {
+                    "error": f"Wystąpił błąd podczas pobierania filmów z premierami dla {month:02d}/{year}",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )
+
+
+@movies_bp.route("/upcoming-premieres", methods=["GET"])
+@cached_response(timeout=300)  # Cache na 5 minut
+def get_upcoming_premieres_route():
+    """Pobiera nadchodzące premiery filmowe z trailerami"""
+    try:
+        limit = request.args.get("limit", 5, type=int)
+
+        # Zabezpieczenie przed zbyt dużym limitem
+        if limit > 20:
+            limit = 20
+        elif limit < 1:
+            limit = 5
+
+        from app.services.movie_service import get_upcoming_premieres
+
+        premieres = get_upcoming_premieres(limit)
+
+        current_app.logger.info(
+            f"Pobrano {len(premieres)} nadchodzących premier z trailerami"
+        )
+
+        response = jsonify({"upcoming_premieres": premieres, "count": len(premieres)})
+        response.headers["Cache-Control"] = "public, max-age=300"  # 5 minut cache
+        return response, 200
+
+    except Exception as e:
+        current_app.logger.error(f"Error in get_upcoming_premieres_route: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas pobierania nadchodzących premier",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )

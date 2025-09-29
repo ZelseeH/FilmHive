@@ -89,7 +89,13 @@ export const getBirthplaces = async (): Promise<{
     return fetchWithAuth('actors/birthplaces');
 };
 
-export const getActorMovies = async (actorId: number, page = 1, perPage = 10): Promise<{
+export const getActorMovies = async (
+    actorId: number,
+    page = 1,
+    perPage = 10,
+    sortField = 'release_date',
+    sortOrder = 'asc'
+): Promise<{
     movies: ActorMovie[];
     pagination: {
         page: number;
@@ -97,6 +103,9 @@ export const getActorMovies = async (actorId: number, page = 1, perPage = 10): P
         total: number;
         total_pages: number;
     };
+    sort_field: string;
+    sort_order: string;
 }> => {
-    return fetchWithAuth(`actors/${actorId}/movies?page=${page}&per_page=${perPage}`);
+    const url = `actors/${actorId}/movies?page=${page}&per_page=${perPage}&sort_field=${sortField}&sort_order=${sortOrder}`;
+    return fetchWithAuth(url);
 };

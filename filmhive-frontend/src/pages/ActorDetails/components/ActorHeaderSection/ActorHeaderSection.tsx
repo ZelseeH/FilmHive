@@ -13,11 +13,18 @@ const ActorHeaderSection: React.FC<ActorHeaderSectionProps> = ({ actor, onShowFu
     return (
         <div className={styles['actor-header-section']}>
             <div className={styles['actor-photo']}>
-                <img
-                    src={actor.photo_url || '/placeholder-actor.jpg'}
-                    alt={`Zdjęcie aktora ${actor.name}`}
-                    onError={(e) => handleActorImageError(e)}
-                />
+                {actor.photo_url && (
+                    <img
+                        src={
+                            actor.photo_url.startsWith('http://') || actor.photo_url.startsWith('https://')
+                                ? actor.photo_url
+                                : `/static/actors/${actor.photo_url}`
+                        }
+                        alt={`Zdjęcie aktora ${actor.name}`}
+                    />
+                )}
+
+
             </div>
             <div className={styles['actor-header-info']}>
                 <h1 className={styles['actor-name']}>{actor.name}</h1>

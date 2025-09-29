@@ -235,3 +235,46 @@ class FavoriteMovieRepository:
                 f"Nieoczekiwany błąd podczas pobierania ostatnich ulubionych filmów: {str(e)}"
             )
             raise
+
+    def get_all_favorite_movies(self, user_id):
+        """Pobierz wszystkie ulubione filmy użytkownika (bez limitu)"""
+        try:
+            results = (
+                self.session.query(FavoriteMovie, Movie)
+                .join(Movie, FavoriteMovie.movie_id == Movie.movie_id)
+                .filter(FavoriteMovie.user_id == user_id)
+                .order_by(FavoriteMovie.added_at.desc())
+                .all()
+            )
+
+            self.logger.info(
+                f"Pobrano wszystkie {len(results)} ulubione filmy użytkownika {user_id}"
+            )
+
+            return [
+                {
+                    "movie_id": movie.movie_id,
+                    "title": movie.title,
+                    "poster_url": (
+                        url_for(
+                            "static",
+                            filename=f"posters/{movie.poster_url}",
+                            _external=True,
+                        )
+                        if movie.poster_url
+                        else None
+                    ),
+                    "added_at": fav.added_at.isoformat() if fav.added_at else None,
+                }
+                for fav, movie in results
+            ]
+        except SQLAlchemyError as e:
+            self.logger.error(
+                f"Błąd SQL podczas pobierania wszystkich ulubionych filmów: {str(e)}"
+            )
+            raise
+        except Exception as e:
+            self.logger.error(
+                f"Nieoczekiwany błąd podczas pobierania wszystkich ulubionych filmów: {str(e)}"
+            )
+            raise

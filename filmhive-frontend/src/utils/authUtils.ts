@@ -7,7 +7,10 @@ export const authUtils = {
     getToken: (): string | null => {
         return localStorage.getItem('token');
     },
-
+    isAuthenticated: (): boolean => {
+        const token = localStorage.getItem('token');
+        return !!token && token.length > 0;
+    },
     validatePassword: (password: string, confirmPassword: string): ValidationResult => {
         if (password !== confirmPassword) {
             return { valid: false, error: 'Hasła nie są identyczne.' };

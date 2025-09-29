@@ -36,12 +36,18 @@ interface Props {
     movies: RecentRatedMovie[];
     loading: boolean;
     error: string | null;
+    isOwnProfile?: boolean; // DODAJ prop
 }
 
 const POPUP_WIDTH = 320;
 const POPUP_MARGIN = 8;
 
-const RecentRatedMovies: React.FC<Props> = ({ movies, loading, error }) => {
+const RecentRatedMovies: React.FC<Props> = ({
+    movies,
+    loading,
+    error,
+    isOwnProfile = false // DODAJ prop z domyślną wartością
+}) => {
     const [activeMovieId, setActiveMovieId] = useState<number | null>(null);
     const [popupPosition, setPopupPosition] = useState<{ left: number; top: number } | null>(null);
     const popupRef = useRef<HTMLDivElement | null>(null);
@@ -69,7 +75,6 @@ const RecentRatedMovies: React.FC<Props> = ({ movies, loading, error }) => {
         }
     );
 
-
     const updatePopupPosition = useCallback(() => {
         if (activeMovieId !== null && !isMobile) {
             const badge = badgeRefs.current[activeMovieId];
@@ -88,7 +93,6 @@ const RecentRatedMovies: React.FC<Props> = ({ movies, loading, error }) => {
         }
     }, [activeMovieId, isMobile]);
 
-
     useEffect(() => {
         if (activeMovieId !== null && !isMobile) {
             updatePopupPosition();
@@ -101,8 +105,15 @@ const RecentRatedMovies: React.FC<Props> = ({ movies, loading, error }) => {
         }
     }, [activeMovieId, isMobile, updatePopupPosition]);
 
+    // DODAJ sprawdzenie czy to własny profil
     const handleBadgeClick = (e: React.MouseEvent, movieId: number) => {
         e.preventDefault();
+
+        // BLOKUJ jeśli nie jest to własny profil
+        if (!isOwnProfile) {
+            return;
+        }
+
         setActiveMovieId(movieId);
         setTimeout(() => {
             updatePopupPosition();
@@ -138,12 +149,16 @@ const RecentRatedMovies: React.FC<Props> = ({ movies, loading, error }) => {
                                     draggable={false}
                                 />
                                 <span
-                                    className={styles.ratingBadge}
+                                    className={`${styles.ratingBadge} ${!isOwnProfile ? styles.ratingBadgeDisabled : ''
+                                        }`}
                                     ref={el => { badgeRefs.current[movie.movie_id] = el; }}
                                     onClick={e => handleBadgeClick(e, movie.movie_id)}
-                                    tabIndex={0}
-                                    role="button"
-                                    aria-label={`Oceń film ${movie.title}`}
+                                    tabIndex={isOwnProfile ? 0 : -1}
+                                    role={isOwnProfile ? "button" : undefined}
+                                    aria-label={isOwnProfile ? `Oceń film ${movie.title}` : undefined}
+                                    style={{
+                                        cursor: isOwnProfile ? 'pointer' : 'default' // ZMIEŃ kursor
+                                    }}
                                 >
                                     <span className={styles.star}>★</span>
                                     <span className={styles.ratingValue}>{movie.rating}</span>
@@ -152,7 +167,8 @@ const RecentRatedMovies: React.FC<Props> = ({ movies, loading, error }) => {
                             <div className={styles.title}>{movie.title}</div>
                         </Link>
 
-                        {activeMovieId === movie.movie_id && (
+                        {/* POPUP TYLKO dla własnego profilu */}
+                        {activeMovieId === movie.movie_id && isOwnProfile && (
                             isMobile ? (
                                 <div
                                     className={styles.popupBackdropMobile}

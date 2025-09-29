@@ -4,6 +4,8 @@ from app.models.movie import Movie
 from sqlalchemy import desc
 from functools import lru_cache
 import logging
+from datetime import date
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 movie_repo = MovieRepository(db.session)
@@ -15,6 +17,7 @@ def get_filter_options_cached():
 
 
 def get_all_movies(serialize_basic=False, user_id=None):
+    """✅ POPRAWIONE - pobiera WSZYSTKIE filmy bez filtrowania dat"""
     try:
         movies = movie_repo.get_all()
 
@@ -49,6 +52,7 @@ def get_all_movies(serialize_basic=False, user_id=None):
 
 
 def get_movies_paginated(page=1, per_page=10, genre_id=None, user_id=None):
+    """✅ POPRAWIONE - pobiera WSZYSTKIE filmy z paginacją"""
     try:
         result = movie_repo.get_paginated(page, per_page, genre_id, user_id)
 
@@ -67,6 +71,7 @@ def get_movies_paginated(page=1, per_page=10, genre_id=None, user_id=None):
 
 
 def get_movie_by_id(movie_id, include_actors_roles=False, user_id=None):
+    """Pobiera pojedynczy film - bez względu na datę premiery"""
     try:
         movie = movie_repo.get_by_id(movie_id, user_id)
         if not movie:
@@ -87,6 +92,7 @@ def get_movie_by_id(movie_id, include_actors_roles=False, user_id=None):
 
 
 def get_top_rated_movies(limit=10, user_id=None):
+    """✅ POPRAWIONE - najlepiej oceniane WSZYSTKIE filmy"""
     try:
         movies = movie_repo.get_top_rated(limit, user_id)
 
@@ -108,15 +114,17 @@ def get_top_rated_movies(limit=10, user_id=None):
 
 
 def create_movie(data):
+    """✅ POPRAWIONE - tworzy film bez ograniczenia dat premiery"""
     try:
         new_movie = Movie(
             title=data.get("title"),
-            release_date=data.get("release_date"),
+            release_date=data.get("release_date"),  # ✅ Przyszłe daty dozwolone
             description=data.get("description", ""),
             poster_url=data.get("poster_url", ""),
             duration_minutes=data.get("duration_minutes", 0),
             country=data.get("country", ""),
             original_language=data.get("original_language", ""),
+            trailer_url=data.get("trailer_url", ""),
         )
         movie_repo.add(new_movie)
         return new_movie.serialize()
@@ -126,6 +134,7 @@ def create_movie(data):
 
 
 def delete_movie(movie_id):
+    """Usuwa film - bez względu na datę premiery"""
     try:
         success = movie_repo.delete(movie_id)
         return success
@@ -143,6 +152,7 @@ def filter_movies(
     sort_order="asc",
     user_id=None,
 ):
+    """✅ POPRAWIONE - filtruje WSZYSTKIE filmy bez ograniczenia dat"""
     try:
         result = movie_repo.filter_movies(
             filters=filters,
@@ -168,6 +178,7 @@ def filter_movies(
 
 
 def get_movie_filter_options():
+    """✅ POPRAWIONE - opcje filtrów dla WSZYSTKICH filmów"""
     try:
         return get_filter_options_cached()
     except Exception as e:
@@ -176,6 +187,7 @@ def get_movie_filter_options():
 
 
 def search_movies(query, page=1, per_page=10, user_id=None):
+    """✅ POPRAWIONE - wyszukuje WSZYSTKIE filmy"""
     try:
         result = movie_repo.search(
             query=query,
@@ -197,6 +209,7 @@ def search_movies(query, page=1, per_page=10, user_id=None):
 
 
 def get_all_movies_with_title_filter(title_filter=None, page=1, per_page=10):
+    """✅ POPRAWIONE - pobiera WSZYSTKIE filmy z filtrem tytułu"""
     try:
         result = movie_repo.get_all_with_title_filter(
             title_filter=title_filter, page=page, per_page=per_page
@@ -216,9 +229,7 @@ def get_all_movies_with_title_filter(title_filter=None, page=1, per_page=10):
 
 
 def update_movie(movie_id, data):
-    """
-    Aktualizuje film - dla panelu administratora
-    """
+    """✅ POPRAWIONE - aktualizuje film bez ograniczenia dat premiery"""
     try:
         updated_movie = movie_repo.update(movie_id, data)
         if not updated_movie:
@@ -233,9 +244,7 @@ def update_movie(movie_id, data):
 
 
 def update_movie_poster(movie_id, poster_url):
-    """
-    Aktualizuje plakat filmu
-    """
+    """Aktualizuje plakat filmu"""
     try:
         updated_movie = movie_repo.update_poster(movie_id, poster_url)
         if not updated_movie:
@@ -252,12 +261,8 @@ def update_movie_poster(movie_id, poster_url):
 
 
 def get_basic_statistics():
-    """Pobiera podstawowe statystyki filmów"""
+    """✅ POPRAWIONE - statystyki WSZYSTKICH filmów"""
     try:
-        from app.repositories.movie_repository import MovieRepository
-        from app.services.database import db
-
-        movie_repo = MovieRepository(db.session)
         stats = movie_repo.get_basic_statistics()
         return stats
     except Exception as e:
@@ -265,13 +270,128 @@ def get_basic_statistics():
 
 
 def get_dashboard_data():
-    """Pobiera dane dashboard dla filmów"""
+    """✅ POPRAWIONE - dashboard WSZYSTKICH filmów"""
     try:
-        from app.repositories.movie_repository import MovieRepository
-        from app.services.database import db
-
-        movie_repo = MovieRepository(db.session)
         dashboard_data = movie_repo.get_dashboard_data()
         return dashboard_data
     except Exception as e:
         raise Exception(f"Nie udało się pobrać danych dashboard: {str(e)}")
+
+
+def get_upcoming_movies_by_month(year, month):
+    """✅ POPRAWIONE - pobiera WSZYSTKIE filmy z danego miesiąca (przeszłe i przyszłe)"""
+    try:
+        # Walidacja parametrów
+        if not isinstance(year, int) or year < 1900 or year > 2100:
+            raise ValueError("Rok musi być liczbą całkowitą między 1900 a 2100")
+
+        if not isinstance(month, int) or month < 1 or month > 12:
+            raise ValueError("Miesiąc musi być liczbą całkowitą między 1 a 12")
+
+        # Pobierz filmy z repository (już poprawionego - wszystkie filmy)
+        movies = movie_repo.get_upcoming_movies_by_month(year, month)
+
+        # Serializuj filmy z dodaną liczbą watchlist i informacją o statusie
+        today = date.today()
+        serialized_movies = [
+            {
+                **movie.serialize(include_genres=True),
+                "release_date_formatted": (
+                    movie.release_date.strftime("%d.%m.%Y")
+                    if movie.release_date
+                    else None
+                ),
+                "days_until_release": (
+                    (movie.release_date - today).days if movie.release_date else None
+                ),
+                "is_upcoming": (
+                    movie.release_date > today if movie.release_date else False
+                ),
+                "is_released": (
+                    movie.release_date <= today if movie.release_date else False
+                ),
+                "watchlist_count": getattr(movie, "_watchlist_count", 0),
+            }
+            for movie in movies
+        ]
+
+        logger.info(
+            f"Pobrano {len(serialized_movies)} filmów z premierami w {month:02d}/{year}"
+        )
+
+        return {
+            "movies": serialized_movies,
+            "year": year,
+            "month": month,
+            "month_name": get_month_name(month),
+            "total_count": len(serialized_movies),
+            "upcoming_count": sum(1 for m in serialized_movies if m["is_upcoming"]),
+            "released_count": sum(1 for m in serialized_movies if m["is_released"]),
+        }
+
+    except ValueError as e:
+        logger.error(f"Błąd walidacji w get_upcoming_movies_by_month: {str(e)}")
+        raise ValueError(str(e))
+    except Exception as e:
+        logger.error(f"Error in get_upcoming_movies_by_month: {str(e)}")
+        raise Exception(
+            f"Błąd podczas pobierania filmów z premierami dla {month:02d}/{year}: {str(e)}"
+        )
+
+
+def get_month_name(month):
+    """Pomocnicza funkcja do zwracania nazwy miesiąca po polsku"""
+    months = {
+        1: "Styczeń",
+        2: "Luty",
+        3: "Marzec",
+        4: "Kwiecień",
+        5: "Maj",
+        6: "Czerwiec",
+        7: "Lipiec",
+        8: "Sierpień",
+        9: "Wrzesień",
+        10: "Październik",
+        11: "Listopad",
+        12: "Grudzień",
+    }
+    return months.get(month, "Nieznany")
+
+
+def get_upcoming_premieres(limit=5):
+    """Pobiera nadchodzące premiery filmowe z trailerami"""
+    try:
+        premieres = movie_repo.get_upcoming_premieres(limit)
+
+        # Dodatkowe przetwarzanie danych dla frontend
+        processed_premieres = []
+        for premiere in premieres:
+            processed_premiere = {
+                **premiere,
+                "release_date_formatted": (
+                    datetime.fromisoformat(premiere["release_date"]).strftime(
+                        "%d.%m.%Y"
+                    )
+                    if premiere["release_date"]
+                    else None
+                ),
+                "days_until_release": (
+                    (
+                        datetime.fromisoformat(premiere["release_date"]).date()
+                        - date.today()
+                    ).days
+                    if premiere["release_date"]
+                    else None
+                ),
+            }
+            processed_premieres.append(processed_premiere)
+
+        logger.info(
+            f"Pobrano {len(processed_premieres)} nadchodzących premier z trailerami"
+        )
+
+        return processed_premieres
+
+    except Exception as e:
+        logger.error(f"Error in get_upcoming_premieres: {str(e)}")
+        raise Exception(f"Błąd podczas pobierania nadchodzących premier: {str(e)}")

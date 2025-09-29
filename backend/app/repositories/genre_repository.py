@@ -6,7 +6,7 @@ class GenreRepository:
         self.session = session
 
     def get_all(self):
-        return self.session.query(Genre).all()
+        return self.session.query(Genre).order_by(Genre.genre_name.asc()).all()
 
     def get_by_id(self, genre_id):
         return self.session.get(Genre, genre_id)

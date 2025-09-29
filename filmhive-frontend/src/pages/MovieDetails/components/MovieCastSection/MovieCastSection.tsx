@@ -4,7 +4,7 @@ import { Actor } from '../../services/movieService';
 import { handleImageError } from '../../utils/movieUtils';
 import styles from './MovieCastSection.module.css';
 import { useSlider } from '../../hooks/useSlider';
-import { createSlug } from '../../../../utils/formatters'; // Dodaj import funkcji createSlug
+import { createSlug } from '../../../../utils/formatters';
 
 interface MovieCastSectionProps {
     actors: Actor[];
@@ -26,8 +26,8 @@ const MovieCastSection: React.FC<MovieCastSectionProps> = ({ actors, title }) =>
                     <div className={styles['cast-slider']} ref={sliderRef}>
                         {actors.map(actor => (
                             <Link
-                                to={`/people/details/${createSlug(actor.name)}`}
-                                state={{ actorId: actor.id }}
+                                to={`/people/actor/${createSlug(actor.name)}`}
+                                state={{ personId: actor.id }}  // ← ZMIANA: actorId → personId
                                 className={styles['cast-member']}
                                 key={actor.id}
                             >

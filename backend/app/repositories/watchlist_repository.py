@@ -184,3 +184,44 @@ class WatchlistRepository:
                 f"Błąd podczas pobierania ostatnich filmów z listy do obejrzenia: {str(e)}"
             )
             raise
+
+    # 🆕 NOWA METODA - Wszystkie filmy z watchlisty
+    def get_all_watchlist_movies(self, user_id):
+        """Pobierz wszystkie filmy z listy do obejrzenia użytkownika (bez limitu)"""
+        try:
+            results = (
+                self.session.query(Watchlist, Movie)
+                .join(Movie, Watchlist.movie_id == Movie.movie_id)
+                .filter(Watchlist.user_id == user_id)
+                .order_by(Watchlist.added_at.desc())
+                .all()
+            )
+
+            self.logger.info(
+                f"Pobrano wszystkie {len(results)} filmów z listy do obejrzenia użytkownika {user_id}"
+            )
+
+            return [
+                {
+                    "movie_id": movie.movie_id,
+                    "title": movie.title,
+                    "poster_url": (
+                        url_for(
+                            "static",
+                            filename=f"posters/{movie.poster_url}",
+                            _external=True,
+                        )
+                        if movie.poster_url
+                        else None
+                    ),
+                    "added_at": (
+                        watchlist.added_at.isoformat() if watchlist.added_at else None
+                    ),
+                }
+                for watchlist, movie in results
+            ]
+        except Exception as e:
+            self.logger.error(
+                f"Błąd podczas pobierania wszystkich filmów z listy do obejrzenia: {str(e)}"
+            )
+            raise

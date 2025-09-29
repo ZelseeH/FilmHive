@@ -7,6 +7,7 @@ from authlib.integrations.flask_client import OAuth
 import os
 from dotenv import load_dotenv
 from app.extensions import db
+import logging
 
 load_dotenv(".env")
 
@@ -58,6 +59,8 @@ def init_oauth(app):
 
 def create_app():
     app = Flask(__name__, static_folder="static", static_url_path="/static")
+    app.logger.setLevel(logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG)
 
     CORS(
         app,
@@ -135,6 +138,9 @@ def create_app():
     from app.routes.people_routes import people_bp
     from app.routes.director_routes import directors_bp
     from app.routes.MovieRelationsRoutes import movie_relations_bp
+    from app.routes.notifications import notifications_bp
+    from app.routes.comment_replies import comment_replies_bp
+    from app.routes.recommendation_routes import recommendations_bp
 
     app.register_blueprint(movies_bp, url_prefix="/api/movies")
     app.register_blueprint(genres_bp, url_prefix="/api/genres")
@@ -150,6 +156,9 @@ def create_app():
     app.register_blueprint(people_bp, url_prefix="/api/people")
     app.register_blueprint(directors_bp, url_prefix="/api/directors")
     app.register_blueprint(movie_relations_bp, url_prefix="/api/movie-relations")
+    app.register_blueprint(notifications_bp)
+    app.register_blueprint(comment_replies_bp)
+    app.register_blueprint(recommendations_bp, url_prefix="/api/recommendations")
 
     @app.before_request
     def handle_options():

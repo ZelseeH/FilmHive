@@ -8,6 +8,9 @@ import MovieCastSection from './components/MovieCastSection/MovieCastSection';
 import MovieActionPanel from './components/MovieActionPanel/MovieActionPanel';
 import AllMovieComments from './components/AllMovieComments/AllMovieComments';
 
+// DODAJ TE IMPORTY:
+import CommentSection from './components/CommentSection/CommentSection';
+
 interface LocationState {
     movieId?: number;
 }
@@ -35,12 +38,19 @@ const MovieDetail: React.FC = () => {
     if (error) return <div className={styles['error']}>Błąd: {error}</div>;
     if (!movie) return <div className={styles['not-found']}>Film nie został znaleziony</div>;
 
+    console.log('MovieDetail - movie object:', movie);
+    console.log('MovieDetail - movie.release_date:', movie.release_date);
+
     return (
         <div className={styles['movie-detail-container']}>
             <div className={styles['header-panel-container']}>
                 <MovieHeaderSection movie={movie} onShowFullDescription={toggleDescriptionModal} />
                 <div className={styles['side-panel']}>
-                    <MovieActionPanel movieId={movie.id} onRatingChange={handleRatingChange} />
+                    <MovieActionPanel
+                        movieId={movie.id}
+                        onRatingChange={handleRatingChange}
+                        releaseDate={movie.release_date}
+                    />
                 </div>
             </div>
 
@@ -55,7 +65,12 @@ const MovieDetail: React.FC = () => {
                 {movie.actors?.length > 0 && <MovieCastSection actors={movie.actors} />}
 
                 <section className={styles['comments-section']}>
-                    <AllMovieComments movieId={movie.id} />
+
+
+                    {/* Istniejąca sekcja - wszystkie komentarze */}
+                    <div className={styles['all-comments-section']}>
+                        <AllMovieComments movieId={movie.id} />
+                    </div>
                 </section>
             </div>
 

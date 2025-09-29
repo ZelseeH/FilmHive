@@ -1,0 +1,244 @@
+.movieCard {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background-color: transparent;
+    padding: 5px;
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    min-height: 180px;
+    height: 180px;
+}
+
+.movieCard:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* LP - numeracja wycentrowana PIONOWO w środku carda */
+.indexNumber {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-secondary, #666);
+    min-width: 30px;
+    flex-shrink: 0;
+    /* WYCENTROWANIE PIONOWE */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    /* PEŁNA wysokość carda */
+}
+
+/* Container z posterem i info */
+.contentContainer {
+    display: flex;
+    gap: 15px;
+    flex: 1;
+    position: relative;
+    height: 100%;
+    align-items: stretch;
+}
+
+/* Poster po lewej */
+.posterContainer {
+    min-width: 10px;
+    flex-shrink: 0;
+    width: 110px;
+    height: 100%;
+}
+
+.poster {
+    width: 100%;
+    height: 150px;
+    border-radius: 6px;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.movieCard:hover .poster {
+    transform: scale(1.02);
+}
+
+/* Info po prawej od postera */
+.movieInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: flex-start;
+    height: 100%;
+}
+
+.movieTitle {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary, #000);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.movieTitle a {
+    color: var(--text-primary, #000);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.movieTitle a:hover {
+    color: var(--yellow, #ffcc00);
+}
+
+/* Meta informacje - BEZPOŚREDNIO pod tytułem */
+.movieMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* USUŃ margin-top: auto - ma być od razu pod tytułem */
+}
+
+.userRating {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--yellow, #ffcc00);
+}
+
+.dateInfo {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #666);
+}
+
+/* Przycisk usuwania */
+.removeButton {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background-color: #dc3545;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.removeButton:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .movieCard {
+        padding: 12px;
+        gap: 12px;
+        min-height: 120px;
+        height: 120px;
+        margin-bottom: 6px;
+    }
+
+    .indexNumber {
+        font-size: 1.1rem;
+        min-width: 25px;
+    }
+
+    .contentContainer {
+        gap: 12px;
+    }
+
+    .posterContainer {
+        width: 100px;
+        min-width: 100px;
+    }
+
+    .poster {
+        height: 90px;
+    }
+
+    .movieTitle {
+        font-size: 1rem;
+    }
+
+    .userRating {
+        font-size: 0.85rem;
+    }
+
+    .dateInfo {
+        font-size: 0.75rem;
+    }
+
+    .removeButton {
+        width: 22px;
+        height: 22px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .movieCard {
+        padding: 10px;
+        gap: 10px;
+        min-height: 100px;
+        height: 100px;
+        margin-bottom: 4px;
+    }
+
+    .indexNumber {
+        font-size: 1rem;
+        min-width: 20px;
+    }
+
+    .contentContainer {
+        gap: 10px;
+    }
+
+    .posterContainer {
+        width: 80px;
+        min-width: 80px;
+    }
+
+    .poster {
+        height: 70px;
+    }
+
+    .movieTitle {
+        font-size: 0.95rem;
+        -webkit-line-clamp: 1;
+    }
+
+    .userRating {
+        font-size: 0.8rem;
+    }
+
+    .dateInfo {
+        font-size: 0.7rem;
+    }
+
+    .removeButton {
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        top: -3px;
+        right: -3px;
+    }
+}

@@ -185,3 +185,33 @@ class WatchlistService:
                 f"Unexpected error getting recent watchlist movies: {str(e)}"
             )
             raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")
+
+    def get_all_watchlist_movies(self, user_id):
+        """Pobierz wszystkie filmy z watchlisty użytkownika (bez limitu)"""
+        try:
+            user = db.session.get(User, user_id)
+            if not user:
+                raise ValueError(f"Użytkownik o ID {user_id} nie istnieje")
+
+            movies = self.watchlist_repository.get_all_watchlist_movies(user_id)
+            current_app.logger.info(
+                f"Pobrano wszystkie {len(movies)} filmy z listy do obejrzenia użytkownika {user_id}"
+            )
+            return {"movies": movies}
+        except ValueError as e:
+            current_app.logger.error(
+                f"ValueError getting all watchlist movies: {str(e)}"
+            )
+            raise
+        except SQLAlchemyError as e:
+            current_app.logger.error(
+                f"SQLAlchemyError getting all watchlist movies: {str(e)}"
+            )
+            raise Exception(
+                f"Nie udało się pobrać wszystkich filmów z listy do obejrzenia: {str(e)}"
+            )
+        except Exception as e:
+            current_app.logger.error(
+                f"Unexpected error getting all watchlist movies: {str(e)}"
+            )
+            raise Exception(f"Wystąpił nieoczekiwany błąd: {str(e)}")

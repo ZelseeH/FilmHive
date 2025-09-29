@@ -53,6 +53,53 @@ class ActorService:
                         "Nieprawidłowy format daty urodzenia. Użyj formatu YYYY-MM-DD"
                     )
 
+            # POPRAWKA: Walidacja photo_url
+            if "photo_url" in actor_data and actor_data["photo_url"]:
+                photo_url = actor_data["photo_url"].strip()
+
+                # Sprawdź czy to jest URL (zaczyna się od http)
+                if photo_url.startswith(("http://", "https://")):
+                    # Walidacja URL-a
+                    try:
+                        from urllib.parse import urlparse
+
+                        parsed = urlparse(photo_url)
+                        if not parsed.netloc:
+                            raise ValueError("Nieprawidłowy URL zdjęcia")
+
+                        # Sprawdź czy URL wygląda na zdjęcie
+                        valid_extensions = [
+                            ".jpg",
+                            ".jpeg",
+                            ".png",
+                            ".gif",
+                            ".webp",
+                            ".svg",
+                        ]
+                        valid_params = ["image-type", "format=", "media/catalog"]
+
+                        is_valid_image = any(
+                            ext in photo_url.lower() for ext in valid_extensions
+                        ) or any(param in photo_url.lower() for param in valid_params)
+
+                        if not is_valid_image:
+                            current_app.logger.warning(
+                                f"URL może nie być obrazem: {photo_url}"
+                            )
+                            # Nie rzucaj błędu, tylko loguj ostrzeżenie
+
+                        actor_data["photo_url"] = photo_url
+                        current_app.logger.info(
+                            f"✅ Zaakceptowano photo_url: {photo_url}"
+                        )
+
+                    except Exception as e:
+                        current_app.logger.error(f"Błąd walidacji URL: {e}")
+                        raise ValueError(f"Nieprawidłowy URL zdjęcia: {str(e)}")
+                else:
+                    # To jest lokalny plik (już uploadowany)
+                    current_app.logger.info(f"📁 Lokalny plik photo: {photo_url}")
+
             # Sprawdź, czy aktor o takiej nazwie już istnieje
             existing_actor = self.actor_repository.get_by_name(actor_data.get("name"))
             if existing_actor:
@@ -60,7 +107,18 @@ class ActorService:
                     f"Aktor o nazwie '{actor_data.get('name')}' już istnieje"
                 )
 
-            return self.actor_repository.add(actor_data)
+            # DEBUG: Wyloguj dane przed przekazaniem do repository
+            current_app.logger.info(f"📋 Dane aktora do zapisu: {actor_data}")
+
+            new_actor = self.actor_repository.add(actor_data)
+
+            # DEBUG: Wyloguj zapisanego aktora
+            current_app.logger.info(
+                f"✅ Zapisano aktora: {new_actor.actor_name}, photo_url: {new_actor.photo_url}"
+            )
+
+            return new_actor
+
         except ValueError as e:
             # Przekazujemy błędy walidacji dalej
             raise e
@@ -76,6 +134,8 @@ class ActorService:
             if not actor:
                 raise ValueError(f"Aktor o ID {actor_id} nie istnieje")
 
+            print(f"🔄 ActorService.update_actor - dane wejściowe: {actor_data}")
+
             # Konwersja daty urodzenia
             if (
                 "birth_date" in actor_data
@@ -88,6 +148,7 @@ class ActorService:
                     actor_data["birth_date"] = datetime.strptime(
                         actor_data["birth_date"], "%Y-%m-%d"
                     ).date()
+                    print(f"📅 Przekonwertowano birth_date: {actor_data['birth_date']}")
                 except ValueError:
                     raise ValueError(
                         "Nieprawidłowy format daty urodzenia. Użyj formatu YYYY-MM-DD"
@@ -101,12 +162,74 @@ class ActorService:
                         f"Aktor o nazwie '{actor_data['name']}' już istnieje"
                     )
 
-            return self.actor_repository.update(actor_id, actor_data)
+            # POPRAWKA: Walidacja photo_url w update
+            if "photo_url" in actor_data and actor_data["photo_url"]:
+                photo_url = actor_data["photo_url"].strip()
+
+                # Sprawdź czy to jest URL (zaczyna się od http)
+                if photo_url.startswith(("http://", "https://")):
+                    # Walidacja URL-a
+                    try:
+                        from urllib.parse import urlparse
+
+                        parsed = urlparse(photo_url)
+                        if not parsed.netloc:
+                            raise ValueError("Nieprawidłowy URL zdjęcia")
+
+                        # Sprawdź czy URL wygląda na zdjęcie
+                        valid_extensions = [
+                            ".jpg",
+                            ".jpeg",
+                            ".png",
+                            ".gif",
+                            ".webp",
+                            ".svg",
+                        ]
+                        valid_params = ["image-type", "format=", "media/catalog"]
+
+                        is_valid_image = any(
+                            ext in photo_url.lower() for ext in valid_extensions
+                        ) or any(param in photo_url.lower() for param in valid_params)
+
+                        if not is_valid_image:
+                            current_app.logger.warning(
+                                f"URL może nie być obrazem: {photo_url}"
+                            )
+
+                        actor_data["photo_url"] = photo_url
+                        current_app.logger.info(
+                            f"✅ Zaakceptowano photo_url w update: {photo_url}"
+                        )
+
+                    except Exception as e:
+                        current_app.logger.error(f"Błąd walidacji URL w update: {e}")
+                        raise ValueError(f"Nieprawidłowy URL zdjęcia: {str(e)}")
+                else:
+                    # To jest lokalny plik (już uploadowany)
+                    current_app.logger.info(
+                        f"📁 Lokalny plik photo w update: {photo_url}"
+                    )
+
+            # DEBUG: Wyloguj dane przed przekazaniem do repository
+            current_app.logger.info(
+                f"📋 Dane do aktualizacji w repository: {actor_data}"
+            )
+
+            updated_actor = self.actor_repository.update(actor_id, actor_data)
+
+            if updated_actor:
+                current_app.logger.info(
+                    f"✅ Zaktualizowano aktora: {updated_actor.actor_name}, photo_url: {updated_actor.photo_url}"
+                )
+
+            return updated_actor
+
         except ValueError as e:
             # Przekazujemy błędy walidacji dalej
+            current_app.logger.error(f"❌ Błąd walidacji w update_actor: {str(e)}")
             raise e
         except SQLAlchemyError as e:
-            current_app.logger.error(f"Error updating actor: {str(e)}")
+            current_app.logger.error(f"❌ Error updating actor: {str(e)}")
             db.session.rollback()
             raise Exception(f"Nie udało się zaktualizować aktora: {str(e)}")
 
@@ -139,8 +262,18 @@ class ActorService:
             db.session.rollback()
             raise Exception(f"Nie udało się usunąć aktora: {str(e)}")
 
-    def get_actor_movies(self, actor_id, page=1, per_page=10):
-        result = self.actor_repository.get_actor_movies(actor_id, page, per_page)
+    def get_actor_movies(
+        self,
+        actor_id,
+        page=1,
+        per_page=10,
+        sort_field="release_date",
+        sort_order="desc",
+    ):
+        """Pobiera filmy aktora z sortowaniem"""
+        result = self.actor_repository.get_actor_movies(
+            actor_id, page, per_page, sort_field, sort_order
+        )
         if not result:
             return None
 
@@ -164,7 +297,12 @@ class ActorService:
                 )
                 del movie_data["actors"]
 
-        return {"movies": serialized_movies, "pagination": pagination}
+        return {
+            "movies": serialized_movies,
+            "pagination": pagination,
+            "sort_field": sort_field,
+            "sort_order": sort_order,
+        }
 
     def upload_actor_photo(self, actor_id, photo_file):
         try:

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { getDirectorById, updateDirector, uploadDirectorPhoto, deleteDirector } from '../../services/directorService';
 import { useInlineEdit } from '../../hooks/useInlineEdit';
+import ImageSelector from '../ImgSelector/ImageSelector';
 import styles from './DirectorsEditPage.module.css';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
@@ -81,9 +82,14 @@ const DirectorEditContent: React.FC<DirectorEditContentProps> = ({
     const { fields, toggleEdit, updateField, cancelEdit, getValues, setInputRef } = useInlineEdit(directorData);
     const [saveLoading, setSaveLoading] = useState<Record<string, boolean>>({});
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    // ImageSelector state
     const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isEditingPhoto, setIsEditingPhoto] = useState<boolean>(false);
+    const [photoError, setPhotoError] = useState<string>('');
+
     const toast = useRef<Toast>(null);
 
     const handleFieldSave = async (fieldName: string) => {
@@ -206,34 +212,58 @@ const DirectorEditContent: React.FC<DirectorEditContentProps> = ({
         }
     };
 
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setPhotoFile(file);
-
-            // Tworzenie podglądu zdjęcia
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
+    // ImageSelector handlers
+    const handleImageChange = (file: File | null, url: string | null) => {
+        setPhotoFile(file);
+        setPhotoUrl(url);
+        setPhotoError('');
     };
 
-    const handlePhotoUpload = async () => {
-        if (!photoFile) return;
+    const handlePreviewChange = (preview: string | null) => {
+        setPhotoPreview(preview);
+    };
+
+    const handlePhotoSave = async () => {
+        if (!photoFile && !photoUrl) {
+            setPhotoError('Wybierz zdjęcie');
+            return;
+        }
 
         try {
             setSaveLoading(prev => ({ ...prev, 'photo': true }));
+            setPhotoError('');
 
-            await uploadDirectorPhoto(directorId, photoFile);
+            const formData = new FormData();
+
+            if (photoFile) {
+                // Plik lokalny
+                formData.append('photo', photoFile);
+            } else if (photoUrl) {
+                // URL z internetu
+                formData.append('photo_url', photoUrl);
+            }
+
+            // DEBUG FormData - POPRAWIONA WERSJA
+            console.log('📋 FormData reżysera zawiera:');
+            const formDataEntries = Array.from(formData.entries());
+            formDataEntries.forEach(([key, value]) => {
+                if (value instanceof File) {
+                    console.log(`${key}: [File] ${value.name} (${value.size} bytes)`);
+                } else {
+                    console.log(`${key}: ${value}`);
+                }
+            });
+
+            await updateDirector(directorId, formData);
 
             // Odśwież dane reżysera
             onRefresh();
 
-            // Wyczyść stan
+            // Wyczyść stan i zakończ edycję
             setPhotoFile(null);
+            setPhotoUrl(null);
             setPhotoPreview(null);
+            setIsEditingPhoto(false);
 
             toast.current?.show({
                 severity: 'success',
@@ -242,27 +272,25 @@ const DirectorEditContent: React.FC<DirectorEditContentProps> = ({
                 life: 3000
             });
         } catch (err: any) {
+            setPhotoError(err.message || 'Nie udało się zaktualizować zdjęcia');
             toast.current?.show({
                 severity: 'error',
                 summary: 'Błąd',
                 detail: err.message || 'Nie udało się zaktualizować zdjęcia',
                 life: 5000
             });
-            console.error('Error uploading photo:', err);
+            console.error('Error updating photo:', err);
         } finally {
             setSaveLoading(prev => ({ ...prev, 'photo': false }));
         }
     };
 
-    const triggerPhotoUpload = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
-    };
-
-    const cancelPhotoUpload = () => {
+    const handlePhotoCancelEdit = () => {
         setPhotoFile(null);
+        setPhotoUrl(null);
         setPhotoPreview(null);
+        setIsEditingPhoto(false);
+        setPhotoError('');
     };
 
     const formatDate = (dateString?: string): string => {
@@ -276,10 +304,13 @@ const DirectorEditContent: React.FC<DirectorEditContentProps> = ({
             header: 'Potwierdzenie usunięcia',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
+            acceptLabel: 'Tak',
+            rejectLabel: 'Nie',
             accept: handleDelete,
             reject: () => { }
         });
     };
+
 
     const handleDelete = async () => {
         try {
@@ -423,47 +454,56 @@ const DirectorEditContent: React.FC<DirectorEditContentProps> = ({
             <div className={styles.directorDetailsCard}>
                 <div className={styles.directorHeader}>
                     <div className={styles.photoContainer}>
-                        {photoPreview ? (
-                            <img src={photoPreview} alt={directorData.name} className={styles.directorPhoto} />
-                        ) : directorData.photo_url ? (
-                            <img src={directorData.photo_url} alt={directorData.name} className={styles.directorPhoto} />
-                        ) : (
-                            <div className={styles.directorPhotoPlaceholder}>
-                                {directorData.name.charAt(0).toUpperCase()}
+                        {isEditingPhoto ? (
+                            <div className={styles.photoEditContainer}>
+                                <ImageSelector
+                                    currentImage={directorData.photo_url}
+                                    onImageChange={handleImageChange}
+                                    onPreviewChange={handlePreviewChange}
+                                    label="Zdjęcie reżysera"
+                                    placeholder="Brak zdjęcia"
+                                    maxFileSize={5}
+                                    required={false}
+                                    error={photoError}
+                                    disabled={saveLoading['photo']}
+                                    className={styles.directorImageSelector}
+                                />
+
+                                <div className={styles.photoEditActions}>
+                                    <button
+                                        onClick={handlePhotoSave}
+                                        className={styles.saveButton}
+                                        disabled={saveLoading['photo']}
+                                    >
+                                        {saveLoading['photo'] ? 'Zapisywanie...' : 'Zapisz zdjęcie'}
+                                    </button>
+                                    <button
+                                        onClick={handlePhotoCancelEdit}
+                                        className={styles.cancelButton}
+                                        disabled={saveLoading['photo']}
+                                    >
+                                        Anuluj
+                                    </button>
+                                </div>
                             </div>
-                        )}
+                        ) : (
+                            <>
+                                {directorData.photo_url ? (
+                                    <img src={directorData.photo_url} alt={directorData.name} className={styles.directorPhoto} />
+                                ) : (
+                                    <div className={styles.directorPhotoPlaceholder}>
+                                        {directorData.name.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
 
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handlePhotoChange}
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                        />
-
-                        <button
-                            className={styles.changePhotoButton}
-                            onClick={triggerPhotoUpload}
-                        >
-                            Zmień zdjęcie
-                        </button>
-
-                        {photoFile && (
-                            <div className={styles.photoActions}>
                                 <button
-                                    onClick={handlePhotoUpload}
-                                    className={styles.saveButton}
+                                    className={styles.changePhotoButton}
+                                    onClick={() => setIsEditingPhoto(true)}
                                     disabled={saveLoading['photo']}
                                 >
-                                    {saveLoading['photo'] ? 'Zapisywanie...' : 'Zapisz zdjęcie'}
+                                    Zmień zdjęcie
                                 </button>
-                                <button
-                                    onClick={cancelPhotoUpload}
-                                    className={styles.cancelButton}
-                                >
-                                    Anuluj
-                                </button>
-                            </div>
+                            </>
                         )}
                     </div>
 

@@ -25,3 +25,9 @@ export async function removeWatchlistMovie(movieId: number, token: string): Prom
         throw error;
     }
 }
+// Dodaj do istniejącego pliku userWatchlistService.ts
+
+export async function fetchAllWatchlistMovies(username: string): Promise<WatchlistMovie[]> {
+    const response = await axios.get<WatchlistMovie[]>(`/api/user/profile/${username}/all-watchlist`);
+    return response.data;
+}

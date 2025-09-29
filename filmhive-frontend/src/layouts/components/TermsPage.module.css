@@ -1,16 +1,18 @@
-TermsPage
-
 /* TermsPage.module.css */
 .container {
     max-width: 1100px;
     margin: 70px auto 20px;
     padding: 15px;
     background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .pageHeader {
     text-align: center;
     margin-bottom: 40px;
+    margin-top: 20px;
+    /* zmniejszone z 70px, bo już mamy margin w container */
 }
 
 .pageTitle {
@@ -81,6 +83,11 @@ TermsPage
 }
 
 @media (max-width: 768px) {
+    .container {
+        margin: 70px 10px 20px;
+        /* mniejszy margines na mobile */
+    }
+
     .termsContent {
         padding: 0 15px;
     }

@@ -1,0 +1,278 @@
+.imageSelector {
+    width: 100%;
+}
+
+.sectionTitle {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.modeSelector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.modeButton {
+    padding: 8px 16px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.modeButton.active {
+    border-color: #0055a4;
+    background: #0055a4;
+    color: white;
+}
+
+.modeButton:hover:not(.active):not(:disabled) {
+    border-color: #0055a4;
+}
+
+.modeButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.imageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.imagePreview {
+    position: relative;
+    display: inline-block;
+}
+
+.previewImage {
+    width: 200px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.imagePlaceholder {
+    width: 200px;
+    height: 300px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    background: #f9f9f9;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.imagePlaceholder:hover:not(.disabled) {
+    border-color: #0055a4;
+    background: #f0f8ff;
+}
+
+.imagePlaceholder.dragOver {
+    border-color: #0055a4;
+    background: #e6f3ff;
+    border-style: solid;
+}
+
+.imagePlaceholder.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.imagePlaceholder p {
+    margin: 10px 0 0 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.imagePlaceholder small {
+    margin: 5px 0 0 0;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.imageActions {
+    display: flex;
+    gap: 10px;
+}
+
+.selectImageButton {
+    padding: 8px 16px;
+    background: #ffcc00;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.selectImageButton:hover:not(:disabled) {
+    background: #ffdb4d;
+}
+
+.selectImageButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.removeImageButton {
+    padding: 8px 16px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.removeImageButton:hover:not(:disabled) {
+    background: #c82333;
+}
+
+.removeImageButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.formField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.fieldLabel {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.formInput {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.formInput:focus {
+    outline: none;
+    border-color: #0055a4;
+    box-shadow: 0 0 0 2px rgba(0, 85, 164, 0.2);
+}
+
+.inputError {
+    border-color: #dc3545;
+}
+
+.inputError:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+.formInput:disabled {
+    background: #f8f9fa;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.fileInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.fileName {
+    color: #333;
+    font-weight: 500;
+}
+
+.fileSize {
+    color: #666;
+}
+
+.fieldHint {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.fieldError {
+    font-size: 12px;
+    color: #dc3545;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .imageContainer {
+        align-items: flex-start;
+    }
+
+    .previewImage,
+    .imagePlaceholder {
+        width: 150px;
+        height: 225px;
+    }
+
+    .imageActions {
+        flex-direction: column;
+        width: 150px;
+    }
+
+    .selectImageButton,
+    .removeImageButton {
+        width: 100%;
+    }
+
+    .modeButton {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .previewImage,
+    .imagePlaceholder {
+        width: 120px;
+        height: 180px;
+    }
+
+    .imageActions {
+        width: 120px;
+    }
+
+    .modeButton {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}

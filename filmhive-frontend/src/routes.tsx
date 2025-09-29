@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Router } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
@@ -41,6 +41,9 @@ import DirectorsEditPage from './pages/Dashboard/components/DirectorsPanel/Direc
 import MoviesEditPage from './pages/Dashboard/components/MoviesPanel/MoviesEditPage';
 import MoviesAddPartTwo from './pages/Dashboard/components/MoviesPanel/MoviesAddPartTwo';
 import CommentsManagePage from './pages/Dashboard/components/CommentsPanel/CommentsManagePage';
+import UpcomingMoviesPage from './pages/Upcoming/UpcomingMoviesPage';
+import RecommendationsPage from './pages/Recommedations/RecommendationsPage';
+import UserActivityPage from './pages/Profile/UserActivityPage';
 
 
 const AppRoutes: React.FC = () => {
@@ -65,6 +68,10 @@ const AppRoutes: React.FC = () => {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/upcoming" element={<UpcomingMoviesPage />} />
+            <Route path="/recommendations" element={<RecommendationsPage />} />
+            <Route path="/profile/:username/activity" element={<UserActivityPage />} />
+
 
             <Route path="/settings" element={
                 <ProtectedRoute>

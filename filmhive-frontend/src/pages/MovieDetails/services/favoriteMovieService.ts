@@ -1,5 +1,19 @@
 export class FavoriteMovieService {
-    static async addToFavorites(movieId: number, token: string): Promise<void> {
+    // Pomocnicza metoda do sprawdzania czy film już wyszedł
+    private static isMovieReleased(releaseDate?: string): boolean {
+        if (!releaseDate) return true; // Jeśli brak daty, zakładamy że film wyszedł
+        const release = new Date(releaseDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return release <= today;
+    }
+
+    static async addToFavorites(movieId: number, token: string, releaseDate?: string): Promise<void> {
+        // Sprawdź datę premiery przed wysłaniem żądania
+        if (!this.isMovieReleased(releaseDate)) {
+            throw new Error('Nie można dodać do ulubionych filmu, który jeszcze nie miał premiery');
+        }
+
         const response = await fetch(`http://localhost:5000/api/favorites/add`, {
             method: 'POST',
             headers: {
@@ -16,7 +30,12 @@ export class FavoriteMovieService {
         }
     }
 
-    static async removeFromFavorites(movieId: number, token: string): Promise<void> {
+    static async removeFromFavorites(movieId: number, token: string, releaseDate?: string): Promise<void> {
+        // Sprawdź datę premiery przed wysłaniem żądania
+        if (!this.isMovieReleased(releaseDate)) {
+            throw new Error('Nie można usunąć z ulubionych filmu, który jeszcze nie miał premiery');
+        }
+
         const response = await fetch(`http://localhost:5000/api/favorites/remove?movie_id=${movieId}`, {
             method: 'DELETE',
             headers: {
@@ -32,7 +51,12 @@ export class FavoriteMovieService {
         }
     }
 
-    static async checkIfFavorite(movieId: number, token: string): Promise<boolean> {
+    static async checkIfFavorite(movieId: number, token: string, releaseDate?: string): Promise<boolean> {
+        // Jeśli film nie wyszedł, zwróć false bez sprawdzania backendu
+        if (!this.isMovieReleased(releaseDate)) {
+            return false;
+        }
+
         const response = await fetch(`http://localhost:5000/api/favorites/check/${movieId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,

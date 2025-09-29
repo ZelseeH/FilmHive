@@ -11,6 +11,7 @@ from app.services.user_service import (
     get_recent_favorite_movies,
     get_user_by_username,
     get_recent_watchlist_movies,
+    update_user_email,
 )
 from werkzeug.exceptions import BadRequest
 import os
@@ -45,18 +46,22 @@ def get_profile():
 def get_user_profile(username):
     try:
         user = get_user_by_username(username)
-
         if not user:
             return jsonify({"error": "Użytkownik nie znaleziony"}), 404
 
+        # ✅ Używaj serialize() zamiast ręcznego tworzenia dict
+        user_data = user.serialize() if hasattr(user, "serialize") else user
+
         public_data = {
-            "username": user.get("username"),
-            "name": user.get("name"),
-            "bio": user.get("bio"),
-            "profile_picture": user.get("profile_picture"),
-            "background_image": user.get("background_image"),
-            "background_position": user.get("background_position"),
-            "registration_date": user.get("registration_date"),
+            "username": user_data.get("username"),
+            "name": user_data.get("name"),
+            "bio": user_data.get("bio"),
+            "profile_picture": user_data.get("profile_picture"),  # ✅ Już przetworzone
+            "background_image": user_data.get(
+                "background_image"
+            ),  # ✅ Już przetworzone
+            "background_position": user_data.get("background_position"),
+            "registration_date": user_data.get("registration_date"),
         }
 
         return jsonify(public_data), 200
@@ -107,6 +112,39 @@ def change_password():
 
         return jsonify({"message": "Hasło zostało zmienione pomyślnie"}), 200
     except BadRequest as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": "Wystąpił nieoczekiwany błąd"}), 500
+
+
+@user_bp.route("/update-email", methods=["POST"])
+@jwt_required()
+def update_email():
+    """Endpoint do aktualizacji emailu użytkownika z weryfikacją hasła"""
+    try:
+        user_id = int(get_jwt_identity())
+        data = request.get_json()
+
+        if not data or "email" not in data or "current_password" not in data:
+            return jsonify({"error": "Brakujący email lub obecne hasło"}), 400
+
+        new_email = data["email"]
+        current_password = data["current_password"]
+
+        # Wywołaj service z weryfikacją hasła
+        result = update_user_email(user_id, new_email, current_password)
+
+        if not result:
+            return jsonify({"error": "Nie znaleziono użytkownika"}), 404
+
+        return (
+            jsonify(
+                {"message": "Email został zaktualizowany pomyślnie", "user": result}
+            ),
+            200,
+        )
+
+    except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": "Wystąpił nieoczekiwany błąd"}), 500
@@ -282,3 +320,61 @@ def get_users_dashboard():
     except Exception as e:
         current_app.logger.error(f"Error getting users dashboard: {str(e)}")
         return jsonify({"error": "Błąd podczas pobierania dashboard użytkowników"}), 500
+
+
+@user_bp.route("/profile/<username>/all-ratings", methods=["GET"])
+def get_all_rated_movies_route(username):
+    """Pobierz wszystkie ocenione filmy użytkownika (bez limitu)"""
+    try:
+        user = get_user_by_username(username)
+        if not user:
+            return jsonify({"error": "Użytkownik nie znaleziony"}), 404
+
+        from app.services.user_service import get_all_rated_movies
+
+        movies = get_all_rated_movies(user.get("id"))
+        current_app.logger.info(
+            f"Retrieved all {len(movies)} rated movies for user {username}"
+        )
+        return jsonify(movies), 200
+    except Exception as e:
+        current_app.logger.error(f"Error in get_all_rated_movies_route: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/profile/<username>/all-favorites", methods=["GET"])
+def get_all_favorite_movies_route(username):
+    """Pobierz wszystkie ulubione filmy użytkownika (bez limitu)"""
+    try:
+        user = get_user_by_username(username)
+        if not user:
+            return jsonify({"error": "Użytkownik nie znaleziony"}), 404
+
+        from app.services.user_service import get_all_favorite_movies
+
+        movies = get_all_favorite_movies(user.get("id"))
+        current_app.logger.info(
+            f"Retrieved all {len(movies)} favorite movies for user {username}"
+        )
+        return jsonify(movies), 200
+    except Exception as e:
+        current_app.logger.error(f"Error in get_all_favorite_movies_route: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/profile/<username>/all-watchlist", methods=["GET"])
+def get_all_watchlist_movies_route(username):
+    """Pobierz wszystkie filmy z watchlisty użytkownika (bez limitu)"""
+    try:
+        user = get_user_by_username(username)
+        if not user:
+            return jsonify({"error": "Użytkownik nie znaleziony"}), 404
+
+        from app.services.user_service import get_all_watchlist_movies
+
+        movies = get_all_watchlist_movies(user.get("id"))
+        current_app.logger.info(f"Retrieved all watchlist movies for user {username}")
+        return jsonify(movies), 200
+    except Exception as e:
+        current_app.logger.error(f"Error in get_all_watchlist_movies_route: {str(e)}")
+        return jsonify({"error": str(e)}), 500

@@ -84,8 +84,10 @@ def add_director():
                 "birth_place": json_data.get("birth_place", ""),
                 "biography": json_data.get("biography", ""),
                 "gender": json_data.get("gender"),
+                "photo_url": json_data.get("photo_url"),  # Dodaj photo_url z JSON
             }
         else:
+            # FormData request
             director_data = {
                 "name": request.form.get("name"),
                 "birth_date": request.form.get("birth_date"),
@@ -94,21 +96,50 @@ def add_director():
                 "gender": request.form.get("gender"),
             }
 
-            photo_file = request.files.get("photo")
-            if photo_file:
-                filename = secure_filename(photo_file.filename)
-                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-                filename = f"{timestamp}_{filename}"
+            # POPRAWKA: Obsługa photo_url z formularza
+            photo_url_from_form = request.form.get("photo_url")
+            if photo_url_from_form and photo_url_from_form.strip():
+                # Użytkownik podał URL
+                director_data["photo_url"] = photo_url_from_form.strip()
+                current_app.logger.info(
+                    f"🔗 Otrzymano photo_url reżysera z formularza: {photo_url_from_form}"
+                )
 
-                upload_dir = os.path.join(current_app.static_folder, "directors")
-                os.makedirs(upload_dir, exist_ok=True)
+            # Obsługa pliku (jeśli nie ma URL-a)
+            elif "photo" in request.files:
+                photo_file = request.files.get("photo")
+                if photo_file and photo_file.filename:
+                    filename = secure_filename(photo_file.filename)
+                    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                    filename = f"{timestamp}_{filename}"
 
-                file_path = os.path.join(upload_dir, filename)
-                photo_file.save(file_path)
+                    upload_dir = os.path.join(current_app.static_folder, "directors")
+                    os.makedirs(upload_dir, exist_ok=True)
 
-                director_data["photo_url"] = filename
+                    file_path = os.path.join(upload_dir, filename)
+                    photo_file.save(file_path)
+
+                    director_data["photo_url"] = filename  # Zapisz nazwę pliku
+                    current_app.logger.info(f"📁 Uploadowano plik reżysera: {filename}")
+
+        # DEBUG: Wyloguj wszystkie dane przed wysłaniem do service
+        current_app.logger.info(f"📋 Dane reżysera do utworzenia: {director_data}")
+
+        # DEBUG: Sprawdź co jest w request
+        current_app.logger.info(f"🔍 Request form keys: {list(request.form.keys())}")
+        current_app.logger.info(f"🔍 Request files keys: {list(request.files.keys())}")
+        if "photo_url" in request.form:
+            current_app.logger.info(
+                f"🔍 photo_url reżysera w formularzu: '{request.form.get('photo_url')}'"
+            )
 
         director = director_service.add_director(director_data)
+
+        # DEBUG: Sprawdź co zostało zapisane
+        current_app.logger.info(
+            f"✅ Utworzono reżysera: {director.director_name}, photo_url: {director.photo_url}"
+        )
+
         return (
             jsonify(
                 {
@@ -120,9 +151,10 @@ def add_director():
         )
 
     except ValueError as e:
+        current_app.logger.error(f"❌ Błąd walidacji reżysera: {str(e)}")
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        current_app.logger.error(f"Error adding director: {str(e)}")
+        current_app.logger.error(f"❌ Unexpected error adding director: {str(e)}")
         return (
             jsonify(
                 {"error": "Wystąpił błąd podczas dodawania reżysera", "details": str(e)}
@@ -141,8 +173,15 @@ def update_director(director_id):
     try:
         director_data = {}
 
+        # DEBUG: Sprawdź co przychodzi
+        current_app.logger.info(f"🔍 Update director {director_id}")
+        current_app.logger.info(f"🔍 Content-Type: {request.content_type}")
+        current_app.logger.info(f"🔍 Form keys: {list(request.form.keys())}")
+        current_app.logger.info(f"🔍 Files keys: {list(request.files.keys())}")
+
         if request.is_json:
             json_data = request.get_json()
+            current_app.logger.info(f"🔍 JSON data: {json_data}")
 
             if "name" in json_data:
                 director_data["name"] = json_data.get("name")
@@ -154,7 +193,10 @@ def update_director(director_id):
                 director_data["biography"] = json_data.get("biography")
             if "gender" in json_data:
                 director_data["gender"] = json_data.get("gender")
+            if "photo_url" in json_data:  # Dodaj obsługę photo_url w JSON
+                director_data["photo_url"] = json_data.get("photo_url")
         else:
+            # FormData request
             if "name" in request.form:
                 director_data["name"] = request.form.get("name")
             if "birth_date" in request.form:
@@ -166,17 +208,46 @@ def update_director(director_id):
             if "gender" in request.form:
                 director_data["gender"] = request.form.get("gender")
 
-            photo_file = request.files.get("photo")
-            if photo_file:
-                director = director_service.upload_director_photo(
-                    director_id, photo_file
-                )
-                if not director:
-                    return jsonify({"error": "Nie znaleziono reżysera"}), 404
+            # POPRAWKA: Obsługa photo_url w update FormData
+            if "photo_url" in request.form:
+                photo_url_from_form = request.form.get("photo_url")
+                if photo_url_from_form and photo_url_from_form.strip():
+                    director_data["photo_url"] = photo_url_from_form.strip()
+                    current_app.logger.info(
+                        f"🔗 Update photo_url reżysera z formularza: {photo_url_from_form}"
+                    )
+
+            # Obsługa nowego pliku (jeśli nie ma URL-a)
+            elif "photo" in request.files:
+                photo_file = request.files.get("photo")
+                if photo_file and photo_file.filename:
+                    # Upload nowego pliku
+                    filename = secure_filename(photo_file.filename)
+                    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                    filename = f"{timestamp}_{filename}"
+
+                    upload_dir = os.path.join(current_app.static_folder, "directors")
+                    os.makedirs(upload_dir, exist_ok=True)
+
+                    file_path = os.path.join(upload_dir, filename)
+                    photo_file.save(file_path)
+
+                    director_data["photo_url"] = filename
+                    current_app.logger.info(
+                        f"📁 Update - uploadowano nowy plik reżysera: {filename}"
+                    )
+
+        current_app.logger.info(
+            f"📋 Dane do aktualizacji reżysera {director_id}: {director_data}"
+        )
 
         director = director_service.update_director(director_id, director_data)
         if not director:
             return jsonify({"error": "Nie znaleziono reżysera"}), 404
+
+        current_app.logger.info(
+            f"✅ Zaktualizowano reżysera: {director.director_name}, photo_url: {director.photo_url}"
+        )
 
         return jsonify(
             {
@@ -186,9 +257,10 @@ def update_director(director_id):
         )
 
     except ValueError as e:
+        current_app.logger.error(f"❌ Błąd walidacji update reżysera: {str(e)}")
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        current_app.logger.error(f"Error updating director: {str(e)}")
+        current_app.logger.error(f"❌ Błąd aktualizacji reżysera: {str(e)}")
         return (
             jsonify(
                 {

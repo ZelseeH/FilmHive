@@ -6,16 +6,33 @@ interface UseFavoriteMovieProps {
     movieId: number;
     user: User | null;
     getToken: () => string | null;
+    releaseDate?: string;
 }
 
-export const useFavoriteMovie = ({ movieId, user, getToken }: UseFavoriteMovieProps) => {
+export const useFavoriteMovie = ({ movieId, user, getToken, releaseDate }: UseFavoriteMovieProps) => {
     const [isFavorite, setIsFavorite] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const fetchingRef = useRef<boolean>(false);
+
+    // Sprawdź czy film już wyszedł
+    const isMovieReleased = () => {
+        if (!releaseDate) return true;
+        const release = new Date(releaseDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return release <= today;
+    };
+
     useEffect(() => {
         const checkFavoriteStatus = async () => {
             if (!user || !movieId || fetchingRef.current) return;
+
+            // Jeśli film nie wyszedł, ustaw false bez sprawdzania backendu
+            if (!isMovieReleased()) {
+                setIsFavorite(false);
+                return;
+            }
 
             fetchingRef.current = true;
             setIsLoading(true);
@@ -25,7 +42,7 @@ export const useFavoriteMovie = ({ movieId, user, getToken }: UseFavoriteMoviePr
                 const token = getToken();
                 if (!token) return;
 
-                const status = await FavoriteMovieService.checkIfFavorite(movieId, token);
+                const status = await FavoriteMovieService.checkIfFavorite(movieId, token, releaseDate);
                 setIsFavorite(status);
             } catch (error) {
                 console.error('Błąd podczas sprawdzania statusu ulubionego:', error);
@@ -41,10 +58,15 @@ export const useFavoriteMovie = ({ movieId, user, getToken }: UseFavoriteMoviePr
         return () => {
             fetchingRef.current = false;
         };
-    }, [movieId, user, getToken]);
+    }, [movieId, user, getToken, releaseDate]);
 
     const toggleFavorite = async () => {
         if (!user || isLoading) return;
+
+        if (!isMovieReleased()) {
+            setError('Nie można dodać do ulubionych filmu, który jeszcze nie miał premiery');
+            return;
+        }
 
         setIsLoading(true);
         setError(null);
@@ -57,9 +79,9 @@ export const useFavoriteMovie = ({ movieId, user, getToken }: UseFavoriteMoviePr
             }
 
             if (isFavorite) {
-                await FavoriteMovieService.removeFromFavorites(movieId, token);
+                await FavoriteMovieService.removeFromFavorites(movieId, token, releaseDate);
             } else {
-                await FavoriteMovieService.addToFavorites(movieId, token);
+                await FavoriteMovieService.addToFavorites(movieId, token, releaseDate);
             }
 
             setIsFavorite(!isFavorite);
@@ -71,5 +93,12 @@ export const useFavoriteMovie = ({ movieId, user, getToken }: UseFavoriteMoviePr
         }
     };
 
-    return { isFavorite, isLoading, error, toggleFavorite, setIsFavorite }
+    return {
+        isFavorite,
+        isLoading,
+        error,
+        toggleFavorite,
+        setIsFavorite,
+        isMovieReleased: isMovieReleased()
+    };
 };

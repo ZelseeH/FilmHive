@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { slide as Menu } from 'react-burger-menu';
 import Hamburger from 'hamburger-react';
@@ -6,11 +6,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavbarVisibility } from './hooks/useNavbarVisibility';
 import { useUserMenu } from './hooks/useUserMenu';
 import { useMobileMenu } from './hooks/useMobileMenu';
+import { useNotifications } from './hooks/useNotifications';
 import { handleLogout } from './services/navbarService';
 import logo from './FilmHiveLogo.png';
-import SearchBar from './SearchBar/SearchBar';
-import UserMenu from './UserMenu/UserMenu';
-import UserAvatar from './UserAvatar/UserAvatar';
+import SearchBar from './components/SearchBar/SearchBar';
+import UserMenu from './components/UserMenu/UserMenu';
+import UserAvatar from './components/UserAvatar/UserAvatar';
+import NotificationBadge from './components/NotificationBadge/NotificationBadge';
+import NotificationsPopup from './components/NotificationsPopup/NotificationsPopup';
 import styles from './Navbar.module.css';
 
 const Navbar: React.FC = () => {
@@ -20,11 +23,28 @@ const Navbar: React.FC = () => {
   const { mobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useMobileMenu();
   const { showUserMenu, menuPosition, avatarRef, toggleUserMenu, closeUserMenu } = useUserMenu();
 
+  // Stan dla powiadomień
+  const [showNotificationsPopup, setShowNotificationsPopup] = useState(false);
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
+
   const onLogout = () => handleLogout(logout, closeUserMenu, navigate);
 
-  // Funkcja przekierowania do strony logowania
   const handleLoginRedirect = () => {
     navigate('/login');
+  };
+
+  const handleNotificationClick = () => {
+    setShowNotificationsPopup(true);
+  };
+
+  const handleCloseNotifications = () => {
+    setShowNotificationsPopup(false);
   };
 
   useEffect(() => {
@@ -77,6 +97,9 @@ const Navbar: React.FC = () => {
             <Link to="/people" className={styles['movies-link']}>
               Aktorzy
             </Link>
+            <Link to="/recommendations" className={styles['movies-link']}>
+              Dla mnie
+            </Link>
           </div>
         </div>
 
@@ -84,6 +107,10 @@ const Navbar: React.FC = () => {
           {user ? (
             <div className={styles['user-info']}>
               <span className={styles.username}>{user.username}</span>
+              <NotificationBadge
+                count={unreadCount}
+                onClick={handleNotificationClick}
+              />
               <div ref={avatarRef} id="user-avatar">
                 <UserAvatar
                   user={{
@@ -114,6 +141,7 @@ const Navbar: React.FC = () => {
         </div>
       </nav>
 
+      {/* Mobile Menu */}
       <Menu
         right
         isOpen={mobileMenuOpen}
@@ -133,6 +161,9 @@ const Navbar: React.FC = () => {
             <Link to="/people" className={styles['mobile-menu-link']} onClick={closeMobileMenu}>
               Aktorzy
             </Link>
+            <Link to="/recommendations" className={styles['mobile-menu-link']} onClick={closeMobileMenu}>
+              Dla mnie
+            </Link>
           </div>
           <div className={styles.spacer}></div>
           <div className={styles.mobileUserSection}>
@@ -149,6 +180,16 @@ const Navbar: React.FC = () => {
                     />
                   </div>
                   <span className={styles.mobileUsername}>{user.username}</span>
+                  {/* Badge pod nickiem w mobile */}
+                  <div className={styles.mobileNotificationContainer}>
+                    <NotificationBadge
+                      count={unreadCount}
+                      onClick={() => {
+                        handleNotificationClick();
+                        closeMobileMenu();
+                      }}
+                    />
+                  </div>
                 </div>
                 <Link
                   to={`/profile/${user.username}`}
@@ -185,11 +226,13 @@ const Navbar: React.FC = () => {
                     Panel Moderatora
                   </Link>
                 )}
+
                 <button
                   className={styles['mobile-logout-btn']}
                   onClick={() => {
                     onLogout();
                     closeMobileMenu();
+                    window.location.reload();
                   }}
                 >
                   <svg
@@ -226,6 +269,7 @@ const Navbar: React.FC = () => {
         </div>
       </Menu>
 
+      {/* User Menu Desktop */}
       {showUserMenu && user && (
         <UserMenu
           username={user.username}
@@ -235,6 +279,16 @@ const Navbar: React.FC = () => {
           role={user.role}
         />
       )}
+
+      {/* Popup z powiadomieniami */}
+      <NotificationsPopup
+        notifications={notifications}
+        isOpen={showNotificationsPopup}
+        onClose={handleCloseNotifications}
+        onMarkAsRead={markAsRead}
+        onMarkAllAsRead={markAllAsRead}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

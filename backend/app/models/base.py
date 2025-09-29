@@ -9,6 +9,7 @@ from sqlalchemy import (
     Float,
     Boolean,
     Enum,
+    Text,
 )
 from sqlalchemy.orm import validates
 from datetime import datetime

@@ -12,6 +12,7 @@ from .base import (
 from .user import User
 from .movie import Movie
 from app.extensions import db
+from datetime import timezone
 
 
 class Comment(db.Model):
@@ -27,20 +28,35 @@ class Comment(db.Model):
         ForeignKey("movies.movie_id", ondelete="CASCADE"), nullable=False, index=True
     )
     comment_text: Mapped[str] = mapped_column(String(1000), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    # ZMIENIONE: DateTime z timezone=True i UTC default
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
     user: Mapped["User"] = relationship("User", back_populates="comments")
     movie: Mapped["Movie"] = relationship("Movie", back_populates="comments")
 
+    replies: Mapped[list["CommentReply"]] = relationship(
+        "CommentReply", back_populates="main_comment", cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return f"<Comment(id={self.comment_id}, user_id={self.user_id}, movie_id={self.movie_id}, text='{self.comment_text}')>"
 
-    def serialize(self, include_user=False, include_movie=False, include_rating=False):
+    def serialize(
+        self,
+        include_user=False,
+        include_movie=False,
+        include_rating=False,
+        include_replies=False,
+    ):
         result = {
             "id": self.comment_id,
             "user_id": self.user_id,
             "movie_id": self.movie_id,
             "text": self.comment_text,
+            # ZMIENIONE: Dodaj 'Z' dla UTC lub użyj pełnego ISO format z timezone
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
@@ -78,5 +94,11 @@ class Comment(db.Model):
                 }
             else:
                 result["user_rating"] = None
+
+        if include_replies:
+            result["replies"] = [
+                reply.serialize(include_users=True) for reply in self.replies
+            ]
+            result["replies_count"] = len(self.replies)
 
         return result

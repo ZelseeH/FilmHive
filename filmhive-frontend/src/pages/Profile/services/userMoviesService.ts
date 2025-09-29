@@ -12,3 +12,9 @@ export async function fetchRecentRatedMovies(username: string): Promise<RecentRa
     const response = await axios.get<RecentRatedMovie[]>(`/api/user/profile/${username}/recent-ratings`);
     return response.data;
 }
+// Dodaj do istniejącego pliku userMoviesService.ts
+
+export async function fetchAllRatedMovies(username: string): Promise<RecentRatedMovie[]> {
+    const response = await axios.get<RecentRatedMovie[]>(`/api/user/profile/${username}/all-ratings`);
+    return response.data;
+}

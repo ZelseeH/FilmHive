@@ -170,3 +170,25 @@ def remove_from_recent_watchlist(movie_id):
             jsonify({"error": "Wystąpił błąd podczas usuwania z listy do obejrzenia"}),
             500,
         )
+
+
+@watchlist_bp.route("/user/<int:user_id>/all", methods=["GET"])
+def get_user_all_watchlist(user_id):
+    """Pobierz wszystkie filmy z watchlisty użytkownika (bez limitu)"""
+    try:
+        result = watchlist_service.get_all_watchlist_movies(user_id)
+        current_app.logger.info(f"Retrieved all watchlist movies for user {user_id}")
+        return jsonify(result), 200
+    except ValueError as e:
+        current_app.logger.error(f"ValueError in get_user_all_watchlist: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Error in get_user_all_watchlist: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "error": "Wystąpił błąd podczas pobierania wszystkich filmów z listy do obejrzenia"
+                }
+            ),
+            500,
+        )

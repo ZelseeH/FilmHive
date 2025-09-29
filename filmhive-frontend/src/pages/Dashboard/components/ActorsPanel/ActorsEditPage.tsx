@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { getActorById, updateActor, uploadActorPhoto, deleteActor } from '../../services/actorService';
 import { useInlineEdit } from '../../hooks/useInlineEdit';
+import ImageSelector from '../ImgSelector/ImageSelector';
 import styles from './ActorsEditPage.module.css';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
@@ -85,9 +86,14 @@ const ActorEditContent: React.FC<ActorEditContentProps> = ({
     const { fields, toggleEdit, updateField, cancelEdit, getValues, setInputRef } = useInlineEdit(actorData);
     const [saveLoading, setSaveLoading] = useState<Record<string, boolean>>({});
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    // ImageSelector state
     const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isEditingPhoto, setIsEditingPhoto] = useState<boolean>(false);
+    const [photoError, setPhotoError] = useState<string>('');
+
     const toast = useRef<Toast>(null);
 
     const handleFieldSave = async (fieldName: string) => {
@@ -210,34 +216,47 @@ const ActorEditContent: React.FC<ActorEditContentProps> = ({
         }
     };
 
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setPhotoFile(file);
-
-            // Tworzenie podglądu zdjęcia
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
+    // ImageSelector handlers
+    const handleImageChange = (file: File | null, url: string | null) => {
+        setPhotoFile(file);
+        setPhotoUrl(url);
+        setPhotoError('');
     };
 
-    const handlePhotoUpload = async () => {
-        if (!photoFile) return;
+    const handlePreviewChange = (preview: string | null) => {
+        setPhotoPreview(preview);
+    };
+
+    const handlePhotoSave = async () => {
+        if (!photoFile && !photoUrl) {
+            setPhotoError('Wybierz zdjęcie');
+            return;
+        }
 
         try {
             setSaveLoading(prev => ({ ...prev, 'photo': true }));
+            setPhotoError('');
 
-            await uploadActorPhoto(actorId, photoFile);
+            const formData = new FormData();
+
+            if (photoFile) {
+                // Plik lokalny
+                formData.append('photo', photoFile);
+            } else if (photoUrl) {
+                // URL z internetu
+                formData.append('photo_url', photoUrl);
+            }
+
+            await updateActor(actorId, formData);
 
             // Odśwież dane aktora
             onRefresh();
 
-            // Wyczyść stan
+            // Wyczyść stan i zakończ edycję
             setPhotoFile(null);
+            setPhotoUrl(null);
             setPhotoPreview(null);
+            setIsEditingPhoto(false);
 
             toast.current?.show({
                 severity: 'success',
@@ -246,27 +265,25 @@ const ActorEditContent: React.FC<ActorEditContentProps> = ({
                 life: 3000
             });
         } catch (err: any) {
+            setPhotoError(err.message || 'Nie udało się zaktualizować zdjęcia');
             toast.current?.show({
                 severity: 'error',
                 summary: 'Błąd',
                 detail: err.message || 'Nie udało się zaktualizować zdjęcia',
                 life: 5000
             });
-            console.error('Error uploading photo:', err);
+            console.error('Error updating photo:', err);
         } finally {
             setSaveLoading(prev => ({ ...prev, 'photo': false }));
         }
     };
 
-    const triggerPhotoUpload = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
-    };
-
-    const cancelPhotoUpload = () => {
+    const handlePhotoCancelEdit = () => {
         setPhotoFile(null);
+        setPhotoUrl(null);
         setPhotoPreview(null);
+        setIsEditingPhoto(false);
+        setPhotoError('');
     };
 
     const formatDate = (dateString?: string): string => {
@@ -280,10 +297,13 @@ const ActorEditContent: React.FC<ActorEditContentProps> = ({
             header: 'Potwierdzenie usunięcia',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
+            acceptLabel: 'Tak',
+            rejectLabel: 'Nie',
             accept: handleDelete,
             reject: () => { }
         });
     };
+
 
     const handleDelete = async () => {
         try {
@@ -427,47 +447,56 @@ const ActorEditContent: React.FC<ActorEditContentProps> = ({
             <div className={styles.actorDetailsCard}>
                 <div className={styles.actorHeader}>
                     <div className={styles.photoContainer}>
-                        {photoPreview ? (
-                            <img src={photoPreview} alt={actorData.name} className={styles.actorPhoto} />
-                        ) : actorData.photo_url ? (
-                            <img src={actorData.photo_url} alt={actorData.name} className={styles.actorPhoto} />
-                        ) : (
-                            <div className={styles.actorPhotoPlaceholder}>
-                                {actorData.name.charAt(0).toUpperCase()}
+                        {isEditingPhoto ? (
+                            <div className={styles.photoEditContainer}>
+                                <ImageSelector
+                                    currentImage={actorData.photo_url}
+                                    onImageChange={handleImageChange}
+                                    onPreviewChange={handlePreviewChange}
+                                    label="Zdjęcie aktora"
+                                    placeholder="Brak zdjęcia"
+                                    maxFileSize={5}
+                                    required={false}
+                                    error={photoError}
+                                    disabled={saveLoading['photo']}
+                                    className={styles.actorImageSelector}
+                                />
+
+                                <div className={styles.photoEditActions}>
+                                    <button
+                                        onClick={handlePhotoSave}
+                                        className={styles.saveButton}
+                                        disabled={saveLoading['photo']}
+                                    >
+                                        {saveLoading['photo'] ? 'Zapisywanie...' : 'Zapisz zdjęcie'}
+                                    </button>
+                                    <button
+                                        onClick={handlePhotoCancelEdit}
+                                        className={styles.cancelButton}
+                                        disabled={saveLoading['photo']}
+                                    >
+                                        Anuluj
+                                    </button>
+                                </div>
                             </div>
-                        )}
+                        ) : (
+                            <>
+                                {actorData.photo_url ? (
+                                    <img src={actorData.photo_url} alt={actorData.name} className={styles.actorPhoto} />
+                                ) : (
+                                    <div className={styles.actorPhotoPlaceholder}>
+                                        {actorData.name.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
 
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handlePhotoChange}
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                        />
-
-                        <button
-                            className={styles.changePhotoButton}
-                            onClick={triggerPhotoUpload}
-                        >
-                            Zmień zdjęcie
-                        </button>
-
-                        {photoFile && (
-                            <div className={styles.photoActions}>
                                 <button
-                                    onClick={handlePhotoUpload}
-                                    className={styles.saveButton}
+                                    className={styles.changePhotoButton}
+                                    onClick={() => setIsEditingPhoto(true)}
                                     disabled={saveLoading['photo']}
                                 >
-                                    {saveLoading['photo'] ? 'Zapisywanie...' : 'Zapisz zdjęcie'}
+                                    Zmień zdjęcie
                                 </button>
-                                <button
-                                    onClick={cancelPhotoUpload}
-                                    className={styles.cancelButton}
-                                >
-                                    Anuluj
-                                </button>
-                            </div>
+                            </>
                         )}
                     </div>
 

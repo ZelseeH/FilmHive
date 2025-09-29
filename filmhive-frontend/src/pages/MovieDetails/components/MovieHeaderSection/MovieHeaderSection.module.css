@@ -8,6 +8,33 @@
     flex: 0 0 180px;
 }
 
+/* Styl podobny do cast-member dla reżysera */
+.director-link {
+    display: inline-block;
+    color: #1a1a1a;
+    /* ciemny kolor tekstu */
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.director-link:hover,
+.director-link:focus {
+    color: #f5c518;
+    /* żółty jak w cast-member */
+    transform: translateY(-3px);
+    outline: none;
+}
+
+/* Opcjonalnie można dodać styl dla odwiedzonego linku */
+.director-link:visited {
+    color: #444;
+}
+
 .movie-poster-small img {
     width: 100%;
     border-radius: 4px;

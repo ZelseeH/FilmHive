@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from datetime import datetime, date
 from app.services.rating_service import (
     get_rating_by_id,
     get_user_rating_for_movie,
@@ -14,6 +15,26 @@ from app.services.rating_service import (
 )
 
 ratings_bp = Blueprint("ratings", __name__)
+
+
+def validate_movie_release_date(movie_id):
+    """Sprawdza czy film już wyszedł"""
+    try:
+        from app.services.movie_service import get_movie_by_id
+
+        movie = get_movie_by_id(movie_id)
+        if not movie:
+            return False, "Film nie istnieje"
+
+        if movie.get("release_date"):
+            release_date = datetime.strptime(movie["release_date"], "%Y-%m-%d").date()
+            today = date.today()
+            if release_date > today:
+                return False, "Nie można ocenić filmu, który jeszcze nie miał premiery"
+
+        return True, None
+    except Exception as e:
+        return False, f"Błąd sprawdzania daty premiery: {str(e)}"
 
 
 @ratings_bp.route("/movies/<int:movie_id>/ratings", methods=["GET"])
@@ -73,6 +94,15 @@ def get_current_user_rating(movie_id):
     try:
         user_id = int(get_jwt_identity())
         print(f"Current user ID: {user_id}")
+
+        # Sprawdź datę premiery
+        is_released, error_msg = validate_movie_release_date(movie_id)
+        if not is_released:
+            return (
+                jsonify({"rating": None}),
+                200,
+            )  # Zwróć null dla nieopublikowanych filmów
+
         result = get_user_rating_for_movie(user_id, movie_id)
         print(f"User rating for movie {movie_id}: {result}")
 
@@ -90,6 +120,11 @@ def get_current_user_rating(movie_id):
 @jwt_required()
 def rate_movie(movie_id):
     try:
+        # WALIDACJA DATY PREMIERY
+        is_released, error_msg = validate_movie_release_date(movie_id)
+        if not is_released:
+            return jsonify({"error": error_msg}), 400
+
         data = request.get_json()
 
         if not data or "rating" not in data:
@@ -128,6 +163,16 @@ def update_movie_rating(rating_id):
             return jsonify({"error": "Ocena musi być liczbą od 1 do 10"}), 400
 
         user_id = int(get_jwt_identity())
+
+        # Pobierz movie_id z oceny przed aktualizacją
+        rating_info = get_rating_by_id(rating_id)
+        if rating_info and rating_info.get("movie_id"):
+            movie_id = rating_info["movie_id"]
+            # WALIDACJA DATY PREMIERY
+            is_released, error_msg = validate_movie_release_date(movie_id)
+            if not is_released:
+                return jsonify({"error": error_msg}), 400
+
         result = update_rating(rating_id, rating_value, user_id)
 
         if result is None:
@@ -152,6 +197,11 @@ def update_movie_rating(rating_id):
 @jwt_required()
 def delete_movie_rating(movie_id):
     try:
+        # WALIDACJA DATY PREMIERY
+        is_released, error_msg = validate_movie_release_date(movie_id)
+        if not is_released:
+            return jsonify({"error": error_msg}), 400
+
         user_id = int(get_jwt_identity())
         print(f"Deleting rating for user {user_id} and movie {movie_id}")
 

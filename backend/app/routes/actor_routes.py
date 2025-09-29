@@ -84,8 +84,10 @@ def add_actor():
                 "birth_place": json_data.get("birth_place", ""),
                 "biography": json_data.get("biography", ""),
                 "gender": json_data.get("gender"),
+                "photo_url": json_data.get("photo_url"),  # Dodaj photo_url z JSON
             }
         else:
+            # FormData request
             actor_data = {
                 "name": request.form.get("name"),
                 "birth_date": request.form.get("birth_date"),
@@ -94,26 +96,67 @@ def add_actor():
                 "gender": request.form.get("gender"),
             }
 
-            photo_file = request.files.get("photo")
-            if photo_file:
-                filename = secure_filename(photo_file.filename)
-                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-                filename = f"{timestamp}_{filename}"
+            # POPRAWKA: Obsługa photo_url z formularza
+            photo_url_from_form = request.form.get("photo_url")
+            if photo_url_from_form and photo_url_from_form.strip():
+                # Użytkownik podał URL
+                actor_data["photo_url"] = photo_url_from_form.strip()
+                current_app.logger.info(
+                    f"🔗 Otrzymano photo_url z formularza: {photo_url_from_form}"
+                )
 
-                upload_dir = os.path.join(current_app.static_folder, "actors")
-                os.makedirs(upload_dir, exist_ok=True)
+            # Obsługa pliku (jeśli nie ma URL-a)
+            elif "photo" in request.files:
+                photo_file = request.files.get("photo")
+                if photo_file and photo_file.filename:
+                    filename = secure_filename(photo_file.filename)
+                    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                    filename = f"{timestamp}_{filename}"
 
-                file_path = os.path.join(upload_dir, filename)
-                photo_file.save(file_path)
+                    upload_dir = os.path.join(current_app.static_folder, "actors")
+                    os.makedirs(upload_dir, exist_ok=True)
 
-                actor_data["photo_url"] = filename
+                    file_path = os.path.join(upload_dir, filename)
+                    photo_file.save(file_path)
+
+                    actor_data["photo_url"] = filename  # Zapisz nazwę pliku
+                    current_app.logger.info(f"📁 Uploadowano plik: {filename}")
+
+        # DEBUG: Wyloguj wszystkie dane przed wysłaniem do service
+        current_app.logger.info(f"📋 Dane aktora do utworzenia: {actor_data}")
+
+        # DEBUG: Sprawdź co jest w request
+        current_app.logger.info(f"🔍 Request form keys: {list(request.form.keys())}")
+        current_app.logger.info(f"🔍 Request files keys: {list(request.files.keys())}")
+        if "photo_url" in request.form:
+            current_app.logger.info(
+                f"🔍 photo_url w formularzu: '{request.form.get('photo_url')}'"
+            )
 
         actor = actor_service.add_actor(actor_data)
+
+        # DEBUG: Sprawdź co zostało zapisane
+        current_app.logger.info(
+            f"✅ Utworzono aktora: {actor.actor_name}, photo_url: {actor.photo_url}"
+        )
+
         return (
             jsonify(
                 {"message": "Aktor został pomyślnie dodany", "actor": actor.serialize()}
             ),
             201,
+        )
+
+    except ValueError as e:
+        current_app.logger.error(f"❌ Błąd walidacji: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"❌ Unexpected error adding actor: {str(e)}")
+        return (
+            jsonify(
+                {"error": "Wystąpił błąd podczas dodawania aktora", "details": str(e)}
+            ),
+            500,
         )
 
     except ValueError as e:
@@ -138,8 +181,15 @@ def update_actor(actor_id):
     try:
         actor_data = {}
 
+        # DEBUG: Sprawdź co przychodzi
+        current_app.logger.info(f"🔍 Update actor {actor_id}")
+        current_app.logger.info(f"🔍 Content-Type: {request.content_type}")
+        current_app.logger.info(f"🔍 Form keys: {list(request.form.keys())}")
+        current_app.logger.info(f"🔍 Files keys: {list(request.files.keys())}")
+
         if request.is_json:
             json_data = request.get_json()
+            current_app.logger.info(f"🔍 JSON data: {json_data}")
 
             if "name" in json_data:
                 actor_data["name"] = json_data.get("name")
@@ -151,7 +201,10 @@ def update_actor(actor_id):
                 actor_data["biography"] = json_data.get("biography")
             if "gender" in json_data:
                 actor_data["gender"] = json_data.get("gender")
+            if "photo_url" in json_data:  # Dodaj obsługę photo_url w JSON
+                actor_data["photo_url"] = json_data.get("photo_url")
         else:
+            # FormData request
             if "name" in request.form:
                 actor_data["name"] = request.form.get("name")
             if "birth_date" in request.form:
@@ -163,15 +216,46 @@ def update_actor(actor_id):
             if "gender" in request.form:
                 actor_data["gender"] = request.form.get("gender")
 
-            photo_file = request.files.get("photo")
-            if photo_file:
-                actor = actor_service.upload_actor_photo(actor_id, photo_file)
-                if not actor:
-                    return jsonify({"error": "Nie znaleziono aktora"}), 404
+            # POPRAWKA: Obsługa photo_url w update FormData
+            if "photo_url" in request.form:
+                photo_url_from_form = request.form.get("photo_url")
+                if photo_url_from_form and photo_url_from_form.strip():
+                    actor_data["photo_url"] = photo_url_from_form.strip()
+                    current_app.logger.info(
+                        f"🔗 Update photo_url z formularza: {photo_url_from_form}"
+                    )
+
+            # Obsługa nowego pliku (jeśli nie ma URL-a)
+            elif "photo" in request.files:
+                photo_file = request.files.get("photo")
+                if photo_file and photo_file.filename:
+                    # Upload nowego pliku
+                    filename = secure_filename(photo_file.filename)
+                    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                    filename = f"{timestamp}_{filename}"
+
+                    upload_dir = os.path.join(current_app.static_folder, "actors")
+                    os.makedirs(upload_dir, exist_ok=True)
+
+                    file_path = os.path.join(upload_dir, filename)
+                    photo_file.save(file_path)
+
+                    actor_data["photo_url"] = filename
+                    current_app.logger.info(
+                        f"📁 Update - uploadowano nowy plik: {filename}"
+                    )
+
+        current_app.logger.info(
+            f"📋 Dane do aktualizacji aktora {actor_id}: {actor_data}"
+        )
 
         actor = actor_service.update_actor(actor_id, actor_data)
         if not actor:
             return jsonify({"error": "Nie znaleziono aktora"}), 404
+
+        current_app.logger.info(
+            f"✅ Zaktualizowano aktora: {actor.actor_name}, photo_url: {actor.photo_url}"
+        )
 
         return jsonify(
             {
@@ -181,9 +265,10 @@ def update_actor(actor_id):
         )
 
     except ValueError as e:
+        current_app.logger.error(f"❌ Błąd walidacji update: {str(e)}")
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        current_app.logger.error(f"Error updating actor: {str(e)}")
+        current_app.logger.error(f"❌ Błąd aktualizacji aktora: {str(e)}")
         return (
             jsonify(
                 {
@@ -266,12 +351,54 @@ def get_actor_movies(actor_id):
     if request.method == "OPTIONS":
         return
 
+    # Istniejące parametry
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
-    result = actor_service.get_actor_movies(actor_id, page, per_page)
-    if result:
-        return jsonify(result)
-    return jsonify({"error": "Actor not found"}), 404
+
+    # NOWE - parametry sortowania
+    sort_field = request.args.get("sort_field", "release_date")
+    sort_order = request.args.get("sort_order", "desc")
+
+    # Walidacja parametrów sortowania
+    valid_sort_fields = ["release_date", "title", "duration_minutes", "average_rating"]
+    if sort_field not in valid_sort_fields:
+        sort_field = "release_date"
+
+    if sort_order not in ["asc", "desc"]:
+        sort_order = "desc"
+
+    # Walidacja paginacji
+    if page < 1:
+        page = 1
+    if per_page < 1 or per_page > 50:
+        per_page = 10
+
+    try:
+        # Wywołaj serwis z nowymi parametrami
+        result = actor_service.get_actor_movies(
+            actor_id, page, per_page, sort_field, sort_order
+        )
+
+        if result:
+            return jsonify({"success": True, "data": result})
+        else:
+            return (
+                jsonify({"success": False, "error": "Aktor nie został znaleziony"}),
+                404,
+            )
+
+    except Exception as e:
+        current_app.logger.error(f"Error in get_actor_movies: {str(e)}")
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Wystąpił błąd podczas pobierania filmów aktora",
+                    "details": str(e),
+                }
+            ),
+            500,
+        )
 
 
 @actors_bp.route("/filter", methods=["GET", "OPTIONS"])

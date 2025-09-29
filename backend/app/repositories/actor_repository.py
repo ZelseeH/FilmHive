@@ -99,19 +99,40 @@ class ActorRepository:
                 elif gender_value == "K":
                     gender = Gender.K
 
+            # POPRAWKA: Obsługa photo_url - zarówno z pliku jak i z URL-a
+            photo_url = None
+
+            # Jeśli przesłano URL bezpośrednio
+            if "photo_url" in actor_data and actor_data["photo_url"]:
+                photo_url = actor_data["photo_url"]
+                print(f"📸 Otrzymano photo_url: {photo_url}")
+
+            # Jeśli przesłano plik (istniejąca logika uploadu)
+            elif "photo_url" in actor_data and actor_data["photo_url"]:
+                # To jest ścieżka do uploadowanego pliku
+                photo_url = actor_data["photo_url"]
+                print(f"📁 Otrzymano plik photo: {photo_url}")
+
+            print(f"🎯 Finalne photo_url do zapisu: {photo_url}")
+
             actor = Actor(
                 actor_name=actor_data.get("name"),
                 birth_date=actor_data.get("birth_date"),
                 birth_place=actor_data.get("birth_place", ""),
                 biography=actor_data.get("biography", ""),
-                photo_url=actor_data.get("photo_url"),
+                photo_url=photo_url,  # POPRAWKA: Użyj przetworzonego photo_url
                 gender=gender,
             )
+
             self.session.add(actor)
             self.session.commit()
+
+            print(f"✅ Zapisano aktora z photo_url: {actor.photo_url}")
             return actor
+
         except SQLAlchemyError as e:
             self.session.rollback()
+            print(f"❌ Błąd bazy danych: {e}")
             raise e
 
     def update(self, actor_id, actor_data):
@@ -120,6 +141,8 @@ class ActorRepository:
             actor = self.get_by_id(actor_id)
             if not actor:
                 return None
+
+            print(f"🔄 Aktualizacja aktora {actor_id} z danymi: {actor_data}")
 
             # Sprawdź, czy nowa nazwa nie koliduje z istniejącym aktorem
             if "name" in actor_data and actor_data["name"] != actor.actor_name:
@@ -136,14 +159,44 @@ class ActorRepository:
             # Aktualizacja pól
             if "name" in actor_data:
                 actor.actor_name = actor_data["name"]
+                print(f"📝 Zaktualizowano name: {actor_data['name']}")
+
             if "birth_date" in actor_data:
                 actor.birth_date = actor_data["birth_date"]
+                print(f"📅 Zaktualizowano birth_date: {actor_data['birth_date']}")
+
             if "birth_place" in actor_data:
                 actor.birth_place = actor_data["birth_place"]
+                print(f"🌍 Zaktualizowano birth_place: {actor_data['birth_place']}")
+
             if "biography" in actor_data:
                 actor.biography = actor_data["biography"]
+                print(
+                    f"📚 Zaktualizowano biography: {len(actor_data['biography'])} znaków"
+                )
+
+            # POPRAWKA: Obsługa photo_url w update
             if "photo_url" in actor_data:
-                actor.photo_url = actor_data["photo_url"]
+                new_photo_url = actor_data["photo_url"]
+                old_photo_url = actor.photo_url
+
+                # Usuń stare zdjęcie jeśli było lokalne (nie URL)
+                if old_photo_url and not old_photo_url.startswith("http"):
+                    try:
+                        import os
+                        from flask import current_app
+
+                        old_photo_path = os.path.join(
+                            current_app.static_folder, "actors", old_photo_url
+                        )
+                        if os.path.exists(old_photo_path):
+                            os.remove(old_photo_path)
+                            print(f"🗑️ Usunięto stary plik: {old_photo_path}")
+                    except Exception as e:
+                        print(f"⚠️ Nie można usunąć starego pliku: {e}")
+
+                actor.photo_url = new_photo_url
+                print(f"📸 Zaktualizowano photo_url: {new_photo_url}")
 
             # Aktualizacja płci
             if "gender" in actor_data:
@@ -152,15 +205,21 @@ class ActorRepository:
                 gender_value = actor_data["gender"]
                 if gender_value == "M":
                     actor.gender = Gender.M
+                    print(f"⚧️ Zaktualizowano gender: Mężczyzna")
                 elif gender_value == "K":
                     actor.gender = Gender.K
+                    print(f"⚧️ Zaktualizowano gender: Kobieta")
                 else:
                     actor.gender = None
+                    print(f"⚧️ Zaktualizowano gender: Nie określono")
 
             self.session.commit()
+            print(f"✅ Pomyślnie zaktualizowano aktora {actor_id}")
             return actor
+
         except SQLAlchemyError as e:
             self.session.rollback()
+            print(f"❌ Błąd bazy danych podczas aktualizacji: {e}")
             raise e
 
     def delete(self, actor_id):
@@ -183,25 +242,56 @@ class ActorRepository:
             self.session.rollback()
             raise e
 
-    def get_actor_movies(self, actor_id, page=1, per_page=10):
-        actor = self.get_by_id(actor_id)
-        if not actor:
+    def get_actor_movies(
+        self,
+        actor_id,
+        page=1,
+        per_page=10,
+        sort_field="release_date",
+        sort_order="desc",
+    ):
+        """Pobiera filmy aktora z paginacją i sortowaniem"""
+        try:
+            from app.models.movie import Movie
+            from app.models.movie_actor import MovieActor
+            from sqlalchemy import desc, asc
+
+            # Query z joinami
+            query = (
+                self.session.query(Movie)
+                .join(MovieActor, Movie.movie_id == MovieActor.movie_id)
+                .filter(MovieActor.actor_id == actor_id)
+            )
+
+            # Sortowanie
+            if hasattr(Movie, sort_field):
+                sort_column = getattr(Movie, sort_field)
+                if sort_order.lower() == "desc":
+                    query = query.order_by(desc(sort_column))
+                else:
+                    query = query.order_by(asc(sort_column))
+            else:
+                # Fallback - sortowanie po dacie premiery malejąco
+                query = query.order_by(desc(Movie.release_date))
+
+            total = query.count()
+            movies = query.offset((page - 1) * per_page).limit(per_page).all()
+
+            total_pages = (total + per_page - 1) // per_page
+
+            return {
+                "movies": movies,
+                "pagination": {
+                    "page": page,
+                    "per_page": per_page,
+                    "total": total,
+                    "total_pages": total_pages,
+                },
+            }
+
+        except Exception as e:
+            print(f"Błąd podczas pobierania filmów aktora: {e}")
             return None
-
-        total = len(actor.movies)
-        movies = actor.movies[(page - 1) * per_page : page * per_page]
-
-        total_pages = (total + per_page - 1) // per_page
-
-        return {
-            "movies": movies,
-            "pagination": {
-                "page": page,
-                "per_page": per_page,
-                "total": total,
-                "total_pages": total_pages,
-            },
-        }
 
     def _apply_filters(self, query, filters):
         from sqlalchemy import or_, and_, extract, func

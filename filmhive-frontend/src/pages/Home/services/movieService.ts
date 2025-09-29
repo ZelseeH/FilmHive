@@ -13,8 +13,23 @@ export interface Movie {
     country?: string;
     average_rating?: number;
     rating_count?: number;
-    user_rating?: number;  // Dodane pole user_rating
+    user_rating?: number;
+    trailer_url?: string; // ← Dodane pole dla trailera
     [key: string]: any;
+}
+
+// Nowy interfejs dla nadchodzących premier
+export interface UpcomingMovie {
+    id: number;
+    title: string;
+    release_date: string;
+    poster_url?: string;
+    trailer_url: string;
+    description?: string;
+    duration_minutes?: number;
+    country?: string;
+    days_until_release?: number;
+    release_date_formatted?: string;
 }
 
 export interface Actor {
@@ -28,6 +43,7 @@ export interface UserRatings {
     [movieId: number]: number;
 }
 
+// Istniejące funkcje...
 export const getAllMovies = async (): Promise<Movie[]> => {
     return fetchWithAuth('movies/all');
 };
@@ -70,4 +86,15 @@ export const rateMovie = async (movieId: number, rating: number): Promise<void> 
 
 export const getMovieDetailsWithRoles = async (movieId: number): Promise<Movie> => {
     return fetchWithAuth(`movies/${movieId}?include_roles=true`);
+};
+
+// ✨ NOWA FUNKCJA - Nadchodzące premiery z trailerami
+export const getUpcomingPremieres = async (limit: number = 5): Promise<UpcomingMovie[]> => {
+    try {
+        const response = await fetchWithAuth(`movies/upcoming-premieres?limit=${limit}`);
+        return response.upcoming_premieres as UpcomingMovie[];
+    } catch (error) {
+        console.error('Error fetching upcoming premieres:', error);
+        throw error;
+    }
 };

@@ -15,6 +15,14 @@ from sqlalchemy.orm import column_property, deferred, joinedload
 from app.extensions import db
 
 
+def _get_photo_url(photo_url: str, folder: str):
+    if not photo_url:
+        return None
+    if photo_url.startswith("http://") or photo_url.startswith("https://"):
+        return photo_url
+    return url_for("static", filename=f"{folder}/{photo_url}", _external=True)
+
+
 class Movie(db.Model):
     __tablename__ = "movies"
 
@@ -108,6 +116,15 @@ class Movie(db.Model):
                 self._rating_count = 0
         return self._rating_count
 
+    def _get_poster_url(self):
+        if not self.poster_url:
+            return None
+        if self.poster_url.startswith("http://") or self.poster_url.startswith(
+            "https://"
+        ):
+            return self.poster_url
+        return url_for("static", filename=f"posters/{self.poster_url}", _external=True)
+
     def serialize(
         self,
         include_genres=False,
@@ -124,18 +141,14 @@ class Movie(db.Model):
                 self.release_date.isoformat() if self.release_date else None
             ),
             "description": self.description,
-            "poster_url": (
-                url_for("static", filename=f"posters/{self.poster_url}", _external=True)
-                if self.poster_url
-                else None
-            ),
+            "poster_url": self._get_poster_url(),
             "duration_minutes": self.duration_minutes,
             "country": self.country,
             "original_language": self.original_language,
             "trailer_url": self.trailer_url,
             "average_rating": self.average_rating,
             "rating_count": self.rating_count,
-            "user_rating": getattr(self, "_user_rating", None),  # <-- TO JEST POPRAWKA
+            "user_rating": getattr(self, "_user_rating", None),
         }
 
         if include_genres:
@@ -165,11 +178,7 @@ class Movie(db.Model):
                             "name": actor.actor_name,
                             "role": roles_map.get(actor.actor_id, ""),
                             "photo_url": (
-                                url_for(
-                                    "static",
-                                    filename=f"actors/{actor.photo_url}",
-                                    _external=True,
-                                )
+                                _get_photo_url(actor.photo_url, "actors")
                                 if actor.photo_url
                                 else None
                             ),
@@ -182,11 +191,7 @@ class Movie(db.Model):
                         "id": actor.actor_id,
                         "name": actor.actor_name,
                         "photo_url": (
-                            url_for(
-                                "static",
-                                filename=f"actors/{actor.photo_url}",
-                                _external=True,
-                            )
+                            _get_photo_url(actor.photo_url, "actors")
                             if actor.photo_url
                             else None
                         ),
@@ -200,11 +205,7 @@ class Movie(db.Model):
                     "id": director.director_id,
                     "name": director.director_name,
                     "photo_url": (
-                        url_for(
-                            "static",
-                            filename=f"directors/{director.photo_url}",
-                            _external=True,
-                        )
+                        _get_photo_url(director.photo_url, "directors")
                         if director.photo_url
                         else None
                     ),
@@ -224,11 +225,7 @@ class Movie(db.Model):
         return {
             "id": self.movie_id,
             "title": self.title,
-            "poster_url": (
-                url_for("static", filename=f"posters/{self.poster_url}", _external=True)
-                if self.poster_url
-                else None
-            ),
+            "poster_url": self._get_poster_url(),
         }
 
     @classmethod

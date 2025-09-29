@@ -24,7 +24,6 @@ const MoviesEditPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [movieData, setMovieData] = useState<any>(null);
 
-    // Pobieranie ID filmu z parametru URL
     const movieId = id ? parseInt(id) : undefined;
 
     useEffect(() => {
@@ -38,10 +37,8 @@ const MoviesEditPage: React.FC = () => {
             setLoading(true);
             const data = await getMovieById(movieId);
 
-            // Pobierz aktorów z rolami osobno
             const actorsWithRoles = await getMovieActors(movieId);
 
-            // Zastąp aktorów z głównego endpointu aktorami z rolami
             const movieWithRoles = {
                 ...data,
                 actors: actorsWithRoles
@@ -57,7 +54,6 @@ const MoviesEditPage: React.FC = () => {
         }
     };
 
-    // Jeśli dane filmu nie są jeszcze załadowane, nie inicjalizuj hooka
     if (!movieData && !loading) {
         return <div className={styles.errorMessage}>Nie można załadować danych filmu</div>;
     }
@@ -102,10 +98,12 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [posterFile, setPosterFile] = useState<File | null>(null);
     const [posterPreview, setPosterPreview] = useState<string | null>(null);
+    const [posterMode, setPosterMode] = useState<'file' | 'url'>('file');
+    const [posterUrl, setPosterUrl] = useState<string>('');
+    const [showPosterEdit, setShowPosterEdit] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const toast = useRef<Toast>(null);
 
-    // Hook do zarządzania relacjami
     const {
         addActor,
         removeActor,
@@ -119,7 +117,6 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
 
     const handleFieldSave = async (fieldName: string) => {
         try {
-            // Walidacja pól przed zapisem
             let isValid = true;
             let errorMessage = '';
 
@@ -133,13 +130,17 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                     errorMessage = 'Tytuł nie może być dłuższy niż 200 znaków';
                 }
             } else if (fieldName === 'release_date') {
+                // POPRAWKA: Usunięto walidację blokującą przyszłe daty
+                // Opcjonalna walidacja na rozsądne daty
                 const value = fields[fieldName].value;
                 if (value) {
                     const selectedDate = new Date(value);
-                    const today = new Date();
-                    if (selectedDate > today) {
+                    const minDate = new Date('1800-01-01');
+                    const maxDate = new Date('2100-12-31');
+
+                    if (selectedDate < minDate || selectedDate > maxDate) {
                         isValid = false;
-                        errorMessage = 'Data premiery nie może być późniejsza niż dzisiejsza';
+                        errorMessage = 'Data premiery musi być między rokiem 1800 a 2100';
                     }
                 }
             } else if (fieldName === 'duration_minutes') {
@@ -147,6 +148,16 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                 if (value && (value < 1 || value > 600)) {
                     isValid = false;
                     errorMessage = 'Czas trwania musi być między 1 a 600 minut';
+                }
+            } else if (fieldName === 'trailer_url') {
+                const value = fields[fieldName].value;
+                if (value && value.trim()) {
+                    try {
+                        new URL(value.trim());
+                    } catch (e) {
+                        isValid = false;
+                        errorMessage = 'Nieprawidłowy format URL';
+                    }
                 }
             }
 
@@ -166,16 +177,13 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
 
             const value = fields[fieldName].value;
 
-            // Przygotuj dane do wysłania
             const formData = new FormData();
             formData.append(fieldName, value);
 
             await updateMovie(movieId, formData);
 
-            // Zakończ tryb edycji
             toggleEdit(fieldName);
 
-            // Odśwież dane filmu
             onRefresh();
 
             toast.current?.show({
@@ -203,7 +211,6 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
             const file = e.target.files[0];
             setPosterFile(file);
 
-            // Tworzenie podglądu plakatu
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPosterPreview(reader.result as string);
@@ -212,20 +219,47 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
         }
     };
 
-    const handlePosterUpload = async () => {
-        if (!posterFile) return;
+    const handlePosterUrlChange = (url: string) => {
+        setPosterUrl(url);
+        if (url && url.trim()) {
+            try {
+                new URL(url);
+                setPosterPreview(url);
+                setFieldErrors(prev => ({ ...prev, poster_url: '' }));
+            } catch (e) {
+                setFieldErrors(prev => ({ ...prev, poster_url: 'Nieprawidłowy format URL' }));
+                setPosterPreview(null);
+            }
+        } else {
+            setPosterPreview(null);
+        }
+    };
 
+    const handlePosterSave = async () => {
         try {
             setSaveLoading(prev => ({ ...prev, 'poster': true }));
 
-            await uploadMoviePoster(movieId, posterFile);
+            if (posterMode === 'file' && posterFile) {
+                await uploadMoviePoster(movieId, posterFile);
+            } else if (posterMode === 'url' && posterUrl.trim()) {
+                try {
+                    new URL(posterUrl.trim());
+                    const formData = new FormData();
+                    formData.append('poster_url', posterUrl.trim());
+                    await updateMovie(movieId, formData);
+                } catch (e) {
+                    throw new Error('Nieprawidłowy format URL');
+                }
+            } else {
+                throw new Error('Wybierz plik lub podaj URL');
+            }
 
-            // Odśwież dane filmu
             onRefresh();
 
-            // Wyczyść stan
             setPosterFile(null);
             setPosterPreview(null);
+            setPosterUrl('');
+            setShowPosterEdit(false);
 
             toast.current?.show({
                 severity: 'success',
@@ -240,7 +274,7 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                 detail: err.message || 'Nie udało się zaktualizować plakatu',
                 life: 5000
             });
-            console.error('Error uploading poster:', err);
+            console.error('Error updating poster:', err);
         } finally {
             setSaveLoading(prev => ({ ...prev, 'poster': false }));
         }
@@ -252,14 +286,25 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
         }
     };
 
-    const cancelPosterUpload = () => {
+    const cancelPosterEdit = () => {
         setPosterFile(null);
         setPosterPreview(null);
+        setPosterUrl('');
+        setShowPosterEdit(false);
+        setFieldErrors(prev => ({ ...prev, poster_url: '' }));
+    };
+
+    const switchPosterMode = (mode: 'file' | 'url') => {
+        setPosterMode(mode);
+        setPosterFile(null);
+        setPosterPreview(null);
+        setPosterUrl('');
+        setFieldErrors(prev => ({ ...prev, poster_url: '' }));
     };
 
     const formatDate = (dateString?: string): string => {
         if (!dateString) return '';
-        return dateString.split('T')[0]; // Format YYYY-MM-DD
+        return dateString.split('T')[0];
     };
 
     const confirmDelete = () => {
@@ -268,6 +313,8 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
             header: 'Potwierdzenie usunięcia',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
+            acceptLabel: 'Tak',
+            rejectLabel: 'Nie',
             accept: handleDelete,
             reject: () => { }
         });
@@ -285,7 +332,6 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                 life: 3000
             });
 
-            // Przekieruj do listy filmów po krótkim opóźnieniu
             setTimeout(() => {
                 navigate('/dashboardpanel/movies/manage');
             }, 1500);
@@ -302,7 +348,6 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
         }
     };
 
-    // FUNKCJE OBSŁUGI RELACJI
     const handleRemoveActor = async (actorId: number) => {
         const success = await removeActor(actorId);
         if (success) {
@@ -345,7 +390,6 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
     const handleAddActors = async (actors: { actorId: number; role: string }[]): Promise<boolean> => {
         try {
             let allSuccess = true;
-            // Dodaj wszystkich aktorów jeden po drugim
             for (const actorData of actors) {
                 const success = await addActor(actorData.actorId, actorData.role);
                 if (!success) {
@@ -366,7 +410,6 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
     const handleAddDirectors = async (directorIds: number[]): Promise<boolean> => {
         try {
             let allSuccess = true;
-            // Dodaj wszystkich reżyserów jeden po drugim
             for (const directorId of directorIds) {
                 const success = await addDirector(directorId);
                 if (!success) {
@@ -387,7 +430,6 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
     const handleAddGenres = async (genreIds: number[]): Promise<boolean> => {
         try {
             let allSuccess = true;
-            // Dodaj wszystkie gatunki jeden po drugim
             for (const genreId of genreIds) {
                 const success = await addGenre(genreId);
                 if (!success) {
@@ -430,7 +472,8 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                                 value={formatDate(field.value)}
                                 onChange={(e) => updateField(fieldName, e.target.value)}
                                 className={styles.editableInput}
-                                max={formatDate(new Date().toISOString())}
+                                min="1800-01-01"
+                                max="2100-12-31"
                             />
                         ) : (
                             <>
@@ -443,6 +486,7 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                                     maxLength={fieldName === 'title' ? 200 : undefined}
                                     min={type === 'number' ? 1 : undefined}
                                     max={type === 'number' ? 600 : undefined}
+                                    placeholder={fieldName === 'trailer_url' ? 'https://www.youtube.com/watch?v=...' : undefined}
                                 />
                                 {fieldName === 'title' && (
                                     <div className={styles.fieldHint}>
@@ -452,6 +496,11 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                                 {fieldName === 'duration_minutes' && (
                                     <div className={styles.fieldHint}>
                                         Czas trwania w minutach (1-600)
+                                    </div>
+                                )}
+                                {fieldName === 'trailer_url' && (
+                                    <div className={styles.fieldHint}>
+                                        Podaj pełny URL zwiastuna
                                     </div>
                                 )}
                             </>
@@ -523,36 +572,78 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                             </div>
                         )}
 
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handlePosterChange}
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                        />
-
                         <button
                             className={styles.changePosterButton}
-                            onClick={triggerPosterUpload}
+                            onClick={() => setShowPosterEdit(!showPosterEdit)}
                         >
-                            Zmień plakat
+                            {showPosterEdit ? 'Anuluj' : 'Zmień plakat'}
                         </button>
 
-                        {posterFile && (
-                            <div className={styles.posterActions}>
-                                <button
-                                    onClick={handlePosterUpload}
-                                    className={styles.saveButton}
-                                    disabled={saveLoading['poster']}
-                                >
-                                    {saveLoading['poster'] ? 'Zapisywanie...' : 'Zapisz plakat'}
-                                </button>
-                                <button
-                                    onClick={cancelPosterUpload}
-                                    className={styles.cancelButton}
-                                >
-                                    Anuluj
-                                </button>
+                        {showPosterEdit && (
+                            <div className={styles.posterEditSection}>
+                                <div className={styles.posterModeSelector}>
+                                    <button
+                                        type="button"
+                                        className={`${styles.modeButton} ${posterMode === 'file' ? styles.active : ''}`}
+                                        onClick={() => switchPosterMode('file')}
+                                    >
+                                        📁 Plik lokalny
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`${styles.modeButton} ${posterMode === 'url' ? styles.active : ''}`}
+                                        onClick={() => switchPosterMode('url')}
+                                    >
+                                        🔗 Link z chmury
+                                    </button>
+                                </div>
+
+                                {posterMode === 'file' ? (
+                                    <div>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handlePosterChange}
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                        />
+                                        <button
+                                            onClick={triggerPosterUpload}
+                                            className={styles.selectFileButton}
+                                        >
+                                            {posterFile ? 'Zmień plik' : 'Wybierz plik'}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <input
+                                            type="url"
+                                            value={posterUrl}
+                                            onChange={(e) => handlePosterUrlChange(e.target.value)}
+                                            placeholder="https://example.com/poster.jpg"
+                                            className={styles.urlInput}
+                                        />
+                                        {fieldErrors.poster_url && (
+                                            <div className={styles.fieldError}>{fieldErrors.poster_url}</div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className={styles.posterActions}>
+                                    <button
+                                        onClick={handlePosterSave}
+                                        className={styles.saveButton}
+                                        disabled={saveLoading['poster'] || (!posterFile && !posterUrl.trim())}
+                                    >
+                                        {saveLoading['poster'] ? 'Zapisywanie...' : 'Zapisz plakat'}
+                                    </button>
+                                    <button
+                                        onClick={cancelPosterEdit}
+                                        className={styles.cancelButton}
+                                    >
+                                        Anuluj
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -582,7 +673,6 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                         </div>
                     </div>
 
-                    {/* WYCIĄGNIĘTE KOMPONENTY */}
                     <ActorsSection
                         actors={movieData.actors}
                         onRemoveActor={handleRemoveActor}
@@ -600,7 +690,7 @@ const MovieEditContent: React.FC<MovieEditContentProps> = ({
                     <GenresSection
                         genres={movieData.genres}
                         onRemoveGenre={handleRemoveGenre}
-                        onAddGenres={handleAddGenres}  // ZMIANA: onAddGenres zamiast onAddGenre
+                        onAddGenres={handleAddGenres}
                         relationsLoading={relationsLoading}
                     />
 

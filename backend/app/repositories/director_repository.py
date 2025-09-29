@@ -63,6 +63,7 @@ class DirectorRepository:
                     f"Reżyser o nazwie '{director_data.get('name')}' już istnieje"
                 )
 
+            # Konwersja płci na enum
             gender = None
             if "gender" in director_data and director_data["gender"]:
                 gender_value = director_data["gender"]
@@ -71,19 +72,34 @@ class DirectorRepository:
                 elif gender_value == "K":
                     gender = Gender.K
 
+            # POPRAWKA: Obsługa photo_url - zarówno z pliku jak i z URL-a
+            photo_url = None
+
+            # Jeśli przesłano URL bezpośrednio
+            if "photo_url" in director_data and director_data["photo_url"]:
+                photo_url = director_data["photo_url"]
+                print(f"📸 Otrzymano photo_url dla reżysera: {photo_url}")
+
+            print(f"🎯 Finalne photo_url do zapisu (reżyser): {photo_url}")
+
             director = Director(
                 director_name=director_data.get("name"),
                 birth_date=director_data.get("birth_date"),
                 birth_place=director_data.get("birth_place", ""),
                 biography=director_data.get("biography", ""),
-                photo_url=director_data.get("photo_url"),
+                photo_url=photo_url,  # POPRAWKA: Użyj przetworzonego photo_url
                 gender=gender,
             )
+
             self.session.add(director)
             self.session.commit()
+
+            print(f"✅ Zapisano reżysera z photo_url: {director.photo_url}")
             return director
+
         except SQLAlchemyError as e:
             self.session.rollback()
+            print(f"❌ Błąd bazy danych (director add): {e}")
             raise e
 
     def update(self, director_id, director_data):
@@ -92,6 +108,9 @@ class DirectorRepository:
             if not director:
                 return None
 
+            print(f"🔄 Aktualizacja reżysera {director_id} z danymi: {director_data}")
+
+            # Sprawdź, czy nowa nazwa nie koliduje z istniejącym reżyserem
             if (
                 "name" in director_data
                 and director_data["name"] != director.director_name
@@ -102,30 +121,68 @@ class DirectorRepository:
                         f"Reżyser o nazwie '{director_data['name']}' już istnieje"
                     )
 
+            # Aktualizacja pól
             if "name" in director_data:
                 director.director_name = director_data["name"]
+                print(f"📝 Zaktualizowano name: {director_data['name']}")
+
             if "birth_date" in director_data:
                 director.birth_date = director_data["birth_date"]
+                print(f"📅 Zaktualizowano birth_date: {director_data['birth_date']}")
+
             if "birth_place" in director_data:
                 director.birth_place = director_data["birth_place"]
+                print(f"🌍 Zaktualizowano birth_place: {director_data['birth_place']}")
+
             if "biography" in director_data:
                 director.biography = director_data["biography"]
-            if "photo_url" in director_data:
-                director.photo_url = director_data["photo_url"]
+                print(
+                    f"📚 Zaktualizowano biography: {len(director_data['biography'])} znaków"
+                )
 
+            # POPRAWKA: Obsługa photo_url w update
+            if "photo_url" in director_data:
+                new_photo_url = director_data["photo_url"]
+                old_photo_url = director.photo_url
+
+                # Usuń stare zdjęcie jeśli było lokalne (nie URL)
+                if old_photo_url and not old_photo_url.startswith("http"):
+                    try:
+                        import os
+                        from flask import current_app
+
+                        old_photo_path = os.path.join(
+                            current_app.static_folder, "directors", old_photo_url
+                        )
+                        if os.path.exists(old_photo_path):
+                            os.remove(old_photo_path)
+                            print(f"🗑️ Usunięto stary plik reżysera: {old_photo_path}")
+                    except Exception as e:
+                        print(f"⚠️ Nie można usunąć starego pliku reżysera: {e}")
+
+                director.photo_url = new_photo_url
+                print(f"📸 Zaktualizowano photo_url reżysera: {new_photo_url}")
+
+            # Aktualizacja płci
             if "gender" in director_data:
                 gender_value = director_data["gender"]
                 if gender_value == "M":
                     director.gender = Gender.M
+                    print(f"⚧️ Zaktualizowano gender: Mężczyzna")
                 elif gender_value == "K":
                     director.gender = Gender.K
+                    print(f"⚧️ Zaktualizowano gender: Kobieta")
                 else:
                     director.gender = None
+                    print(f"⚧️ Zaktualizowano gender: Nie określono")
 
             self.session.commit()
+            print(f"✅ Pomyślnie zaktualizowano reżysera {director_id}")
             return director
+
         except SQLAlchemyError as e:
             self.session.rollback()
+            print(f"❌ Błąd bazy danych podczas aktualizacji reżysera: {e}")
             raise e
 
     def delete(self, director_id):

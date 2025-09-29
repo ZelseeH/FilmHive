@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Sidebar.module.css';
 import { useSidebar } from '../../hooks/useSidebar';
 import { menuItems } from './menuItems';
+import { userService } from '../../services/userService';
 import {
     FaUser, FaSignOutAlt, FaChevronDown, FaChevronUp,
     FaChevronLeft, FaChevronRight
@@ -25,9 +26,45 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
         isSubmenuActive
     } = useSidebar(collapsed, toggleSidebar);
 
+    // State dla zdjęcia profilowego
+    const [userProfilePicture, setUserProfilePicture] = useState<string | null>(null);
+    const [imageLoading, setImageLoading] = useState<boolean>(false);
+    const [imageError, setImageError] = useState<boolean>(false);
+
+    // Pobierz zdjęcie profilowe użytkownika
+    useEffect(() => {
+        const fetchUserProfilePicture = async () => {
+            if (!user?.id) return;
+
+            try {
+                setImageLoading(true);
+                setImageError(false);
+
+                const userData = await userService.getUserDetails(user.id);
+
+                if (userData.profile_picture) {
+                    setUserProfilePicture(userData.profile_picture);
+                }
+            } catch (error) {
+                console.error('Błąd pobierania zdjęcia profilowego:', error);
+                setImageError(true);
+            } finally {
+                setImageLoading(false);
+            }
+        };
+
+        fetchUserProfilePicture();
+    }, [user?.id]);
+
     // Funkcja do wylogowania z przeładowaniem
     const handleLogout = () => {
         window.location.href = '/';
+    };
+
+    // Funkcja obsługująca błędy ładowania obrazka
+    const handleImageError = () => {
+        setImageError(true);
+        setUserProfilePicture(null);
     };
 
     // Filtrowanie elementów menu w zależności od roli
@@ -49,7 +86,21 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
 
                 <div className={styles.userInfo}>
                     <div className={styles.avatar}>
-                        <FaUser />
+                        {userProfilePicture && !imageError ? (
+                            <img
+                                src={userProfilePicture}
+                                alt="Zdjęcie profilowe"
+                                className={styles.profileImage}
+                                onError={handleImageError}
+                                onLoad={() => setImageError(false)}
+                            />
+                        ) : imageLoading ? (
+                            <div className={styles.avatarSpinner}>
+                                <div className={styles.spinner}></div>
+                            </div>
+                        ) : (
+                            <FaUser />
+                        )}
                     </div>
                     {!collapsed && (
                         <div className={styles.userDetails}>

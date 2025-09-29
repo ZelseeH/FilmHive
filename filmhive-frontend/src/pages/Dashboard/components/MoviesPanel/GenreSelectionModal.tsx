@@ -27,7 +27,6 @@ const GenreSelectionContent: React.FC<GenreSelectionModalProps> = ({
 
     useEffect(() => {
         if (visible) {
-            // Załaduj wszystkie gatunki od razu, bez wyszukiwania
             const fetchAllGenres = async () => {
                 setLoading(true);
                 setError(null);
@@ -141,8 +140,36 @@ const GenreSelectionContent: React.FC<GenreSelectionModalProps> = ({
         if (name === 'komedia rom.' || name === 'komedia romantyczna') return '💕';
         if (name === 'gangsterski') return '🔫';
         if (name === 'thriller') return '🔪';
+        if (name.includes('akcja')) return '💥';
+        if (name.includes('przygod')) return '🗺️';
+        if (name.includes('wojenn')) return '⚔️';
+        if (name.includes('western')) return '🤠';
+        if (name.includes('musical')) return '🎵';
+        if (name.includes('sport')) return '⚽';
+        if (name.includes('komedia')) return '😂';
+        if (name.includes('dramat')) return '🎭';
+        if (name.includes('krymin')) return '🔍';
+        if (name.includes('sci-fi') || name.includes('science')) return '🚀';
+        if (name.includes('fantasy') || name.includes('fantast')) return '🧙‍♂️';
+        if (name.includes('horror') || name.includes('straszen')) return '👻';
+        if (name.includes('romans') || name.includes('miłosn')) return '💝';
+        if (name.includes('dokument')) return '📹';
+        if (name.includes('animacj')) return '🎨';
+        if (name.includes('dla dzieci') || name.includes('dziecięc')) return '👶';
+        if (name.includes('młodzież')) return '🧒';
+        if (name.includes('rodzinn') || name.includes('family')) return '👨‍👩‍👧‍👦';
+        if (name.includes('biograf')) return '👤';
+        if (name.includes('historia') || name.includes('histor')) return '🏛️';
+        if (name.includes('noir')) return '🕵️‍♀️';
+        if (name.includes('gangster') || name.includes('mafi')) return '🔫';
+        if (name.includes('katastro')) return '🌪️';
+        if (name.includes('erotycz') || name.includes('sex')) return '💋';
+        if (name.includes('religious') || name.includes('religijn')) return '⛪';
+        if (name.includes('poezj') || name.includes('poetry')) return '📝';
+        if (name.includes('surreal')) return '🌀';
+        if (name.includes('experimental')) return '🔬';
+        if (name.includes('minimalist')) return '⚪';
 
-        // Fallback dla nieznanych gatunków
         return '🎬';
     };
 

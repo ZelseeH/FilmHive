@@ -206,6 +206,8 @@ const MoviesAddPartTwo: React.FC = () => {
             header: 'Potwierdzenie anulowania',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
+            acceptLabel: 'Tak',
+            rejectLabel: 'Nie',
             accept: confirmDeleteMovie,
             reject: () => { }
         });

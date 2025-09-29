@@ -34,6 +34,12 @@ class User(db.Model):
     role: Mapped[int] = mapped_column(
         Integer, default=3, nullable=False
     )  # 1=admin, 2=moderator, 3=user
+
+    # NOWE POLE NOTIFICATION
+    notification: Mapped[int] = mapped_column(
+        Integer, default=1, nullable=False
+    )  # 1=włączone, 0=wyłączone
+
     registration_date: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
@@ -62,6 +68,7 @@ class User(db.Model):
         Boolean, default=False
     )  # czy konto utworzone przez OAuth
 
+    # ISTNIEJĄCE RELATIONSHIPS
     ratings: Mapped[list["Rating"]] = relationship("Rating", back_populates="user")
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user")
     activity_logs: Mapped[list["UserActivityLog"]] = relationship(
@@ -75,6 +82,19 @@ class User(db.Model):
     )
     watchlist: Mapped[list["Watchlist"]] = relationship(
         "Watchlist", back_populates="user"
+    )
+
+    # NOWE RELATIONSHIPS DLA FORUM
+    received_replies: Mapped[list["CommentReply"]] = relationship(
+        "CommentReply", foreign_keys="CommentReply.id_main", back_populates="main_user"
+    )
+    sent_replies: Mapped[list["CommentReply"]] = relationship(
+        "CommentReply",
+        foreign_keys="CommentReply.id_reply",
+        back_populates="reply_user",
+    )
+    notifications: Mapped[list["Notification"]] = relationship(
+        "Notification", foreign_keys="Notification.user_id", back_populates="user"
     )
 
     def __repr__(self):
@@ -111,6 +131,11 @@ class User(db.Model):
             self.google_id or self.facebook_id or self.github_id
         )
 
+    @property
+    def notifications_enabled(self):
+        """Sprawdza czy użytkownik ma włączone notyfikacje"""
+        return self.notification == 1
+
     def update_last_login(self):
         self.last_login = datetime.utcnow()
 
@@ -125,6 +150,15 @@ class User(db.Model):
 
         if not self.oauth_provider:
             self.oauth_provider = provider
+
+    def toggle_notifications(self):
+        """Przełącza status notyfikacji"""
+        self.notification = 1 if self.notification == 0 else 0
+
+    # NOWA METODA DLA POWIADOMIEŃ
+    def get_unread_notifications_count(self):
+        """Zwraca liczbę nieprzeczytanych powiadomień"""
+        return len([n for n in self.notifications if not n.is_read])
 
     def serialize(
         self,
@@ -155,6 +189,9 @@ class User(db.Model):
             "name": self.name,
             "email": self.email,
             "role": self.role,
+            "notification": self.notification,  # DODANE POLE
+            "notifications_enabled": self.notifications_enabled,  # DODANA WŁAŚCIWOŚĆ
+            "unread_notifications_count": self.get_unread_notifications_count(),  # NOWE POLE
             "registration_date": (
                 self.registration_date.isoformat() if self.registration_date else None
             ),

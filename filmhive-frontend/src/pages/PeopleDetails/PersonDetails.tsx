@@ -1,12 +1,10 @@
-// src/pages/PersonDetails/PersonDetails.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import styles from './PersonDetails.module.css';
 import { usePersonDetails } from './hooks/usePersonDetails';
 import PersonHeaderSection from './components/PersonHeaderSection/PersonHeaderSection';
 import PersonFilmography from './components/PersonFilmography/PersonFilmography';
-import { getPersonMovies } from './services/peopleService';
-import { PersonMovie } from './services/peopleService';
+import { getPersonMovies, PersonMovie } from './services/peopleService';
 
 interface LocationState {
     personId?: number;
@@ -20,6 +18,9 @@ const PersonDetails: React.FC = () => {
     const personId = locationState?.personId;
     const type = personType || locationState?.personType || 'actor';
 
+    // Debug logs
+    console.log('PersonDetails:', { personType, personName, locationState, personId, type });
+
     const [showFullBio, setShowFullBio] = useState<boolean>(false);
     const [movies, setMovies] = useState<PersonMovie[]>([]);
     const [loadingMovies, setLoadingMovies] = useState<boolean>(false);
@@ -28,9 +29,11 @@ const PersonDetails: React.FC = () => {
 
     useEffect(() => {
         if (person?.id) {
+            console.log(`Fetching movies for person id=${person.id}, type=${person.type}`);
             setLoadingMovies(true);
-            getPersonMovies(person.id, person.type)
+            getPersonMovies(person.id, person.type, 1, 'all', 'release_date', 'desc')
                 .then((data) => {
+                    console.log('API response movies:', data);
                     setMovies(data.movies);
                     setLoadingMovies(false);
                 })
@@ -42,14 +45,12 @@ const PersonDetails: React.FC = () => {
     }, [person?.id, person?.type]);
 
     const toggleBioModal = () => {
-        setShowFullBio((prev) => !prev);
+        setShowFullBio(prev => !prev);
     };
 
     if (loading) return <div className={styles['loading']}>Ładowanie szczegółów...</div>;
     if (error) return <div className={styles['error']}>Błąd: {error}</div>;
     if (!person) return <div className={styles['not-found']}>Nie znaleziono osoby</div>;
-
-    const typeLabel = person.type === 'actor' ? 'aktora' : 'reżysera';
 
     return (
         <div className={styles['person-detail-container']}>
@@ -58,7 +59,11 @@ const PersonDetails: React.FC = () => {
             {loadingMovies ? (
                 <div className={styles['loading']}>Ładowanie filmografii...</div>
             ) : (
-                <PersonFilmography movies={movies} personType={person.type} />
+                <PersonFilmography
+                    personId={person.id}
+                    personType={person.type}
+                    initialMovies={movies}
+                />
             )}
 
             {showFullBio && (
@@ -68,7 +73,7 @@ const PersonDetails: React.FC = () => {
                     role="dialog"
                     aria-labelledby="modal-title"
                 >
-                    <div className={styles['modal-content']} onClick={(e) => e.stopPropagation()}>
+                    <div className={styles['modal-content']} onClick={e => e.stopPropagation()}>
                         <button
                             className={styles['modal-close-btn']}
                             onClick={toggleBioModal}

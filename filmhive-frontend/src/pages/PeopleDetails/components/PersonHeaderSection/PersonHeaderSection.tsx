@@ -1,5 +1,4 @@
-// src/features/people/components/PersonHeaderSection/PersonHeaderSection.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Person } from '../../services/peopleService';
 import { handlePersonImageError, formatPersonBirthDate, calculateAge } from '../../utils/personUtils';
 import styles from './PersonHeaderSection.module.css';
@@ -10,25 +9,37 @@ interface PersonHeaderSectionProps {
 }
 
 const PersonHeaderSection: React.FC<PersonHeaderSectionProps> = ({ person, onShowFullBio }) => {
-    const getPersonTypeLabel = (type: 'actor' | 'director', gender?: string | null): string => {
-        if (type === 'actor') {
-            return gender === 'K' ? 'Aktorka' : 'Aktor';
-        } else {
-            return gender === 'K' ? 'Reżyserka' : 'Reżyser';
-        }
-    };
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const getPersonTypeLabel = (type: 'actor' | 'director', gender?: string | null): string =>
+        type === 'actor' ? (gender === 'K' ? 'Aktorka' : 'Aktor') : (gender === 'K' ? 'Reżyserka' : 'Reżyser');
 
     const personTypeLabel = getPersonTypeLabel(person.type, person.gender);
+
+    // ✨ JavaScript truncation jako backup
+    const MAX_CHARS = 400;
+    const biography = person.biography || '';
+    const shouldTruncate = biography.length > MAX_CHARS;
+    const displayBio = isExpanded || !shouldTruncate
+        ? biography
+        : `${biography.substring(0, MAX_CHARS).trim()}...`;
 
     return (
         <div className={styles['person-header-section']}>
             <div className={styles['person-photo']}>
-                <img
-                    src={person.photo_url || `/placeholder-${person.type}.jpg`}
-                    alt={`Zdjęcie - ${person.name}`}
-                    onError={(e) => handlePersonImageError(e, person.type)}
-                />
+                {person.photo_url ? (
+                    <img
+                        src={person.photo_url}
+                        alt={person.name}
+                        onError={(e) => handlePersonImageError(e)}
+                    />
+                ) : (
+                    <div className={styles['no-image']}>
+                        {person.name && person.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </div>
+                )}
             </div>
+
             <div className={styles['person-header-info']}>
                 <div className={styles['person-type-label']}>{personTypeLabel}</div>
                 <h1 className={styles['person-name']}>{person.name}</h1>
@@ -40,21 +51,18 @@ const PersonHeaderSection: React.FC<PersonHeaderSectionProps> = ({ person, onSho
                             <span className={styles['detail-value']}>{formatPersonBirthDate(person.birth_date)}</span>
                         </div>
                     )}
-
                     {person.birth_place && (
                         <div className={styles['detail-item']}>
                             <span className={styles['detail-label']}>Miejsce urodzenia:</span>
                             <span className={styles['detail-value']}>{person.birth_place}</span>
                         </div>
                     )}
-
                     {person.birth_date && (
                         <div className={styles['detail-item']}>
                             <span className={styles['detail-label']}>Wiek:</span>
                             <span className={styles['detail-value']}>{calculateAge(person.birth_date)} lat</span>
                         </div>
                     )}
-
                     {person.gender && (
                         <div className={styles['detail-item']}>
                             <span className={styles['detail-label']}>Płeć:</span>
@@ -63,19 +71,26 @@ const PersonHeaderSection: React.FC<PersonHeaderSectionProps> = ({ person, onSho
                     )}
                 </div>
 
+                {/* ✨ POŁĄCZENIE: JavaScript truncation + CSS jako backup */}
                 <div className={styles['person-bio-container']}>
-                    <p className={styles['person-bio']}>
-                        {person.biography && person.biography.length > 300
-                            ? `${person.biography.substring(0, 300)}...`
-                            : person.biography || 'Brak dostępnej biografii.'}
+                    <p className={`${styles['person-bio']} ${isExpanded ? styles['expanded'] : ''}`}>
+                        {displayBio || 'Brak dostępnej biografii.'}
                     </p>
-                    {person.biography && person.biography.length > 300 && (
-                        <button
-                            className={styles['show-full-bio-btn']}
-                            onClick={onShowFullBio}
-                        >
-                            zobacz pełną biografię
-                        </button>
+                    {shouldTruncate && (
+                        <div className={styles['bio-buttons']}>
+                            <button
+                                className={styles['show-full-bio-btn']}
+                                onClick={() => setIsExpanded(!isExpanded)}
+                            >
+                                {isExpanded ? 'zwiń opis' : 'zobacz pełny opis'}
+                            </button>
+                            <button
+                                className={styles['modal-bio-btn']}
+                                onClick={onShowFullBio}
+                            >
+                                otwórz w oknie
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

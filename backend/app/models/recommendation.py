@@ -27,8 +27,13 @@ class Recommendation(db.Model):
         ForeignKey("movies.movie_id", ondelete="CASCADE"), nullable=False, index=True
     )
     score: Mapped[float] = mapped_column(Float, nullable=False)
-    algorithm_used: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_id", "movie_id", name="unique_user_movie_recommendation"
+        ),
+    )
 
     @validates("score")
     def validate_score(self, key, value):
@@ -40,7 +45,10 @@ class Recommendation(db.Model):
     movie: Mapped["Movie"] = relationship("Movie", back_populates="recommendations")
 
     def __repr__(self):
-        return f"<Recommendation(id={self.recommendation_id}, user_id={self.user_id}, movie_id={self.movie_id}, score={self.score})>"
+        return (
+            f"<Recommendation(id={self.recommendation_id}, user_id={self.user_id}, "
+            f"movie_id={self.movie_id}, score={self.score})>"
+        )
 
     def serialize(self, include_user=False, include_movie=False):
         result = {
@@ -48,7 +56,6 @@ class Recommendation(db.Model):
             "user_id": self.user_id,
             "movie_id": self.movie_id,
             "score": self.score,
-            "algorithm_used": self.algorithm_used,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 

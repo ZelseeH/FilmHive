@@ -25,3 +25,8 @@ export async function removeFavoriteMovie(movieId: number, token: string): Promi
         throw error;
     }
 }
+
+export async function fetchAllFavoriteMovies(username: string): Promise<FavoriteMovie[]> {
+    const response = await axios.get<FavoriteMovie[]>(`/api/user/profile/${username}/all-favorites`);
+    return response.data;
+}

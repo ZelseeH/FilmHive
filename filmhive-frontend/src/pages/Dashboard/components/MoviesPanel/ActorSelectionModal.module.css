@@ -3,9 +3,11 @@
 }
 
 .actorModal .p-dialog {
-    width: 85% !important;
     max-width: 1200px !important;
-    max-height: 85vh !important;
+    max-height: 90vh !important;
+    width: 95vw !important;
+    height: 90vh !important;
+    margin: 0 !important;
 }
 
 .actorModal .p-dialog .p-dialog-content {
@@ -13,26 +15,27 @@
     overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
+    height: 100% !important;
 }
 
 .scrollableContent {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
-    max-height: 70vh;
+    padding: 1rem;
+    min-height: 0;
 }
 
 .modalHeader {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 8px;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .modalHeader h3 {
     margin: 0;
     color: #333;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 600;
 }
 
@@ -42,10 +45,11 @@
 
 .searchInput {
     width: 100% !important;
-    padding: 10px 12px !important;
-    font-size: 14px !important;
+    padding: 0.75rem !important;
+    font-size: 0.875rem !important;
     border: 1px solid #ddd !important;
-    border-radius: 6px !important;
+    border-radius: 0.375rem !important;
+    box-sizing: border-box !important;
 }
 
 .searchInput:focus {
@@ -56,7 +60,7 @@
 .modalContent {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 1.5rem;
     width: 100%;
     min-height: min-content;
 }
@@ -64,36 +68,37 @@
 .errorMessage {
     background: rgba(255, 77, 77, 0.1);
     color: #d32f2f;
-    padding: 12px 16px;
-    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
     border-left: 3px solid #d32f2f;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 
 .actorsGrid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 12px;
-    max-height: calc(3 * (140px + 12px));
+    gap: 0.75rem;
+    max-height: 50vh;
     overflow-y: auto;
     width: 100%;
+    padding: 0.25rem;
 }
 
 .actorCard {
     background: white;
     border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 12px;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
-    min-height: 140px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     width: 100%;
     box-sizing: border-box;
+    min-height: 140px;
 }
 
 .actorCard:hover {
@@ -112,7 +117,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
     width: 100%;
     position: relative;
 }
@@ -133,7 +138,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 1.5rem;
     font-weight: bold;
     color: #666;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -143,12 +148,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 0.125rem;
     width: 100%;
+    overflow: hidden;
 }
 
 .actorName {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #333;
     line-height: 1.2;
@@ -163,13 +169,14 @@
 }
 
 .actorYear {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #666;
     font-weight: normal;
+    white-space: nowrap;
 }
 
 .actorPlace {
-    font-size: 11px;
+    font-size: 0.6875rem;
     color: #888;
     font-style: italic;
     line-height: 1.2;
@@ -178,7 +185,9 @@
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
 }
 
 .selectedBadge {
@@ -193,7 +202,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -202,10 +211,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    padding: 20px;
+    gap: 0.75rem;
+    padding: 1.25rem;
     color: #666;
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 
 .spinner {
@@ -230,7 +239,7 @@
 .noResults {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 40px 20px;
+    padding: 2.5rem 1.25rem;
     color: #666;
     font-style: italic;
 }
@@ -238,38 +247,42 @@
 .selectedActorsSection {
     background: #f8f9fa;
     border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-top: 1rem;
 }
 
 .selectedActorsSection h4 {
-    margin: 0 0 16px 0;
+    margin: 0 0 1rem 0;
     color: #333;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
 }
 
 .selectedActorsList {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
 }
 
 .selectedActorItem {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
     background: white;
-    padding: 12px;
-    border-radius: 8px;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
     border: 1px solid #e0e0e0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .selectedActorInfo {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
     min-width: 150px;
+    flex-shrink: 0;
 }
 
 .selectedActorPhoto {
@@ -277,59 +290,6 @@
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-}
-
-.addButton {
-    padding: 12px 16px;
-    background: var(--yellow);
-    color: var(--black);
-    border: 2px dashed transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: var(--transition);
-    text-align: center;
-    margin-top: 8px;
-}
-
-.removeButton {
-    padding: 6px 12px;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: var(--transition);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.saveButton {
-    padding: 8px 16px;
-    background: var(--yellow);
-    color: var(--black);
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    transition: var(--transition);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.cancelButton {
-    padding: 8px 16px;
-    background: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    transition: var(--transition);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .selectedActorPhotoPlaceholder {
@@ -340,27 +300,29 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: bold;
     color: #666;
 }
 
 .selectedActorName {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     color: #333;
 }
 
 .roleInputContainer {
     flex: 1;
+    min-width: 0;
 }
 
 .roleInput {
     width: 100% !important;
-    padding: 8px 12px !important;
-    font-size: 13px !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8125rem !important;
     border: 1px solid #ddd !important;
-    border-radius: 6px !important;
+    border-radius: 0.375rem !important;
+    box-sizing: border-box !important;
 }
 
 .roleInput:focus {
@@ -380,7 +342,8 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 12px;
+    font-size: 0.75rem;
+    flex-shrink: 0;
 }
 
 .removeActorButton:hover {
@@ -391,8 +354,58 @@
 .modalFooter {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    padding-top: 8px;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+    flex-shrink: 0;
+}
+
+.saveButton,
+.cancelButton {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+}
+
+.saveButton {
+    background: #ffcc00;
+    color: #000;
+}
+
+.cancelButton {
+    background: #6c757d;
+    color: white;
+}
+
+.addButton {
+    padding: 12px 16px;
+    background: #ffcc00;
+    color: #000;
+    border: 2px dashed transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.removeButton {
+    padding: 6px 12px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Scrollbar styling */
@@ -445,7 +458,9 @@
         max-height: 65vh;
     }
 
-
+    .actorsGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 
     .actorCard {
         padding: 10px;
@@ -567,6 +582,7 @@
 
     .actorsGrid {
         gap: 6px;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .selectedActorsSection {
@@ -594,7 +610,7 @@
     }
 
     .actorsGrid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 4px;
         max-height: calc(3 * (100px + 4px));
     }
@@ -657,10 +673,9 @@
     }
 }
 
-/* Bardzo małe ekrany */
 @media (max-width: 360px) {
     .actorsGrid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
         max-height: calc(3 * (90px + 4px));
     }
 
@@ -703,6 +718,6 @@
 @media (max-width: 300px) {
     .actorsGrid {
         max-height: calc(2 * (100px + 4px));
-        grid-template-columns: repeat(1, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 }

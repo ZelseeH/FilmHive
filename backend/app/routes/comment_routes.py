@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.comment_service import CommentService
 from app.services.auth_service import admin_required, staff_required
+import app.services.user_service as user_service_module
 
 comments_bp = Blueprint("comments", __name__)
 comment_service = CommentService()
@@ -75,11 +76,8 @@ def delete_comment_enhanced(comment_id):
     try:
         user_id = int(get_jwt_identity())
 
-        # Sprawdź czy to staff
-        from app.services.user_service import UserService
-
-        user_service = UserService()
-        user = user_service.get_user_by_id(user_id)
+        # Użyj funkcji zamiast klasy
+        user = user_service_module.get_user_by_id(user_id)
 
         is_staff = user and user.get("role", 3) <= 2
 
@@ -89,9 +87,11 @@ def delete_comment_enhanced(comment_id):
             result = comment_service.delete_comment(comment_id, user_id)
 
         if result:
-            action = "staff deletion" if is_staff else "user deletion"
+            action = (
+                "usunięcie przez staff" if is_staff else "usunięcie przez użytkownika"
+            )
             current_app.logger.info(
-                f"User {user_id} deleted comment {comment_id} ({action})"
+                f"Użytkownik {user_id} usunął komentarz {comment_id} ({action})"
             )
             return jsonify({"message": "Komentarz został usunięty"}), 200
         else:
@@ -105,10 +105,10 @@ def delete_comment_enhanced(comment_id):
             )
 
     except ValueError as e:
-        current_app.logger.error(f"ValueError in delete_comment: {str(e)}")
+        current_app.logger.error(f"ValueError w delete_comment: {str(e)}")
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        current_app.logger.error(f"Error in delete_comment: {str(e)}")
+        current_app.logger.error(f"Błąd w delete_comment: {str(e)}")
         return jsonify({"error": "Wystąpił błąd podczas usuwania komentarza"}), 500
 
 

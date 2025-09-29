@@ -43,19 +43,27 @@ class Director(db.Model):
         return f"<Director(id={self.director_id}, name='{self.director_name}', birth_date={self.birth_date})>"
 
     def serialize(self, include_movies=False):
+        from flask import url_for
+
+        def is_full_url(url):
+            return url and (url.startswith("http://") or url.startswith("https://"))
+
+        if is_full_url(self.photo_url):
+            photo = self.photo_url
+        elif self.photo_url:
+            photo = url_for(
+                "static", filename=f"directors/{self.photo_url}", _external=True
+            )
+        else:
+            photo = None
+
         result = {
             "id": self.director_id,
             "name": self.director_name,
             "birth_date": self.birth_date.isoformat() if self.birth_date else None,
             "birth_place": self.birth_place,
             "biography": self.biography,
-            "photo_url": (
-                url_for(
-                    "static", filename=f"directors/{self.photo_url}", _external=True
-                )
-                if self.photo_url
-                else None
-            ),
+            "photo_url": photo,
             "gender": self.gender.value if self.gender else None,
         }
 

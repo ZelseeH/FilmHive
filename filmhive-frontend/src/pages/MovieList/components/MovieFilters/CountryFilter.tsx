@@ -8,23 +8,47 @@ interface CountryFilterProps {
     onToggle: (country: string) => void;
 }
 
+const countryCodeMap: Record<string, string> = {
+    AE: 'Zjednoczone Emiraty Arabskie',
+    AU: 'Australia',
+    BE: 'Belgia',
+    BR: 'Brazylia',
+    CA: 'Kanada',
+    CN: 'Chiny',
+    CZ: 'Czechy',
+    DE: 'Niemcy',
+    DK: 'Dania',
+    EG: 'Egipt',
+    ES: 'Hiszpania',
+    FR: 'Francja',
+    GB: 'Wielka Brytania',
+    HK: 'Hongkong',
+    IE: 'Irlandia',
+    IT: 'Włochy',
+    JP: 'Japonia',
+    KR: 'Korea Południowa',
+    MX: 'Meksyk',
+    PL: 'Polska',
+    US: 'Stany Zjednoczone',
+    NZ: 'Nowa Zelandia',
+    'Irlandia/UK/USA': 'Irlandia, Wielka Brytania, Stany Zjednoczone',
+    UK: 'Wielka Brytania',
+    'UK/Australia': 'Wielka Brytania, Australia',
+    'UK/USA': 'Wielka Brytania, Stany Zjednoczone',
+    USA: 'Stany Zjednoczone',
+    'USA/NZ': 'Stany Zjednoczone, Nowa Zelandia',
+    'USA/UK': 'Stany Zjednoczone, Wielka Brytania',
+};
+
 const CountryFilter: React.FC<CountryFilterProps> = ({
     countries,
     selectedCountries,
     isLoading,
-    onToggle
+    onToggle,
 }) => {
-    const [searchTerm, setSearchTerm] = useState('');
     const [showAll, setShowAll] = useState(false);
 
-    // Filter countries based on search term
-    const filteredCountries = countries.filter(country =>
-        country.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    // Limit displayed countries unless showAll is true
-    const displayedCountries = showAll ? filteredCountries : filteredCountries.slice(0, 10);
-    const hasMoreCountries = filteredCountries.length > 10;
+    const displayedCountries = showAll ? countries : countries.slice(0, 10);
 
     return (
         <div className={styles.filterSection}>
@@ -33,36 +57,26 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
                 <div className={styles.loading}>Ładowanie krajów...</div>
             ) : (
                 <>
-                    {countries.length > 5 && (
-                        <div className={styles.searchContainer}>
-                            <input
-                                type="text"
-                                placeholder="Szukaj kraju..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className={styles.searchInput}
-                            />
-                        </div>
-                    )}
-
-                    <div className={styles.countryList}>
+                    <div
+                        className={`${styles.countryList} ${showAll ? styles.expanded : ''}`}
+                    >
                         {displayedCountries.map((country) => (
                             <div
                                 key={country}
-                                className={`${styles.countryItem} ${selectedCountries.includes(country) ? styles.selected : ''}`}
+                                className={`${styles.countryItem} ${selectedCountries.includes(country) ? styles.selected : ''
+                                    }`}
                                 onClick={() => onToggle(country)}
                             >
-                                {country}
+                                {countryCodeMap[country] || country}
                             </div>
                         ))}
                     </div>
-
-                    {hasMoreCountries && (
+                    {countries.length > 10 && (
                         <button
                             className={styles.showMoreButton}
                             onClick={() => setShowAll(!showAll)}
                         >
-                            {showAll ? 'Pokaż mniej' : 'Pokaż więcej'}
+                            {showAll ? 'Pokaż mniej' : 'Pokaż wszystkie'}
                         </button>
                     )}
                 </>

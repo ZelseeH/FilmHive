@@ -7,6 +7,17 @@ from app.models.favorite_movie import FavoriteMovie
 from app.models.watchlist import Watchlist
 
 
+def _get_poster_url_for_movie(poster_url):
+    """Pomocnicza funkcja do przetwarzania URL posterów filmów"""
+    if not poster_url:
+        return None
+    # Sprawdź czy to już pełny URL (TMDB)
+    if poster_url.startswith(("http://", "https://")):
+        return poster_url
+    # Dla lokalnych plików dodaj pełną ścieżkę
+    return url_for("static", filename=f"posters/{poster_url}", _external=True)
+
+
 class UserRepository:
     def __init__(self, session):
         self.session = session
@@ -34,36 +45,89 @@ class UserRepository:
         return user
 
     def update_profile(self, user_id, data):
+        """Aktualizuje profil użytkownika z debugowaniem"""
+        print(f"=== DEBUG UPDATE_PROFILE ===")
+        print(f"User ID: {user_id}")
+        print(f"Dane do aktualizacji: {data}")
+
         user = self.get_by_id(user_id)
         if not user:
+            print(f"ERROR: Nie znaleziono użytkownika o ID: {user_id}")
             return None
 
+        print(f"Znaleziono użytkownika: {user.username} ({user.email})")
+
+        # Walidacja i aktualizacja username
         if "username" in data and data["username"] != user.username:
+            print(f"Zmiana username z '{user.username}' na '{data['username']}'")
+
+            if not data["username"].strip():
+                print("ERROR: Nazwa użytkownika nie może być pusta")
+                raise ValueError("Nazwa użytkownika nie może być pusta")
+
             existing_user = self.get_by_username_or_email(data["username"])
+            if existing_user:
+                print(
+                    f"Znaleziono istniejącego użytkownika z username: {existing_user.user_id}"
+                )
+
             if existing_user and existing_user.user_id != user.user_id:
+                print("ERROR: Nazwa użytkownika jest już zajęta")
                 raise ValueError("Nazwa użytkownika jest już zajęta")
+
             user.username = data["username"]
+            print(f"Username zaktualizowany na: {user.username}")
 
+        # Walidacja i aktualizacja email
         if "email" in data and data["email"] != user.email:
+            print(f"Zmiana email z '{user.email}' na '{data['email']}'")
+
+            if not data["email"].strip():
+                print("ERROR: Email nie może być pusty")
+                raise ValueError("Email nie może być pusty")
+
+            # Podstawowa walidacja formatu email
+            import re
+
+            email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            if not re.match(email_pattern, data["email"]):
+                print(f"ERROR: Nieprawidłowy format emailu: {data['email']}")
+                raise ValueError("Nieprawidłowy format emailu")
+
             existing_user = self.get_by_username_or_email(data["email"])
+            if existing_user:
+                print(
+                    f"Znaleziono istniejącego użytkownika z email: {existing_user.user_id}"
+                )
+
             if existing_user and existing_user.user_id != user.user_id:
+                print("ERROR: Email jest już zajęty")
                 raise ValueError("Email jest już zajęty")
+
             user.email = data["email"]
+            print(f"Email zaktualizowany na: {user.email}")
 
-        if "name" in data:
-            user.name = data["name"]
+        # Aktualizacja pozostałych pól
+        for field in ["name", "bio", "profile_picture", "is_active"]:
+            if field in data:
+                old_value = getattr(user, field)
+                setattr(user, field, data[field])
+                print(f"{field} zaktualizowane z '{old_value}' na '{data[field]}'")
 
-        if "bio" in data:
-            user.bio = data["bio"]
-
-        if "profile_picture" in data:
-            user.profile_picture = data["profile_picture"]
-
-        if "is_active" in data:
-            user.is_active = data["is_active"]
-
-        self.session.commit()
-        return user
+        # Zapisz zmiany
+        try:
+            print("Zapisywanie zmian do bazy danych...")
+            self.session.commit()
+            print("✅ Zmiany zapisane pomyślnie!")
+            print(f"Zaktualizowany użytkownik: {user.username} ({user.email})")
+            print("=== END DEBUG ===")
+            return user
+        except Exception as e:
+            print(f"❌ BŁĄD podczas zapisywania: {str(e)}")
+            self.session.rollback()
+            print("Rollback wykonany")
+            print("=== END DEBUG ===")
+            raise Exception(f"Błąd podczas zapisywania zmian: {str(e)}")
 
     def change_password(self, user_id, new_password):
         user = self.get_by_id(user_id)
@@ -90,6 +154,7 @@ class UserRepository:
         return user
 
     def get_recent_rated_movies(self, user_id, limit=6):
+        """Pobiera ostatnio ocenione filmy z poprawnymi URL-ami posterów"""
         results = (
             self.session.query(Rating, Movie)
             .join(Movie, Rating.movie_id == Movie.movie_id)
@@ -103,13 +168,9 @@ class UserRepository:
             {
                 "movie_id": movie.movie_id,
                 "title": movie.title,
-                "poster_url": (
-                    url_for(
-                        "static", filename=f"posters/{movie.poster_url}", _external=True
-                    )
-                    if movie.poster_url
-                    else None
-                ),
+                "poster_url": _get_poster_url_for_movie(
+                    movie.poster_url
+                ),  # ✅ POPRAWKA
                 "rating": rating.rating,
                 "rated_at": rating.rated_at.isoformat() if rating.rated_at else None,
             }
@@ -117,6 +178,7 @@ class UserRepository:
         ]
 
     def get_recent_favorite_movies(self, user_id, limit=6):
+        """Pobiera ostatnio polubione filmy z poprawnymi URL-ami posterów"""
         results = (
             self.session.query(FavoriteMovie, Movie)
             .join(Movie, FavoriteMovie.movie_id == Movie.movie_id)
@@ -130,19 +192,16 @@ class UserRepository:
             {
                 "movie_id": movie.movie_id,
                 "title": movie.title,
-                "poster_url": (
-                    url_for(
-                        "static", filename=f"posters/{movie.poster_url}", _external=True
-                    )
-                    if movie.poster_url
-                    else None
-                ),
+                "poster_url": _get_poster_url_for_movie(
+                    movie.poster_url
+                ),  # ✅ POPRAWKA
                 "added_at": fav.added_at.isoformat() if fav.added_at else None,
             }
             for fav, movie in results
         ]
 
     def get_recent_watchlist_movies(self, user_id, limit=6):
+        """Pobiera ostatnie filmy z watchlisty z poprawnymi URL-ami posterów"""
         results = (
             self.session.query(Watchlist, Movie)
             .join(Movie, Watchlist.movie_id == Movie.movie_id)
@@ -156,13 +215,9 @@ class UserRepository:
             {
                 "movie_id": movie.movie_id,
                 "title": movie.title,
-                "poster_url": (
-                    url_for(
-                        "static", filename=f"posters/{movie.poster_url}", _external=True
-                    )
-                    if movie.poster_url
-                    else None
-                ),
+                "poster_url": _get_poster_url_for_movie(
+                    movie.poster_url
+                ),  # ✅ POPRAWKA
                 "added_at": (
                     watchlist.added_at.isoformat() if watchlist.added_at else None
                 ),
@@ -196,8 +251,7 @@ class UserRepository:
             },
         }
 
-    # Nowe metody do obsługi panelu administratora
-
+    # Metody do obsługi panelu administratora
     def get_all(self):
         """Pobierz wszystkich użytkowników"""
         return self.session.query(User).all()
@@ -235,7 +289,6 @@ class UserRepository:
         user = self.get_by_id(user_id)
         if not user:
             return None
-
         user.role = new_role
         self.session.commit()
         return user
@@ -245,7 +298,6 @@ class UserRepository:
         user = self.get_by_id(user_id)
         if not user:
             return None
-
         user.is_active = is_active
         self.session.commit()
         return user
@@ -275,6 +327,52 @@ class UserRepository:
             .all()
         )
 
+    def update_email(self, user_id, new_email, current_password):
+        """Aktualizuje email użytkownika z weryfikacją hasła"""
+        print(f"=== DEBUG UPDATE_EMAIL REPOSITORY ===")
+        print(f"User ID: {user_id}, New email: {new_email}")
+
+        user = self.get_by_id(user_id)
+        if not user:
+            print(f"ERROR: Nie znaleziono użytkownika o ID: {user_id}")
+            return None
+
+        # 🔥 WERYFIKACJA OBECNEGO HASŁA
+        if not user.check_password(current_password):
+            print("ERROR: Nieprawidłowe obecne hasło")
+            raise ValueError("Nieprawidłowe obecne hasło")
+
+        old_email = user.email
+        print(f"Zmiana email z '{old_email}' na '{new_email}'")
+
+        # Sprawdź czy email nie jest już zajęty
+        existing_user = self.get_by_username_or_email(new_email)
+        if existing_user and existing_user.user_id != user.user_id:
+            print("ERROR: Email jest już zajęty")
+            raise ValueError("Email jest już zajęty")
+
+        # Podstawowa walidacja formatu email
+        import re
+
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(email_pattern, new_email):
+            print(f"ERROR: Nieprawidłowy format emailu: {new_email}")
+            raise ValueError("Nieprawidłowy format emailu")
+
+        user.email = new_email
+
+        try:
+            print("Zapisywanie zmiany email do bazy danych...")
+            self.session.commit()
+            print("✅ Email zaktualizowany pomyślnie!")
+            print("=== END DEBUG ===")
+            return user, old_email
+        except Exception as e:
+            print(f"❌ BŁĄD podczas zapisywania: {str(e)}")
+            self.session.rollback()
+            print("=== END DEBUG ===")
+            raise Exception(f"Błąd podczas zapisywania zmian: {str(e)}")
+
     def get_recent_active_users(self, limit=10):
         """Pobierz ostatnio aktywnych użytkowników"""
         return (
@@ -289,8 +387,7 @@ class UserRepository:
         """Pobierz użytkownika na podstawie adresu email"""
         return self.session.query(User).filter(User.email == email).first()
 
-        # OAUTH METHODS - dodaj na końcu klasy UserRepository
-
+    # OAUTH METHODS
     def get_by_google_id(self, google_id):
         """Znajdź użytkownika po Google ID"""
         return self.session.query(User).filter_by(google_id=google_id).first()
@@ -542,3 +639,74 @@ class UserRepository:
         except Exception as e:
             print(f"Błąd podczas pobierania danych dashboard: {e}")
             raise
+
+    def get_all_rated_movies(self, user_id):
+        """Pobiera wszystkie ocenione filmy użytkownika (bez limitu)"""
+        results = (
+            self.session.query(Rating, Movie)
+            .join(Movie, Rating.movie_id == Movie.movie_id)
+            .filter(Rating.user_id == user_id)
+            .order_by(Rating.rated_at.desc())
+            .all()
+        )
+
+        print(f"Pobrano wszystkie {len(results)} ocenione filmy użytkownika {user_id}")
+
+        return [
+            {
+                "movie_id": movie.movie_id,
+                "title": movie.title,
+                "poster_url": _get_poster_url_for_movie(movie.poster_url),
+                "rating": rating.rating,
+                "rated_at": rating.rated_at.isoformat() if rating.rated_at else None,
+            }
+            for rating, movie in results
+        ]
+
+    def get_all_favorite_movies(self, user_id):
+        """Pobiera wszystkie ulubione filmy użytkownika (bez limitu)"""
+        results = (
+            self.session.query(FavoriteMovie, Movie)
+            .join(Movie, FavoriteMovie.movie_id == Movie.movie_id)
+            .filter(FavoriteMovie.user_id == user_id)
+            .order_by(FavoriteMovie.added_at.desc())
+            .all()
+        )
+
+        print(f"Pobrano wszystkie {len(results)} ulubione filmy użytkownika {user_id}")
+
+        return [
+            {
+                "movie_id": movie.movie_id,
+                "title": movie.title,
+                "poster_url": _get_poster_url_for_movie(movie.poster_url),
+                "added_at": fav.added_at.isoformat() if fav.added_at else None,
+            }
+            for fav, movie in results
+        ]
+
+    def get_all_watchlist_movies(self, user_id):
+        """Pobiera wszystkie filmy z watchlisty użytkownika (bez limitu)"""
+        results = (
+            self.session.query(Watchlist, Movie)
+            .join(Movie, Watchlist.movie_id == Movie.movie_id)
+            .filter(Watchlist.user_id == user_id)
+            .order_by(Watchlist.added_at.desc())
+            .all()
+        )
+
+        print(
+            f"Pobrano wszystkie {len(results)} filmy z watchlisty użytkownika {user_id}"
+        )
+
+        return [
+            {
+                "movie_id": movie.movie_id,
+                "title": movie.title,
+                "poster_url": _get_poster_url_for_movie(movie.poster_url),
+                "added_at": (
+                    watchlist.added_at.isoformat() if watchlist.added_at else None
+                ),
+            }
+            for watchlist, movie in results
+        ]

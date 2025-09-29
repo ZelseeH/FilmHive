@@ -13,6 +13,7 @@ interface MovieFormData {
     original_language: string;
     trailer_url: string;
     description: string;
+    poster_url: string;
 }
 
 const MoviesAddPage: React.FC = () => {
@@ -26,19 +27,24 @@ const MoviesAddPage: React.FC = () => {
         country: '',
         original_language: '',
         trailer_url: '',
-        description: ''
+        description: '',
+        poster_url: ''
     });
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [posterFile, setPosterFile] = useState<File | null>(null);
     const [posterPreview, setPosterPreview] = useState<string | null>(null);
+    const [posterMode, setPosterMode] = useState<'file' | 'url'>('file');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const toast = useRef<Toast>(null);
 
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
-        // Wyczyść błąd dla tego pola
         if (formErrors[field]) {
             setFormErrors(prev => ({ ...prev, [field]: '' }));
+        }
+
+        if (field === 'poster_url' && value && posterMode === 'url') {
+            setPosterPreview(value);
         }
     };
 
@@ -47,7 +53,6 @@ const MoviesAddPage: React.FC = () => {
             const file = e.target.files[0];
             setPosterFile(file);
 
-            // Tworzenie podglądu plakatu
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPosterPreview(reader.result as string);
@@ -62,36 +67,48 @@ const MoviesAddPage: React.FC = () => {
         }
     };
 
-    const cancelPosterUpload = () => {
+    const switchPosterMode = (mode: 'file' | 'url') => {
+        setPosterMode(mode);
         setPosterFile(null);
         setPosterPreview(null);
-    };
-
-    const formatDate = (dateString?: string): string => {
-        if (!dateString) return '';
-        return dateString.split('T')[0]; // Format YYYY-MM-DD
+        setFormData(prev => ({ ...prev, poster_url: '' }));
+        if (formErrors.poster_url) {
+            setFormErrors(prev => ({ ...prev, poster_url: '' }));
+        }
     };
 
     const validateForm = (): boolean => {
         const errors: Record<string, string> = {};
 
-        // Walidacja tytułu
         if (!formData.title.trim()) {
             errors.title = 'Tytuł jest wymagany';
         } else if (formData.title.length > 200) {
             errors.title = 'Tytuł nie może być dłuższy niż 200 znaków';
         }
 
-        // Walidacja daty premiery
-        if (formData.release_date) {
-            const selectedDate = new Date(formData.release_date);
-            const today = new Date();
-            if (selectedDate > today) {
-                errors.release_date = 'Data premiery nie może być późniejsza niż dzisiejsza';
+        if (formData.trailer_url && formData.trailer_url.trim()) {
+            try {
+                new URL(formData.trailer_url.trim());
+            } catch (e) {
+                errors.trailer_url = 'Nieprawidłowy format URL';
             }
         }
 
-        // Walidacja czasu trwania
+        if (posterMode === 'url' && formData.poster_url && formData.poster_url.trim()) {
+            try {
+                new URL(formData.poster_url.trim());
+            } catch (e) {
+                errors.poster_url = 'Nieprawidłowy format URL plakatu';
+            }
+        }
+
+        if (formData.release_date) {
+            const selectedDate = new Date(formData.release_date);
+            if (isNaN(selectedDate.getTime())) {
+                errors.release_date = 'Nieprawidłowy format daty';
+            }
+        }
+
         if (formData.duration_minutes) {
             const duration = parseInt(formData.duration_minutes);
             if (isNaN(duration) || duration < 1 || duration > 600) {
@@ -117,22 +134,21 @@ const MoviesAddPage: React.FC = () => {
         try {
             setLoading(true);
 
-            // Przygotuj dane do wysłania
             const movieFormData = new FormData();
             movieFormData.append('title', formData.title);
             if (formData.release_date) movieFormData.append('release_date', formData.release_date);
             if (formData.duration_minutes) movieFormData.append('duration_minutes', formData.duration_minutes);
             if (formData.country) movieFormData.append('country', formData.country);
             if (formData.original_language) movieFormData.append('original_language', formData.original_language);
-            if (formData.trailer_url) movieFormData.append('trailer_url', formData.trailer_url);
+            if (formData.trailer_url) movieFormData.append('trailer_url', formData.trailer_url.trim());
             if (formData.description) movieFormData.append('description', formData.description);
 
-            // Dodaj plakat jeśli został wybrany
-            if (posterFile) {
+            if (posterMode === 'file' && posterFile) {
                 movieFormData.append('poster', posterFile);
+            } else if (posterMode === 'url' && formData.poster_url) {
+                movieFormData.append('poster_url', formData.poster_url.trim());
             }
 
-            // Stwórz film w bazie danych
             const newMovie = await createMovie(movieFormData);
 
             toast.current?.show({
@@ -142,7 +158,6 @@ const MoviesAddPage: React.FC = () => {
                 life: 3000
             });
 
-            // POPRAWIONE PRZEKIEROWANIE do etapu 2
             navigate(`/dashboardpanel/movies/add/${newMovie.id}/relations`);
 
         } catch (err: any) {
@@ -187,7 +202,6 @@ const MoviesAddPage: React.FC = () => {
                         value={formData[fieldName]}
                         onChange={(e) => handleInputChange(fieldName, e.target.value)}
                         className={`${styles.formInput} ${formErrors[fieldName] ? styles.inputError : ''}`}
-                        max={formatDate(new Date().toISOString())}
                     />
                 ) : (
                     <input
@@ -198,6 +212,10 @@ const MoviesAddPage: React.FC = () => {
                         maxLength={fieldName === 'title' ? 200 : undefined}
                         min={type === 'number' ? 1 : undefined}
                         max={type === 'number' ? 600 : undefined}
+                        placeholder={
+                            fieldName === 'trailer_url' ? 'https://www.youtube.com/watch?v=...' :
+                                fieldName === 'poster_url' ? 'https://example.com/poster.jpg' : undefined
+                        }
                     />
                 )}
                 {fieldName === 'title' && (
@@ -208,6 +226,16 @@ const MoviesAddPage: React.FC = () => {
                 {fieldName === 'duration_minutes' && (
                     <div className={styles.fieldHint}>
                         Czas trwania w minutach (1-600)
+                    </div>
+                )}
+                {fieldName === 'trailer_url' && (
+                    <div className={styles.fieldHint}>
+                        Podaj pełny URL zwiastuna
+                    </div>
+                )}
+                {fieldName === 'poster_url' && (
+                    <div className={styles.fieldHint}>
+                        Podaj pełny URL plakatu
                     </div>
                 )}
                 {formErrors[fieldName] && (
@@ -226,7 +254,7 @@ const MoviesAddPage: React.FC = () => {
                     className={styles.backButton}
                     onClick={handleCancel}
                 >
-                    &larr; Powrót do listy
+                    ← Powrót do listy
                 </button>
 
                 <h1 className={styles.title}>
@@ -245,43 +273,79 @@ const MoviesAddPage: React.FC = () => {
                 <div className={styles.formContent}>
                     <div className={styles.posterSection}>
                         <h3>Plakat filmu</h3>
-                        <div className={styles.posterContainer}>
-                            {posterPreview ? (
-                                <img src={posterPreview} alt="Podgląd plakatu" className={styles.posterPreview} />
-                            ) : (
-                                <div className={styles.posterPlaceholder}>
-                                    <i className="pi pi-image" style={{ fontSize: '3rem', color: '#ccc' }}></i>
-                                    <p>Brak plakatu</p>
-                                </div>
-                            )}
 
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handlePosterChange}
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                            />
+                        <div className={styles.posterModeSelector}>
+                            <button
+                                type="button"
+                                className={`${styles.modeButton} ${posterMode === 'file' ? styles.active : ''}`}
+                                onClick={() => switchPosterMode('file')}
+                            >
+                                📁 Plik lokalny
+                            </button>
+                            <button
+                                type="button"
+                                className={`${styles.modeButton} ${posterMode === 'url' ? styles.active : ''}`}
+                                onClick={() => switchPosterMode('url')}
+                            >
+                                🔗 Link z chmury
+                            </button>
+                        </div>
 
-                            <div className={styles.posterActions}>
-                                <button
-                                    type="button"
-                                    className={styles.selectPosterButton}
-                                    onClick={triggerPosterUpload}
-                                >
-                                    {posterFile ? 'Zmień plakat' : 'Wybierz plakat'}
-                                </button>
-                                {posterFile && (
+                        {posterMode === 'file' ? (
+                            <div className={styles.posterContainer}>
+                                {posterPreview ? (
+                                    <img src={posterPreview} alt="Podgląd plakatu" className={styles.posterPreview} />
+                                ) : (
+                                    <div className={styles.posterPlaceholder}>
+                                        <i className="pi pi-image" style={{ fontSize: '3rem', color: '#ccc' }}></i>
+                                        <p>Brak plakatu</p>
+                                    </div>
+                                )}
+
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handlePosterChange}
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                />
+
+                                <div className={styles.posterActions}>
                                     <button
                                         type="button"
-                                        className={styles.removePosterButton}
-                                        onClick={cancelPosterUpload}
+                                        className={styles.selectPosterButton}
+                                        onClick={triggerPosterUpload}
                                     >
-                                        Usuń
+                                        {posterFile ? 'Zmień plakat' : 'Wybierz plakat'}
                                     </button>
-                                )}
+                                    {posterFile && (
+                                        <button
+                                            type="button"
+                                            className={styles.removePosterButton}
+                                            onClick={() => {
+                                                setPosterFile(null);
+                                                setPosterPreview(null);
+                                            }}
+                                        >
+                                            Usuń
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className={styles.posterContainer}>
+                                {posterPreview ? (
+                                    <img src={posterPreview} alt="Podgląd plakatu" className={styles.posterPreview} />
+                                ) : (
+                                    <div className={styles.posterPlaceholder}>
+                                        <i className="pi pi-image" style={{ fontSize: '3rem', color: '#ccc' }}></i>
+                                        <p>Brak plakatu</p>
+                                    </div>
+                                )}
+
+                                {renderFormField('poster_url', 'URL plakatu')}
+                            </div>
+                        )}
                     </div>
 
                     <div className={styles.formFields}>

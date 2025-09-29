@@ -10,6 +10,10 @@ from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.services.database import db
 from app.services.user_service import change_user_password
+from app.services.login_activity_service import (
+    log_login_activity,
+    log_failed_login_attempt,
+)
 import re
 import random
 
@@ -39,23 +43,27 @@ def register():
         username=data["username"],
         email=data["email"],
         registration_date=datetime.utcnow(),
+        last_login=datetime.utcnow(),  # Ustaw last_login już przy rejestracji
     )
     new_user.set_password(data["password"])
 
     try:
         user_repo.add(new_user)
 
+        # 🔥 LOGUJ PIERWSZĄ AKTYWNOŚĆ (REJESTRACJA + PIERWSZE LOGOWANIE)
+        log_login_activity(new_user.user_id, status="Registration & First Login")
+
         # Krótszy czas życia tokenu dostępowego
         access_token = create_access_token(
             identity=str(new_user.user_id),
             additional_claims={"role": new_user.role},
-            expires_delta=timedelta(minutes=30),  # Krótszy czas życia
+            expires_delta=timedelta(minutes=30),
         )
 
         # Dodajemy refresh token
         refresh_token = create_refresh_token(
             identity=str(new_user.user_id),
-            expires_delta=timedelta(days=30),  # Dłuższy czas życia
+            expires_delta=timedelta(days=30),
         )
 
         return (
@@ -87,29 +95,36 @@ def login():
     user = user_repo.get_by_username_or_email(data["username"])
 
     if not user or not user.check_password(data["password"]):
+        # 🔥 LOGUJ NIEUDANĄ PRÓBĘ
+        log_failed_login_attempt(data["username"])
         return jsonify({"error": "Nieprawidłowa nazwa użytkownika lub hasło"}), 401
 
     # Sprawdź, czy konto jest aktywne
     if not user.is_active:
+        # 🔥 LOGUJ PRÓBĘ LOGOWANIA NA NIEAKTYWNE KONTO
+        log_login_activity(user.user_id, status="Failed - Account Inactive")
         return (
             jsonify({"error": "Konto zostało zawieszone. "}),
             403,
         )
 
     user.last_login = datetime.utcnow()
+
+    # 🔥 LOGUJ UDANE LOGOWANIE
+    log_login_activity(user.user_id, status="Success")
+
     db.session.commit()
 
-    # Krótszy czas życia tokenu dostępowego
+    # Reszta kodu bez zmian...
     access_token = create_access_token(
         identity=str(user.user_id),
         additional_claims={"role": user.role},
-        expires_delta=timedelta(minutes=30),  # Krótszy czas życia
+        expires_delta=timedelta(minutes=30),
     )
 
-    # Dodajemy refresh token
     refresh_token = create_refresh_token(
         identity=str(user.user_id),
-        expires_delta=timedelta(days=30),  # Dłuższy czas życia
+        expires_delta=timedelta(days=30),
     )
 
     return (
@@ -235,6 +250,7 @@ def handle_oauth_user(user_info, provider, provider_id):
     try:
         # Sprawdź czy użytkownik już istnieje po Google ID
         user = user_repo.get_by_google_id(provider_id)
+        is_new_user = False
 
         if not user:
             # Sprawdź czy istnieje użytkownik z tym emailem
@@ -248,6 +264,7 @@ def handle_oauth_user(user_info, provider, provider_id):
                 db.session.commit()
             else:
                 # Utwórz nowego użytkownika
+                is_new_user = True
                 username = generate_unique_username(
                     user_info.get("name", user_info.get("email"))
                 )
@@ -260,19 +277,26 @@ def handle_oauth_user(user_info, provider, provider_id):
                     google_id=provider_id,
                     oauth_provider=provider,
                     oauth_created=True,
-                    password_hash=None,  # Brak hasła dla OAuth
+                    password_hash=None,
                     registration_date=datetime.utcnow(),
                     is_active=True,
-                    role=3,  # Domyślna rola użytkownika
+                    role=3,
                 )
 
                 user_repo.add(user)
 
         # Aktualizuj ostatnie logowanie
         user.update_last_login()
+
+        # 🔥 LOGUJ AKTYWNOŚĆ OAUTH
+        status = f"OAuth-{provider.title()}"
+        if is_new_user:
+            status += " (New Account)"
+        log_login_activity(user.user_id, status=status)
+
         db.session.commit()
 
-        # Generuj tokeny JWT
+        # Reszta kodu bez zmian...
         access_token = create_access_token(
             identity=str(user.user_id),
             additional_claims={"role": user.role},
@@ -283,7 +307,6 @@ def handle_oauth_user(user_info, provider, provider_id):
             identity=str(user.user_id), expires_delta=timedelta(days=30)
         )
 
-        # Przekieruj z tokenami na frontend
         return redirect(
             f"http://localhost:3000/auth/success?token={access_token}&refresh={refresh_token}"
         )

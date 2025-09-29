@@ -72,7 +72,12 @@ const ActorDetail: React.FC = () => {
             {loadingMovies ? (
                 <div className={styles['loading']}>Ładowanie filmografii...</div>
             ) : (
-                <ActorFilmography movies={movies} />
+                // Zmień tylko linię z ActorFilmography:
+                <ActorFilmography
+                    actorId={actor.id}
+                    initialMovies={movies}
+                />
+
             )}
 
             {showFullBio && (

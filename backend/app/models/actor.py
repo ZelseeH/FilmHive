@@ -45,17 +45,25 @@ class Actor(db.Model):
     def serialize(self, include_movies=False):
         from flask import url_for
 
+        def is_full_url(url):
+            return url.startswith("http://") or url.startswith("https://")
+
+        photo = None
+        if self.photo_url:
+            if is_full_url(self.photo_url):
+                photo = self.photo_url  # pełny URL - użyj bez zmian
+            else:
+                photo = url_for(
+                    "static", filename=f"actors/{self.photo_url}", _external=True
+                )  # lokalny plik
+
         result = {
             "id": self.actor_id,
             "name": self.actor_name,
             "birth_date": self.birth_date.isoformat() if self.birth_date else None,
             "birth_place": self.birth_place,
             "biography": self.biography,
-            "photo_url": (
-                url_for("static", filename=f"actors/{self.photo_url}", _external=True)
-                if self.photo_url
-                else None
-            ),
+            "photo_url": photo,
             "gender": (self.gender.value if self.gender else None),
         }
 

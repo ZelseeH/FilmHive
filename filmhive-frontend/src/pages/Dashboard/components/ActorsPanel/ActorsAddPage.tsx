@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { createActor } from '../../services/actorService';
+import ImageSelector from '../ImgSelector/ImageSelector';
 import styles from './ActorsAddPage.module.css';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog } from 'primereact/confirmdialog';
@@ -10,7 +11,6 @@ const ActorsAddPage: React.FC = () => {
     const navigate = useNavigate();
     const { isStaff } = useAuth();
     const toast = useRef<Toast>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [loading, setLoading] = useState<boolean>(false);
     const [formData, setFormData] = useState({
@@ -21,7 +21,10 @@ const ActorsAddPage: React.FC = () => {
         gender: '' as '' | 'M' | 'K'
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // ImageSelector state
     const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
     // Sprawdzenie uprawnień
@@ -38,8 +41,6 @@ const ActorsAddPage: React.FC = () => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-
-        // Walidacja w trakcie wpisywania
         validateField(name, value);
     };
 
@@ -101,27 +102,19 @@ const ActorsAddPage: React.FC = () => {
         setErrors(newErrors);
     };
 
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setPhotoFile(file);
+    // ImageSelector handlers
+    const handleImageChange = (file: File | null, url: string | null) => {
+        setPhotoFile(file);
+        setPhotoUrl(url);
 
-            // Tworzenie podglądu zdjęcia
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-
-            // Wyczyść błąd po wybraniu zdjęcia
+        // Wyczyść błąd zdjęcia gdy coś zostało wybrane
+        if (file || url) {
             setErrors(prev => ({ ...prev, photo: '' }));
         }
     };
 
-    const triggerPhotoUpload = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
+    const handlePreviewChange = (preview: string | null) => {
+        setPhotoPreview(preview);
     };
 
     const validateForm = (): boolean => {
@@ -133,15 +126,13 @@ const ActorsAddPage: React.FC = () => {
 
         // Sprawdź, czy zdjęcie zostało wybrane
         const newErrors = { ...errors };
-        if (!photoFile) {
+        if (!photoFile && !photoUrl) {
             newErrors.photo = 'Zdjęcie jest wymagane';
         } else {
             delete newErrors.photo;
         }
 
         setErrors(newErrors);
-
-        // Sprawdź, czy są jakiekolwiek błędy
         return Object.keys(newErrors).length === 0;
     };
 
@@ -172,8 +163,11 @@ const ActorsAddPage: React.FC = () => {
 
             actorFormData.append('gender', formData.gender);
 
+            // Dodaj zdjęcie - plik lokalny lub URL
             if (photoFile) {
                 actorFormData.append('photo', photoFile);
+            } else if (photoUrl) {
+                actorFormData.append('photo_url', photoUrl);
             }
 
             const result = await createActor(actorFormData);
@@ -185,7 +179,6 @@ const ActorsAddPage: React.FC = () => {
                 life: 3000
             });
 
-            // Przekieruj do listy aktorów po krótkim opóźnieniu
             setTimeout(() => {
                 navigate('/dashboardpanel/actors/manage');
             }, 1500);
@@ -226,34 +219,17 @@ const ActorsAddPage: React.FC = () => {
                 <form onSubmit={handleSubmit}>
                     <div className={styles.actorHeader}>
                         <div className={styles.photoContainer}>
-                            {photoPreview ? (
-                                <img src={photoPreview} alt="Podgląd zdjęcia" className={styles.actorPhoto} />
-                            ) : (
-                                <div
-                                    className={`${styles.actorPhotoPlaceholder} ${errors.photo ? styles.photoError : ''}`}
-                                    onClick={triggerPhotoUpload}
-                                >
-                                    +
-                                </div>
-                            )}
-
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handlePhotoChange}
-                                accept="image/*"
-                                style={{ display: 'none' }}
+                            <ImageSelector
+                                onImageChange={handleImageChange}
+                                onPreviewChange={handlePreviewChange}
+                                label="Zdjęcie aktora"
+                                placeholder="Brak zdjęcia"
+                                maxFileSize={5}
+                                required={true}
+                                error={errors.photo}
+                                disabled={loading}
+                                className={styles.actorImageSelector}
                             />
-
-                            <button
-                                type="button"
-                                className={styles.changePhotoButton}
-                                onClick={triggerPhotoUpload}
-                            >
-                                {photoPreview ? 'Zmień zdjęcie' : 'Dodaj zdjęcie*'}
-                            </button>
-
-                            {errors.photo && <div className={styles.fieldError}>{errors.photo}</div>}
                         </div>
 
                         <div className={styles.actorInfo}>
@@ -279,6 +255,7 @@ const ActorsAddPage: React.FC = () => {
                                     onChange={handleInputChange}
                                     className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
                                     maxLength={100}
+                                    disabled={loading}
                                 />
                                 <div className={styles.fieldHint}>
                                     {formData.name.length}/100 znaków
@@ -296,6 +273,7 @@ const ActorsAddPage: React.FC = () => {
                                     onChange={handleInputChange}
                                     className={`${styles.input} ${errors.birth_date ? styles.inputError : ''}`}
                                     max={new Date().toISOString().split('T')[0]}
+                                    disabled={loading}
                                     required
                                 />
                                 {errors.birth_date && <div className={styles.fieldError}>{errors.birth_date}</div>}
@@ -311,6 +289,7 @@ const ActorsAddPage: React.FC = () => {
                                     onChange={handleInputChange}
                                     placeholder="np. Warszawa, Polska"
                                     className={`${styles.input} ${errors.birth_place ? styles.inputError : ''}`}
+                                    disabled={loading}
                                     required
                                 />
                                 {errors.birth_place && <div className={styles.fieldError}>{errors.birth_place}</div>}
@@ -324,6 +303,7 @@ const ActorsAddPage: React.FC = () => {
                                     value={formData.gender}
                                     onChange={handleInputChange}
                                     className={`${styles.input} ${errors.gender ? styles.inputError : ''}`}
+                                    disabled={loading}
                                     required
                                 >
                                     <option value="">Wybierz płeć</option>
@@ -343,6 +323,7 @@ const ActorsAddPage: React.FC = () => {
                                     className={styles.textarea}
                                     rows={4}
                                     placeholder="Opcjonalnie"
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
