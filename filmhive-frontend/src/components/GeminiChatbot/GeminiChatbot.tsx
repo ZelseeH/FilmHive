@@ -65,7 +65,6 @@ const GeminiChatbot: React.FC = () => {
         try {
             const isFirstUserMessage = messages.filter(m => !m.isBot).length === 0;
 
-            // Tylko przy pierwszym pytaniu sprawdzaj, czy jest filmowe
             if (isFirstUserMessage && !isFilmRelated(inputMessage)) {
                 setMessages(prev => [...prev, {
                     content: "Przepraszam, ale mogę odpowiadać tylko na pytania związane z filmami, kinem, aktorami i serialami. Czy mogę pomóc Ci w znalezieniu informacji na temat świata filmu?",
@@ -75,7 +74,6 @@ const GeminiChatbot: React.FC = () => {
                 return;
             }
 
-            // Stwórz historię rozmowy dla lepszego kontekstu
             const conversationHistory = messages
                 .map(m => (m.isBot ? "Asystent: " : "Użytkownik: ") + m.content)
                 .join("\n") + `\nUżytkownik: ${inputMessage}`;

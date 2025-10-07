@@ -1,4 +1,4 @@
-from app.repositories.recommendation_repository import RecommendationRepository
+from backend.app.repositories.recommendation_repository_old import RecommendationRepository
 from app.services.database import db
 from app.models.recommendation import Recommendation
 from app.recommendation_algorithm.recommender import MovieRecommender

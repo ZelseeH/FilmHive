@@ -190,7 +190,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               logout();
             }
           } catch (e) {
-            // Ignoruj błędy parsowania JSON
           }
         }
 

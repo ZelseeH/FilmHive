@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta
 from app import create_app
 from app.extensions import db
-from app.models.movie import Movie  # zakładam, że masz model Movie zgodny z opisem
+from app.models.movie import Movie  
 import random
 
 api_key = "d729e3223cb49b1d62ae3feb6a2cd2b7"
@@ -89,18 +89,17 @@ if __name__ == "__main__":
             start_str = period_start.strftime("%Y-%m-%d")
             end_str = period_end.strftime("%Y-%m-%d")
 
-            page = 1  # pierwsza strona z najpopularniejszymi filmami
+            page = 1 
 
             try:
                 data = discover_movies(start_str, end_str, page)
-                movies = data.get("results", [])[:10]  # max 10 filmów
+                movies = data.get("results", [])[:10]  
 
                 movies_to_commit = []
 
                 for movie_summary in movies:
                     movie_id = movie_summary["id"]
 
-                    # Sprawdzenie unikalności w bazie po movie_id - zakładam pole istnieje
                     existing_movie = Movie.query.filter_by(movie_id=movie_id).first()
                     if existing_movie:
                         continue
@@ -146,7 +145,6 @@ if __name__ == "__main__":
                     if exists_title:
                         continue
 
-                    # Tworzymy Movie bez pola id, które jest autoinkrementowane
                     movie_obj = Movie(
                         title=title,
                         release_date=release_date,

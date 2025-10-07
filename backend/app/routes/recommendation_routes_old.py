@@ -4,7 +4,7 @@ from app.services.auth_service import admin_required, staff_required
 import time
 from functools import wraps
 
-from app.services.recommendation_service import (
+from backend.app.services.recommendation_service_old import (
     generate_recommendations_for_user,
     get_user_recommendations,
     get_recommendations_paginated,

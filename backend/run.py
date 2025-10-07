@@ -6,7 +6,6 @@ load_dotenv(".env")
 
 app = create_app()
 
-# 🔥 DODAJ ProxyFix TUTAJ
 app.wsgi_app = ProxyFix(
     app.wsgi_app,
     x_for=2,  # liczba proxy przed aplikacją

@@ -145,15 +145,12 @@ def update_user(user_id):
         if "is_active" in data:
             user.is_active = bool(data["is_active"])
 
-        # Aktualizacja roli (z ograniczeniami)
         if "role" in data:
             new_role = int(data["role"])
 
-            # Sprawdzenie, czy rola jest prawidłowa
             if new_role not in [1, 2, 3]:
                 return jsonify({"error": "Nieprawidłowa rola"}), 400
 
-            # Nie można modyfikować własnego konta
             if user_id == current_user_id:
                 return (
                     jsonify(
@@ -162,14 +159,12 @@ def update_user(user_id):
                     403,
                 )
 
-            # Administrator nie może nadać nikomu roli administratora
             if new_role == 1 and user.role != 1:
                 return (
                     jsonify({"error": "Nie możesz nadać nikomu roli administratora"}),
                     403,
                 )
 
-            # Administrator nie może odebrać roli administratora innemu administratorowi
             if user.role == 1 and new_role != 1:
                 return (
                     jsonify(
@@ -379,7 +374,6 @@ def delete_user(user_id):
 
         current_user_id = int(get_jwt_identity())
 
-        # Sprawdzenia bezpieczeństwa
         if user_id == current_user_id:
             return jsonify({"error": "Nie możesz usunąć swojego własnego konta"}), 403
 
@@ -391,9 +385,8 @@ def delete_user(user_id):
 
         user_data = user.serialize()
 
-        # KASKADOWE USUWANIE - każde polecenie w osobnej try-except
         try:
-            # 1. Usuń ratings
+
             try:
                 result = db.session.execute(
                     text("DELETE FROM ratings WHERE user_id = :user_id"),
@@ -402,9 +395,8 @@ def delete_user(user_id):
                 print(f"Usunięto {result.rowcount} ocen")
             except Exception as e:
                 print(f"Błąd ratings: {e}")
-                db.session.rollback()  # Rollback tylko tej operacji
+                db.session.rollback()
 
-            # 2. Usuń comments
             try:
                 result = db.session.execute(
                     text("DELETE FROM comments WHERE user_id = :user_id"),
@@ -415,7 +407,6 @@ def delete_user(user_id):
                 print(f"Błąd comments: {e}")
                 db.session.rollback()
 
-            # 3. Usuń favorite_movies
             try:
                 result = db.session.execute(
                     text("DELETE FROM favorite_movies WHERE user_id = :user_id"),
@@ -426,7 +417,6 @@ def delete_user(user_id):
                 print(f"Błąd favorite_movies: {e}")
                 db.session.rollback()
 
-            # 4. Usuń watchlist
             try:
                 result = db.session.execute(
                     text("DELETE FROM watchlist WHERE user_id = :user_id"),
@@ -437,7 +427,6 @@ def delete_user(user_id):
                 print(f"Błąd watchlist: {e}")
                 db.session.rollback()
 
-            # 5. Usuń activity_logs
             try:
                 result = db.session.execute(
                     text("DELETE FROM activity_logs WHERE user_id = :user_id"),
@@ -448,7 +437,6 @@ def delete_user(user_id):
                 print(f"Błąd activity_logs: {e}")
                 db.session.rollback()
 
-            # 6. Usuń login_activities
             try:
                 result = db.session.execute(
                     text("DELETE FROM login_activities WHERE user_id = :user_id"),
@@ -459,13 +447,12 @@ def delete_user(user_id):
                 print(f"Błąd login_activities: {e}")
                 db.session.rollback()
 
-            # 7. Na końcu usuń użytkownika - to MUSI się powieść
             try:
                 db.session.execute(
                     text("DELETE FROM users WHERE user_id = :user_id"),
                     {"user_id": user_id},
                 )
-                db.session.commit()  # Commit tylko jeśli user został usunięty
+                db.session.commit()
 
                 return (
                     jsonify(
@@ -503,32 +490,26 @@ def create_user():
     try:
         data = request.get_json()
 
-        # Sprawdzenie wymaganych pól
         required_fields = ["username", "email", "password"]
         for field in required_fields:
             if field not in data or not data[field]:
                 return jsonify({"error": f"Pole {field} jest wymagane"}), 400
 
-        # Sprawdzenie unikalności nazwy użytkownika i emaila
         if user_repo.get_by_username(data["username"]):
             return jsonify({"error": "Nazwa użytkownika jest już zajęta"}), 400
 
         if user_repo.get_by_email(data["email"]):
             return jsonify({"error": "Email jest już używany"}), 400
 
-        # Walidacja hasła
         if len(data["password"]) < 8:
             return jsonify({"error": "Hasło musi mieć co najmniej 8 znaków"}), 400
 
-        # Ustawienie domyślnych wartości
-        role = data.get("role", 3)  # Domyślnie zwykły użytkownik
+        role = data.get("role", 3)
         is_active = data.get("is_active", True)
 
-        # Walidacja roli
         if role not in [1, 2, 3]:
             return jsonify({"error": "Nieprawidłowa rola"}), 400
 
-        # Tworzenie nowego użytkownika
         new_user = User(
             username=data["username"],
             email=data["email"],
@@ -538,10 +519,8 @@ def create_user():
             is_active=is_active,
         )
 
-        # Ustawienie hasła
         new_user.set_password(data["password"])
 
-        # Zapisanie do bazy danych
         db.session.add(new_user)
         db.session.commit()
 

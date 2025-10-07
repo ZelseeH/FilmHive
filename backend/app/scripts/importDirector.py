@@ -10,7 +10,6 @@ base_url = "https://api.themoviedb.org/3"
 language = "pl-PL"
 spinner = ["-", "\\", "|", "/"]
 
-# Lista 100 najpopularniejszych reżyserów do wyszukiwania
 directors_list = [
     "Joseph Kosinski",
     "David Ayer",

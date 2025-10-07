@@ -36,7 +36,7 @@ with open("insert_actors.sql", mode="w", encoding="utf-8") as file:
     actors_fetched = 0
     max_actors = 100
     current_page = 1
-    max_pages = 10  # do 200 aktorów, zatrzymamy wcześniej po 100 spełniających warunki
+    max_pages = 10  
     file.write(
         "INSERT INTO actors (actor_name, birth_date, birth_place, biography, photo_url, gender) VALUES\n"
     )
@@ -54,9 +54,9 @@ with open("insert_actors.sql", mode="w", encoding="utf-8") as file:
             actor_id = actor["id"]
             details = get_actor_details(actor_id)
 
-            # Sprawdzamy wymagane pola - min. data urodzenia lub biografia
+          
             if not details.get("birthday") and not details.get("biography"):
-                # Pomijamy aktorów bez daty urodzenia i biografii
+                
                 continue
 
             actor_name = sanitize(details.get("name"))
@@ -77,7 +77,7 @@ with open("insert_actors.sql", mode="w", encoding="utf-8") as file:
             actors_fetched += 1
             print(f"Pobrano aktora: {actor_name} ({actors_fetched}/{max_actors})")
 
-            time.sleep(0.25)  # aby nie przekraczać limitów API
+            time.sleep(0.25)  
 
         current_page += 1
 

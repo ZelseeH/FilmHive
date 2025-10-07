@@ -6,7 +6,7 @@ language = "pl-PL"
 
 def get_top_100_movies_by_vote_count():
     movies = []
-    pages_to_fetch = 10  # możesz zwiększyć, jeśli chcesz większy próg
+    pages_to_fetch = 10  
     for page in range(1, pages_to_fetch + 1):
         url = f"https://api.themoviedb.org/3/movie/popular"
         params = {"api_key": api_key, "language": language, "page": page}

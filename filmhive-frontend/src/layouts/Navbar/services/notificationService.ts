@@ -158,7 +158,6 @@ export const getNotificationsByComment = async (commentId: number): Promise<{
     }
 };
 
-// Tworzy nowe powiadomienie
 export const createNotification = async (data: CreateNotificationData): Promise<{
     success: boolean;
     notification?: NotificationItem;

@@ -71,8 +71,6 @@ const AppRoutes: React.FC = () => {
             <Route path="/upcoming" element={<UpcomingMoviesPage />} />
             <Route path="/recommendations" element={<RecommendationsPage />} />
             <Route path="/profile/:username/activity" element={<UserActivityPage />} />
-
-
             <Route path="/settings" element={
                 <ProtectedRoute>
                     <SettingsPage />
@@ -83,8 +81,6 @@ const AppRoutes: React.FC = () => {
                     {user ? <Navigate to={`/profile/${user.username}`} replace /> : <Navigate to="/" replace />}
                 </ProtectedRoute>
             } />
-
-            {/* Stary dashboard */}
             <Route path="/dashboard" element={
                 <StaffRoute>
                     <Dashboard />
@@ -105,7 +101,6 @@ const AppRoutes: React.FC = () => {
                     <GenresPage />
                 </StaffRoute>
             } />
-
             <Route path="/dashboardpanel" element={
                 <StaffRoute>
                     <DashboardPanel />
@@ -131,28 +126,21 @@ const AppRoutes: React.FC = () => {
                     </AdminRoute>
                 } />
 
-                {/* Ścieżki dostępne dla wszystkich pracowników */}
+                {/* Ścieżki dostępne dla moderatorów i adminów */}
                 <Route path="genres" element={<GenresPage />} />
-
                 <Route path="actors/manage" element={<ActorsManagePage />} />
                 <Route path="actors/add" element={<ActorsAddPage />} />
                 <Route path="actors/edit/:id" element={<ActorsEditPage />} />
-
                 <Route path="directors/manage" element={<DirectorsManagePage />} />
                 <Route path="directors/add" element={<DirectorsAddPage />} />
                 <Route path="directors/edit/:id" element={<DirectorsEditPage />} />
-
                 <Route path="movies/manage" element={<MoviesManagePage />} />
                 <Route path="movies/add" element={<MoviesAddPage />} />
                 <Route path="movies/edit/:id" element={<MoviesEditPage />} />
                 <Route path="movies/add/:id/relations" element={<MoviesAddPartTwo />} />
                 <Route path="comments/manage" element={<CommentsManagePage />} />
-
-                {/* Ustawienia dashboarda */}
-
                 <Route path="settings" element={<DashboardSettings />} />
             </Route>
-
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
