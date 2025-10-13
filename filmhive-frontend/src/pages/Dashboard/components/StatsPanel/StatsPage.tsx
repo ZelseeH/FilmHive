@@ -74,7 +74,7 @@ const StatsPage: React.FC = () => {
                 value={statistics.movies.total_movies}
                 icon="🎬"
                 color="yellow"
-                subtitle={`Średnia ocena: ${statistics.movies.average_rating}/5`}
+                subtitle={`Średnia ocena: ${statistics.movies.average_rating}/10`}
             />
             <StatCard
                 title="Łączna liczba aktorów"
@@ -191,7 +191,7 @@ const StatsPage: React.FC = () => {
                     value={statistics.movies.average_rating}
                     icon="⭐"
                     color="orange"
-                    suffix="/5"
+                    suffix="/10"
                 />
                 <StatCard
                     title="Nowe filmy (30 dni)"
@@ -208,16 +208,7 @@ const StatsPage: React.FC = () => {
                 />
             </div>
 
-            <div className={styles.chartsGrid}>
-                <ChartCard
-                    title="Plakaty filmów"
-                    type="pie"
-                    data={[
-                        { label: 'Z plakatami', value: statistics.movies.poster_statistics.with_posters, color: '#2ed573' },
-                        { label: 'Bez plakatów', value: statistics.movies.poster_statistics.without_posters, color: '#ff4757' }
-                    ]}
-                />
-            </div>
+
 
             <div className={styles.additionalStats}>
                 <div className={styles.statRow}>
@@ -258,13 +249,7 @@ const StatsPage: React.FC = () => {
                     icon="🆕"
                     color="purple"
                 />
-                <StatCard
-                    title="Ze zdjęciami"
-                    value={statistics.actors.photo_statistics.with_photos}
-                    icon="📸"
-                    color="orange"
-                    subtitle={`${statistics.actors.photo_statistics.photo_percentage}%`}
-                />
+
             </div>
 
             <div className={styles.chartsGrid}>
@@ -305,13 +290,7 @@ const StatsPage: React.FC = () => {
                     color="blue"
                     suffix={statistics.directors.average_age ? " lat" : ""}
                 />
-                <StatCard
-                    title="Ze zdjęciami"
-                    value={statistics.directors.photo_statistics.with_photos}
-                    icon="📸"
-                    color="orange"
-                    subtitle={`${statistics.directors.photo_statistics.photo_percentage}%`}
-                />
+
             </div>
 
             <div className={styles.chartsGrid}>

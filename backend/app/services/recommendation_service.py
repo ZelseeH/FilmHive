@@ -49,7 +49,11 @@ def generate_recommendations_for_user(user_id):
         return result
 
     except Exception as e:
+        # POPRAWKA: Dodaj pełny traceback dla diagnozy
+        import traceback
+
         logger.error(f"Error in generate_recommendations_for_user: {str(e)}")
+        logger.error(f"Full traceback:\n{traceback.format_exc()}")  # Pełny stack trace
         raise Exception(f"Błąd podczas generowania rekomendacji: {str(e)}")
 
 

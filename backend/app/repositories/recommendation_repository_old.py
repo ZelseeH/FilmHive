@@ -1,83 +1,107 @@
 from app.models.recommendation import Recommendation
 from app.models.movie import Movie
 from app.models.user import User
-from sqlalchemy import func, desc, asc
-from sqlalchemy.orm import joinedload, selectinload
-from datetime import datetime, timedelta
+from app.models.rating import Rating
+from sqlalchemy import func, desc
+from sqlalchemy.orm import joinedload
+from datetime import datetime
+from app.recommendation_algorithm.config import MIN_USER_RATINGS
 
 
 class RecommendationRepository:
     def __init__(self, session):
         self.session = session
 
-    def get_user_recommendations(self, user_id, limit=10, include_details=False):
-        """Pobiera rekomendacje dla użytkownika"""
+    def get_recommendation_status(self, user_id):
+        """Sprawdza status rekomendacji użytkownika - główna metoda dla UI"""
+        try:
+            # Sprawdź ile ocen ma użytkownik
+            ratings_count = (
+                self.session.query(Rating).filter(Rating.user_id == user_id).count()
+            )
+
+            # Sprawdź czy ma rekomendacje
+            recommendations_count = (
+                self.session.query(Recommendation)
+                .filter(Recommendation.user_id == user_id)
+                .count()
+            )
+
+            # Pobierz datę ostatnich rekomendacji
+            last_recommendation = (
+                self.session.query(Recommendation)
+                .filter(Recommendation.user_id == user_id)
+                .order_by(desc(Recommendation.created_at))
+                .first()
+            )
+
+            last_generated = None
+            if last_recommendation:
+                last_generated = last_recommendation.created_at
+
+            eligible = ratings_count >= MIN_USER_RATINGS
+            has_recommendations = recommendations_count > 0
+
+            return {
+                "eligible": eligible,
+                "has_recommendations": has_recommendations,
+                "ratings_count": ratings_count,
+                "min_required": MIN_USER_RATINGS,
+                "recommendations_count": recommendations_count,
+                "last_generated": last_generated,
+                "message": self._get_status_message(
+                    eligible, ratings_count, has_recommendations
+                ),
+            }
+
+        except Exception as e:
+            print(f"Błąd podczas sprawdzania statusu rekomendacji: {e}")
+            return {
+                "eligible": False,
+                "has_recommendations": False,
+                "ratings_count": 0,
+                "min_required": MIN_USER_RATINGS,
+                "recommendations_count": 0,
+                "last_generated": None,
+                "message": "Wystąpił błąd podczas sprawdzania statusu",
+            }
+
+    def get_user_recommendations(self, user_id, limit=10):
+        """Pobiera rekomendacje użytkownika z detalami filmów"""
         query = (
             self.session.query(Recommendation)
             .filter(Recommendation.user_id == user_id)
+            .options(
+                joinedload(Recommendation.movie).joinedload(Movie.genres),
+                joinedload(Recommendation.movie).joinedload(Movie.actors),
+                joinedload(Recommendation.movie).joinedload(Movie.directors),
+            )
             .order_by(desc(Recommendation.score), desc(Recommendation.created_at))
             .limit(limit)
         )
 
-        if include_details:
-            query = query.options(
-                joinedload(Recommendation.movie).joinedload(Movie.genres),
-                joinedload(Recommendation.user),
-            )
-
         return query.all()
 
-    def get_by_user_and_movie(self, user_id, movie_id):
-        """Pobiera konkretną rekomendację użytkownik-film"""
-        return (
-            self.session.query(Recommendation)
-            .filter(
-                Recommendation.user_id == user_id, Recommendation.movie_id == movie_id
-            )
-            .first()
-        )
-
-    def create_or_update(self, user_id, movie_id, score):
-        """Tworzy nową lub aktualizuje istniejącą rekomendację"""
-        recommendation = self.get_by_user_and_movie(user_id, movie_id)
-
-        if recommendation:
-            # Aktualizuj istniejącą
-            recommendation.score = score
-            recommendation.created_at = datetime.utcnow()
-        else:
-            # Utwórz nową
-            recommendation = Recommendation(
-                user_id=user_id, movie_id=movie_id, score=score
-            )
-            self.session.add(recommendation)
-
-        self.session.commit()
-        return recommendation
-
-    def bulk_create_or_update(self, recommendations_data):
-        """Masowo tworzy/aktualizuje rekomendacje"""
+    def replace_user_recommendations(self, user_id, recommendations_data):
+        """Zastępuje wszystkie rekomendacje użytkownika nowymi (dla POST)"""
         try:
-            # Usuń stare rekomendacje użytkownika
-            if recommendations_data:
-                user_id = recommendations_data[0]["user_id"]
-                self.session.query(Recommendation).filter(
-                    Recommendation.user_id == user_id
-                ).delete()
+            # Usuń stare rekomendacje
+            self.session.query(Recommendation).filter(
+                Recommendation.user_id == user_id
+            ).delete()
 
-            # Dodaj nowe rekomendacje
-            recommendations = []
+            # Dodaj nowe
+            new_recommendations = []
             for data in recommendations_data:
                 recommendation = Recommendation(
-                    user_id=data["user_id"],
-                    movie_id=data["movie_id"],
-                    score=data["score"],
+                    user_id=user_id, movie_id=data["movie_id"], score=data["score"]
                 )
-                recommendations.append(recommendation)
+                new_recommendations.append(recommendation)
 
-            self.session.add_all(recommendations)
+            self.session.add_all(new_recommendations)
             self.session.commit()
-            return recommendations
+
+            return new_recommendations
 
         except Exception as e:
             self.session.rollback()
@@ -86,76 +110,43 @@ class RecommendationRepository:
     def delete_user_recommendations(self, user_id):
         """Usuwa wszystkie rekomendacje użytkownika"""
         try:
-            deleted = (
+            deleted_count = (
                 self.session.query(Recommendation)
                 .filter(Recommendation.user_id == user_id)
                 .delete()
             )
+
             self.session.commit()
-            return deleted > 0
+            return deleted_count > 0
+
         except Exception as e:
             self.session.rollback()
             raise e
 
-    def get_statistics(self):
-        """Pobiera statystyki rekomendacji"""
+    def _get_status_message(self, eligible, ratings_count, has_recommendations):
+        """Generuje odpowiedni komunikat dla UI"""
+        if not eligible:
+            missing = MIN_USER_RATINGS - ratings_count
+            return f"Oceń jeszcze {missing} {'film' if missing == 1 else 'filmy' if missing < 5 else 'filmów'} aby otrzymać rekomendacje"
+
+        if not has_recommendations:
+            return "Możesz wygenerować swoje pierwsze rekomendacje!"
+
+        return f"Masz {ratings_count} ocenionych filmów. Rekomendacje są gotowe!"
+
+    # Opcjonalne - dla przyszłych statystyk/admin panelu
+    def get_basic_statistics(self):
+        """Podstawowe statystyki dla admin panelu (opcjonalne)"""
         try:
             total_recommendations = self.session.query(Recommendation).count()
-
             users_with_recommendations = (
                 self.session.query(Recommendation.user_id).distinct().count()
-            )
-
-            avg_score = self.session.query(func.avg(Recommendation.score)).scalar()
-
-            recent_recommendations = (
-                self.session.query(Recommendation)
-                .filter(
-                    Recommendation.created_at >= datetime.utcnow() - timedelta(days=7)
-                )
-                .count()
             )
 
             return {
                 "total_recommendations": total_recommendations,
                 "users_with_recommendations": users_with_recommendations,
-                "average_score": round(avg_score, 3) if avg_score else 0,
-                "recent_recommendations_7_days": recent_recommendations,
             }
-
         except Exception as e:
-            print(f"Błąd podczas pobierania statystyk rekomendacji: {e}")
-            return {
-                "total_recommendations": 0,
-                "users_with_recommendations": 0,
-                "average_score": 0,
-                "recent_recommendations_7_days": 0,
-            }
-
-    def get_paginated(self, page=1, per_page=20, user_id=None):
-        """Pobiera rekomendacje z paginacją"""
-        query = self.session.query(Recommendation).options(
-            joinedload(Recommendation.movie), joinedload(Recommendation.user)
-        )
-
-        if user_id:
-            query = query.filter(Recommendation.user_id == user_id)
-
-        query = query.order_by(desc(Recommendation.created_at))
-
-        total = query.count()
-        recommendations = query.offset((page - 1) * per_page).limit(per_page).all()
-
-        total_pages = (total + per_page - 1) // per_page
-
-        return {
-            "recommendations": recommendations,
-            "pagination": {
-                "page": page,
-                "per_page": per_page,
-                "total": total,
-                "total_pages": total_pages,
-                "has_next": page < total_pages,
-                "has_prev": page > 1,
-            },
-        }
+            print(f"Błąd podczas pobierania statystyk: {e}")
+            return {"total_recommendations": 0, "users_with_recommendations": 0}

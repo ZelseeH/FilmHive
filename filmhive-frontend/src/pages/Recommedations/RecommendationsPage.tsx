@@ -56,6 +56,7 @@ const RecommendationsPage: React.FC = () => {
             if (hasRecommendations && recommendationsCount > 0) {
                 const recommendationsData = await getRecommendations(20);
                 if (recommendationsData?.recommendations?.length > 0) {
+                    console.log('Rekomendacje IDs (debug):', recommendationsData.recommendations.map(r => ({ id: r.recommendation_id, movie: r.movie_id }))); // Log do debugu unikalności
                     setRecommendations(recommendationsData.recommendations);
                     setView('recommendations');
                 } else {
@@ -97,6 +98,7 @@ const RecommendationsPage: React.FC = () => {
             setStatus(newStatus);
 
             if (recommendationsData?.recommendations?.length > 0) {
+                console.log('Nowe rekomendacje IDs (debug):', recommendationsData.recommendations.map(r => ({ id: r.recommendation_id, movie: r.movie_id }))); // Log do debugu
                 setRecommendations(recommendationsData.recommendations);
                 setView('recommendations');
             } else {
@@ -273,9 +275,9 @@ const RecommendationsPage: React.FC = () => {
                 )}
 
                 <div className={styles.recommendationsGrid}>
-                    {recommendations.map((recommendation) => (
+                    {recommendations.map((recommendation, index) => (
                         <RecommendationCard
-                            key={recommendation.recommendation_id}
+                            key={recommendation.recommendation_id ? `rec-${recommendation.recommendation_id}` : `fallback-${recommendation.movie_id}-${index}`}
                             recommendation={recommendation}
                         />
                     ))}

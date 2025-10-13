@@ -51,11 +51,11 @@ class Actor(db.Model):
         photo = None
         if self.photo_url:
             if is_full_url(self.photo_url):
-                photo = self.photo_url  
+                photo = self.photo_url
             else:
                 photo = url_for(
                     "static", filename=f"actors/{self.photo_url}", _external=True
-                )  
+                )
 
         result = {
             "id": self.actor_id,

@@ -4,29 +4,68 @@ MIN_USER_RATINGS = 5
 # Liczba rekomendacji do zwrócenia
 NUM_RECOMMENDATIONS = 20
 
-# Progi ocen
-POSITIVE_RATING_THRESHOLD = 7.0  # oceny 7+ traktowane jako pozytywne
-NEGATIVE_RATING_THRESHOLD = 4.0  # oceny poniżej 4 jako negatywne
+# Progi ocen (FIX: Adjust dla user ratings 5-6)
+POSITIVE_RATING_THRESHOLD = 6.0
+NEGATIVE_RATING_THRESHOLD = 5.0
 
 # Parametry dla k-NN
 KNN_NEIGHBORS = 10
 KNN_METRIC = "cosine"
+DIRECTOR_BONUS = 0.8
+DEFAULT_RATING = 3.0
+MIN_SIMILARITY_THRESHOLD = 0.1
+KNN_TOP_K = 7
 
 # Parametry dla TF-IDF
 TFIDF_MAX_FEATURES = 5000
-TFIDF_MIN_DF = 2  # słowo musi wystąpić w co najmniej 2 dokumentach
-TFIDF_MAX_DF = 0.8  # słowo nie może wystąpić w więcej niż 80% dokumentów
+TFIDF_MIN_DF = 2
+TFIDF_MAX_DF = 0.8
+TFIDF_NGRAM_RANGE = (1, 2)
+TFIDF_SUBLINEAR_TF = True
+
+# Parametry dla Naive Bayes
+NB_ALPHA = 1.0
+NB_MODEL_TYPE = "multinomial"
+NB_TOP_K = 3
 
 # Wagi dla kombinowania algorytmów
-STRUCTURAL_WEIGHT = 0.7  # waga dla k-NN (dane strukturalne)
-TEXTUAL_WEIGHT = 0.3  # waga dla Naive Bayes (opisy)
+STRUCTURAL_WEIGHT = 0.8
+TEXTUAL_WEIGHT = 0.2
 
 # Parametry algorytmu Rocchio (na przyszłość)
-ROCCHIO_ALPHA = 1.0  # waga dotychczasowego profilu
-ROCCHIO_BETA = 0.75  # waga dokumentów istotnych
-ROCCHIO_GAMMA = 0.15  # waga dokumentów nieistotnych
+ROCCHIO_ALPHA = 1.0
+ROCCHIO_BETA = 0.75
+ROCCHIO_GAMMA = 0.15
+
+# Parametry dla klasyfikatorów liniowych
+ETA = 0.01
+SVM_C = 1.0
+
+# Parametry hybrydy i ogólne
+HYBRID_THRESHOLD = 0.5
+COLD_START_STRATEGY = "popular"
+MAX_CANDIDATES = 100
+LOG_LEVEL = "INFO"
 
 # Parametry bazy danych
-BATCH_SIZE = 1000  # rozmiar batcha przy przetwarzaniu dużych zbiorów
+BATCH_SIZE = 1000
+RECENT_RATINGS_LIMIT = 10
 
-RECENT_RATINGS_LIMIT = 20  # Liczba ostatnich ocen do analizy
+# Parametry adaptacyjne
+ADAPTIVE_BASE_WEIGHT = 0.1
+ADAPTIVE_SCALING_FACTOR = 0.7
+ADAPTIVE_GENRE_WEIGHT = 0.25
+ADAPTIVE_ACTOR_WEIGHT = 0.40
+ADAPTIVE_DIRECTOR_WEIGHT = 0.35
+ADAPTIVE_BASE_GENRE_WEIGHT = 0.3
+ADAPTIVE_BASE_ACTOR_WEIGHT = 0.3
+ADAPTIVE_BASE_DIRECTOR_WEIGHT = 0.25
+
+# Parametry similarity
+ENSEMBLE_KNN_WEIGHT = 0.6
+ENSEMBLE_NB_WEIGHT = 0.4
+YEAR_MAX_DIFF = 20
+DURATION_MAX_DIFF = 180
+ACTOR_BONUS = 0.05
+TOP_ACTORS_IN_PATTERN = 3
+TOP_ENTITIES = 50

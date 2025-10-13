@@ -2,6 +2,11 @@ import requests
 import os
 import time
 import sys
+import logging
+
+# Disable DEBUG logs
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = os.path.dirname(script_dir)
@@ -17,55 +22,65 @@ from app.models.movie_genre import MovieGenre
 API_KEY = "d729e3223cb49b1d62ae3feb6a2cd2b7"
 SEARCH_MOVIE_URL = "https://api.themoviedb.org/3/search/movie"
 MOVIE_DETAILS_URL = "https://api.themoviedb.org/3/movie/{movie_id}"
-CHECKPOINT_FILE = "movie_genres_checkpoint6.txt"
+CHECKPOINT_FILE = "movie_genres_checkpoint_repair.txt"
 
+# POPRAWIONE mapping
 TMDB_TO_DB_GENRES = {
-    "Action": 60,
-    "Adventure": 60,
+    # English TMDb genres
+    "Action": 64,
+    "Adventure": 66,
     "Animation": 52,
     "Comedy": 28,
     "Crime": 53,
     "Documentary": 12,
-    "Drama": 15,
+    "Drama": 63,
     "Family": 20,
-    "Fantasy": 21,
-    "History": 25,
+    "Fantasy": 67,
+    "History": 70,
     "Horror": 26,
-    "Music": 28,
+    "Music": 68,
     "Mystery": 55,
     "Romance": 56,
-    "Science Fiction": 48,
+    "Science Fiction": 65,
     "TV Movie": 12,
     "Thriller": 61,
     "War": 58,
     "Western": 59,
-    "Akcja": 60,
-    "Przygodowy": 60,
+    # Polish genres
+    "Akcja": 64,
+    "Przygodowy": 66,
+    "Przygoda": 66,
     "Animacja": 52,
     "Komedia": 28,
     "Kryminał": 53,
     "Kryminalne": 53,
+    "Kryminalna": 53,
     "Dokumentalny": 12,
-    "Dramat": 15,
+    "Dokumentalizowany": 11,
+    "Dramat": 63,
     "Dramat obyczajowy": 15,
+    "Dramat sądowy": 16,
     "Familijny": 20,
     "Dla całej rodziny": 20,
-    "Fantasy": 21,
-    "Fantastyczny": 21,
-    "Historyczny": 25,
-    "Historia": 25,
+    "Fantasy": 67,
+    "Fantastyczny": 67,
+    "Historyczny": 70,
+    "Historia": 70,
     "Horror": 26,
-    "Muzyczny": 28,
+    "Muzyczny": 68,
+    "Muzyka": 68,
     "Tajemnica": 55,
     "Romans": 56,
     "Romantyczny": 56,
-    "Sci-Fi": 48,
-    "Science Fiction": 48,
+    "Sci-Fi": 65,
+    "Science Fiction": 65,
     "Film telewizyjny": 12,
     "Dreszczowiec": 17,
     "Thriller": 61,
     "Wojenny": 58,
+    "Wojna": 58,
     "Western": 59,
+    # Specjalistyczne
     "Biograficzny": 7,
     "Biography": 7,
     "Biografia": 7,
@@ -79,10 +94,50 @@ TMDB_TO_DB_GENRES = {
     "Gangster": 23,
     "Film-Noir": 22,
     "Noir": 22,
+    "Neo-noir": 89,
     "Katastroficzny": 27,
     "Disaster": 27,
     "Baśń": 5,
     "Fairy Tale": 5,
+    "Sportowy": 69,
+    "Sports": 69,
+    "Psychologiczny": 71,
+    "Psychological": 71,
+    "Czarna komedia": 72,
+    "Black Comedy": 72,
+    "Supernatural": 73,
+    "Nadprzyrodzony": 73,
+    "Mockumentary": 74,
+    "Dystopian": 75,
+    "Dystopia": 75,
+    "Shonen": 76,
+    "Seinen": 77,
+    "Shoujo": 78,
+    "Slice of Life": 79,
+    "Wycinek życia": 79,
+    "Suspense": 80,
+    "Napięcie": 80,
+    "Polityczny": 81,
+    "Political": 81,
+    "Religijny": 82,
+    "Religious": 82,
+    "Satyryczny": 83,
+    "Satire": 83,
+    "Heist": 84,
+    "Napad": 84,
+    "Zombie": 85,
+    "Steampunk": 86,
+    "Cyberpunk": 87,
+    "Space Opera": 88,
+    "Opera kosmiczna": 88,
+    "Thriller prawniczy": 90,
+    "Legal Thriller": 90,
+    "Szpiegowski": 91,
+    "Spy": 91,
+    "Komedia kryminalna": 29,
+    "Komedia romantyczna": 31,
+    "Komedia rom.": 31,
+    "Groteska filmowa": 24,
 }
 
 
@@ -95,7 +150,7 @@ def load_checkpoint():
                 last_title = lines[0]
                 last_index = int(lines[1]) if len(lines) > 1 else 0
                 print(
-                    f"🔄 Checkpoint found: resuming from movie '{last_title}' (#{last_index + 1})"
+                    f"🔄 Checkpoint: resuming from '{last_title}' (#{last_index + 1})"
                 )
                 return last_title, last_index
     return None, 0
@@ -106,24 +161,9 @@ def save_checkpoint(title, index):
         f.write(f"{title}\n{index}")
 
 
-def count_movies_without_genres():
-    count = (
-        db.session.query(Movie)
-        .outerjoin(MovieGenre, Movie.movie_id == MovieGenre.movie_id)
-        .filter(MovieGenre.movie_id.is_(None))
-        .count()
-    )
-    return count
-
-
-def get_movies_without_genres():
-    return (
-        db.session.query(Movie)
-        .outerjoin(MovieGenre, Movie.movie_id == MovieGenre.movie_id)
-        .filter(MovieGenre.movie_id.is_(None))
-        .order_by(Movie.movie_id)
-        .all()
-    )
+def get_all_movies():
+    """Get ALL movies (nie tylko bez gatunków)"""
+    return db.session.query(Movie).order_by(Movie.movie_id).all()
 
 
 def search_movie_in_tmdb(movie_title, movie_year=None):
@@ -151,13 +191,12 @@ def search_movie_in_tmdb(movie_title, movie_year=None):
                     if release_date and str(movie_year) in release_date:
                         best_match = result
                         break
-
             return best_match["id"]
         else:
             return None
 
     except Exception as e:
-        print(f"     ⚠️  Błąd wyszukiwania TMDb: {str(e)}")
+        print(f"     ⚠️  Błąd TMDb search: {str(e)}")
         return None
 
 
@@ -170,16 +209,15 @@ def get_movie_genres_from_tmdb(tmdb_movie_id):
         )
         details_resp.raise_for_status()
         details = details_resp.json()
-
-        genres = details.get("genres", [])
-        return genres
+        return details.get("genres", [])
 
     except Exception as e:
-        print(f"     ⚠️  Błąd pobierania szczegółów TMDb: {str(e)}")
+        print(f"     ⚠️  Błąd TMDb details: {str(e)}")
         return []
 
 
 def map_tmdb_genre_to_db(tmdb_genre_name):
+    """Map TMDb genre name to DB genre_id"""
     if tmdb_genre_name in TMDB_TO_DB_GENRES:
         return TMDB_TO_DB_GENRES[tmdb_genre_name]
 
@@ -195,28 +233,15 @@ def main():
     app = create_app()
 
     with app.app_context():
-        print("🎬 ROZPOCZYNAM WYSZUKIWANIE GATUNKÓW PRZEZ TMDb API")
-        print("(Tylko filmy bez gatunków)")
+        print("🎬 NAPRAWA GATUNKÓW - SPRAWDZAM WSZYSTKIE FILMY")
+        print("(Dodaję brakujące gatunki, nie usuwam istniejących)")
         print("=" * 80)
 
-        print("📊 Liczę filmy bez gatunków...")
-        total_movies = count_movies_without_genres()
-        print(f"📊 ZNALEZIONO {total_movies} FILMÓW BEZ GATUNKÓW")
-        print("=" * 80)
+        print("📊 Pobieram listę wszystkich filmów...")
+        all_movies = get_all_movies()
+        total_movies = len(all_movies)
 
-        if total_movies == 0:
-            print("🎉 Wszystkie filmy mają już przypisane gatunki!")
-            return
-
-        print("📋 Pobieram listę filmów bez gatunków...")
-        movies_without_genres = get_movies_without_genres()
-
-        print(f"📝 Przykłady filmów bez gatunków:")
-        for i, movie in enumerate(movies_without_genres[:5]):
-            print(f"   {i+1}. {movie.title} (ID: {movie.movie_id})")
-        if total_movies > 5:
-            print(f"   ... i {total_movies - 5} więcej")
-
+        print(f"📊 ZNALEZIONO {total_movies} FILMÓW DO SPRAWDZENIA")
         print("=" * 80)
 
         last_title, start_index = load_checkpoint()
@@ -225,18 +250,26 @@ def main():
         total_skipped = 0
         total_errors = 0
         total_no_genres = 0
+        total_already_complete = 0
 
         try:
             for i in range(start_index, total_movies):
-                movie = movies_without_genres[i]
+                movie = all_movies[i]
                 current_number = i + 1
 
-                print(f"\n🎭 FILM {current_number} z {total_movies}: '{movie.title}'")
-                print(
-                    f"📈 POSTĘP: {current_number}/{total_movies} ({(current_number/total_movies*100):.1f}%)"
-                )
+                print(f"\n🎭 FILM {current_number}/{total_movies}: '{movie.title}'")
+                print(f"📈 POSTĘP: {(current_number/total_movies*100):.1f}%")
 
                 try:
+                    # Check current genres
+                    existing_genres = MovieGenre.query.filter_by(
+                        movie_id=movie.movie_id
+                    ).all()
+                    existing_genre_ids = {mg.genre_id for mg in existing_genres}
+
+                    print(f"   📋 Obecne gatunki: {len(existing_genre_ids)}")
+
+                    # Get TMDb genres
                     movie_year = None
                     if hasattr(movie, "release_date") and movie.release_date:
                         movie_year = movie.release_date.year
@@ -245,14 +278,13 @@ def main():
                     tmdb_movie_id = search_movie_in_tmdb(movie.title, movie_year)
 
                     if not tmdb_movie_id:
-                        print(f"   ❌ Nie znaleziono filmu w TMDb")
+                        print(f"   ❌ Nie znaleziono w TMDb")
                         total_no_genres += 1
                         save_checkpoint(movie.title, i)
                         continue
 
-                    print(f"   ✅ Znaleziono w TMDb (ID: {tmdb_movie_id})")
+                    print(f"   ✅ TMDb ID: {tmdb_movie_id}")
 
-                    print(f"   📋 Pobieram gatunki z TMDb...")
                     tmdb_genres = get_movie_genres_from_tmdb(tmdb_movie_id)
 
                     if not tmdb_genres:
@@ -263,6 +295,7 @@ def main():
 
                     print(f"   🎭 TMDb gatunki: {[g['name'] for g in tmdb_genres]}")
 
+                    # Add missing genres (NIE usuwaj existing!)
                     relations_added = 0
                     mapped_genres = []
 
@@ -274,9 +307,14 @@ def main():
                         db_genre_id = map_tmdb_genre_to_db(tmdb_genre_name)
 
                         if not db_genre_id:
-                            print(f"   ⚠️  Nie zmapowano gatunku: {tmdb_genre_name}")
+                            print(f"   ⚠️  Nie zmapowano: {tmdb_genre_name}")
                             continue
 
+                        # Skip jeśli już istnieje
+                        if db_genre_id in existing_genre_ids:
+                            continue
+
+                        # Check genre exists in DB
                         genre_exists = db.session.query(
                             db.session.query(Genre)
                             .filter_by(genre_id=db_genre_id)
@@ -284,50 +322,41 @@ def main():
                         ).scalar()
 
                         if not genre_exists:
-                            print(
-                                f"   ⚠️  Gatunek ID {db_genre_id} nie istnieje w bazie"
-                            )
+                            print(f"   ⚠️  Genre ID {db_genre_id} nie istnieje w bazie")
                             continue
 
-                        existing_relation = MovieGenre.query.filter_by(
+                        # Add missing relation
+                        relation = MovieGenre(
                             movie_id=movie.movie_id, genre_id=db_genre_id
-                        ).first()
-
-                        if not existing_relation:
-                            relation = MovieGenre(
-                                movie_id=movie.movie_id, genre_id=db_genre_id
-                            )
-                            db.session.add(relation)
-                            relations_added += 1
-                            mapped_genres.append(f"{tmdb_genre_name} -> {db_genre_id}")
+                        )
+                        db.session.add(relation)
+                        relations_added += 1
+                        mapped_genres.append(f"{tmdb_genre_name} -> {db_genre_id}")
 
                     if relations_added > 0:
                         db.session.commit()
                         total_added_relations += relations_added
-                        print(f"   💾 Dodano {relations_added} relacji:")
+                        print(f"   💾 Dodano {relations_added} brakujących gatunków:")
                         for mapped in mapped_genres:
                             print(f"     ✅ {mapped}")
                     else:
-                        print(
-                            f"   ⏭️  Wszystkie relacje już istnieją lub gatunki nie zostały zmapowane"
-                        )
-                        total_skipped += 1
+                        print(f"   ✅ Film ma wszystkie gatunki (kompletny)")
+                        total_already_complete += 1
 
                     save_checkpoint(movie.title, i)
 
-                    if current_number % 10 == 0:
-                        remaining = total_movies - current_number
+                    # Stats co 50 filmów
+                    if current_number % 50 == 0:
                         print(f"\n📊 STATYSTYKI PO {current_number} FILMACH:")
                         print(f"   🔗 Dodanych relacji: {total_added_relations}")
-                        print(f"   ⏭️  Pominiętych: {total_skipped}")
-                        print(f"   🚫 Bez gatunków: {total_no_genres}")
+                        print(f"   ✅ Kompletnych: {total_already_complete}")
+                        print(f"   🚫 Bez gatunków TMDb: {total_no_genres}")
                         print(f"   ❌ Błędów: {total_errors}")
                         print(
-                            f"   📈 Postęp: {current_number}/{total_movies} ({(current_number/total_movies*100):.1f}%)"
+                            f"   ⏰ Pozostało: {total_movies - current_number} filmów"
                         )
-                        print(f"   ⏰ Pozostało: {remaining} filmów")
 
-                    time.sleep(0.5)
+                    time.sleep(0.3)  # Rate limit
 
                 except requests.RequestException as e:
                     print(f"   💥 Błąd HTTP: {str(e)}")
@@ -336,30 +365,27 @@ def main():
                     time.sleep(5)
 
                 except Exception as e:
-                    print(f"   💥 Niespodziewany błąd: {str(e)}")
+                    print(f"   💥 Błąd: {str(e)}")
                     db.session.rollback()
                     total_errors += 1
                     save_checkpoint(movie.title, i)
 
             if os.path.exists(CHECKPOINT_FILE):
                 os.remove(CHECKPOINT_FILE)
-                print(f"\n🗑️  Usunięto checkpoint - proces zakończony!")
+                print(f"\n🗑️  Checkpoint usunięty - proces zakończony!")
 
             print(f"\n" + "=" * 80)
             print(f"🎉 PROCES ZAKOŃCZONY!")
             print(f"=" * 80)
-            print(f"📊 Przetworzonych filmów: {total_movies}")
-            print(f"🔗 Dodanych relacji: {total_added_relations}")
-            print(f"⏭️  Pominiętych: {total_skipped}")
-            print(f"🚫 Bez gatunków: {total_no_genres}")
+            print(f"📊 Sprawdzonych filmów: {total_movies}")
+            print(f"🔗 Dodanych relacji (brakujące): {total_added_relations}")
+            print(f"✅ Filmów kompletnych: {total_already_complete}")
+            print(f"🚫 Bez gatunków TMDb: {total_no_genres}")
             print(f"❌ Błędów: {total_errors}")
-            if total_movies > 0:
-                success_rate = (total_added_relations) / total_movies * 100
-                print(f"🎯 Procent sukcesu: {success_rate:.1f}%")
 
         except KeyboardInterrupt:
-            print(f"\n\n⚠️  PRZERWANO PRZEZ UŻYTKOWNIKA (Ctrl+C)")
-            print(f"💾 Checkpoint został zapisany - można wznowić!")
+            print(f"\n\n⚠️  PRZERWANO (Ctrl+C)")
+            print(f"💾 Checkpoint zapisany - można wznowić!")
 
 
 if __name__ == "__main__":

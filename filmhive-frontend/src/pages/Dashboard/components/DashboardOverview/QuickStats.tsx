@@ -22,7 +22,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ statistics }) => {
                 value={statistics.movies.total_movies}
                 icon="🎬"
                 color="yellow"
-                subtitle={`Ocena: ${statistics.movies.average_rating}/5`}
+                subtitle={`Ocena: ${statistics.movies.average_rating}/10`}
             />
             <StatCard
                 title="Łączna liczba aktorów"

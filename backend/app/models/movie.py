@@ -41,7 +41,6 @@ class Movie(db.Model):
         secondary="movies_genres",
         back_populates="movies",
         lazy="joined",
-        cascade="all, delete",
     )
 
     actors = relationship(
@@ -49,14 +48,12 @@ class Movie(db.Model):
         secondary="movie_actors",
         back_populates="movies",
         lazy="select",
-        cascade="all, delete",
     )
     directors = relationship(
         "Director",
         secondary="movie_directors",
         back_populates="movies",
         lazy="select",
-        cascade="all, delete",
     )
     ratings = relationship(
         "Rating",
