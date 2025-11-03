@@ -1,1 +1,1 @@
-Początki projektu na prace inżynierską ;)
+Praca inżynierska - Jakub Kołodziej
