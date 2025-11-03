@@ -73,14 +73,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({ recommendation 
                     <RecommendationScore score={score} />
                 </div>
 
-                {movie.average_rating && (
-                    <div className={styles.movieRatingOverlay}>
-                        <span className={styles.star}>★</span>
-                        <span className={styles.ratingValue}>
-                            {movie.average_rating.toFixed(1)}
-                        </span>
-                    </div>
-                )}
+
             </div>
 
             <div className={styles.movieInfo}>

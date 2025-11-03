@@ -20,7 +20,6 @@ const GeminiChatbot: React.FC = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Lista słów kluczowych związanych z filmem i kinem
     const isFilmRelated = (query: string): boolean => {
         const filmKeywords = [
             'film', 'filmy', 'akcja', 'kino', 'aktor', 'aktorka', 'reżyser', 'scenariusz', 'scenarzysta',
@@ -45,12 +44,6 @@ const GeminiChatbot: React.FC = () => {
         const lowerCaseQuery = query.toLowerCase();
         return filmKeywords.some(keyword => lowerCaseQuery.includes(keyword));
     };
-    const getLastUserMessage = (): string | null => {
-        for (let i = messages.length - 1; i >= 0; i--) {
-            if (!messages[i].isBot) return messages[i].content;
-        }
-        return null;
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -74,11 +67,18 @@ const GeminiChatbot: React.FC = () => {
                 return;
             }
 
-            const conversationHistory = messages
-                .map(m => (m.isBot ? "Asystent: " : "Użytkownik: ") + m.content)
-                .join("\n") + `\nUżytkownik: ${inputMessage}`;
 
-            const contextualPrompt = `Kontekst: Jesteś asystentem filmowym FilmHive, który odpowiada WYŁĄCZNIE na pytania związane z filmami, serialami, aktorami, reżyserami i światem kina.\nRozmowa:\n${conversationHistory}`;
+            let contextualPrompt = `Jesteś asystentem filmowym FilmHive. Odpowiadaj WYŁĄCZNIE na tematy związane z filmami, serialami, aktorami, reżyserami i kinem.`;
+
+            const recentMessages = messages.slice(-10);
+            if (recentMessages.length > 0) {
+                contextualPrompt += `\n\nHistoria konwersacji:`;
+                recentMessages.forEach(m => {
+                    contextualPrompt += `\n${m.isBot ? 'Ty' : 'Użytkownik'}: ${m.content}`;
+                });
+            }
+
+            contextualPrompt += `\n\nNowe pytanie użytkownika: ${inputMessage}\n\nOdpowiedz jako FilmHive Assistant:`;
 
             const botResponse = await generateContent(contextualPrompt);
             setMessages(prev => [...prev, { content: botResponse, isBot: true }]);
@@ -91,7 +91,6 @@ const GeminiChatbot: React.FC = () => {
 
         setIsLoading(false);
     };
-
 
     return (
         <div className={styles.chatbotContainer}>
@@ -113,10 +112,12 @@ const GeminiChatbot: React.FC = () => {
                             <div className={styles.welcomeMessage}>
                                 <p>Witaj w FilmHive Assistant! 👋</p>
                                 <p>Możesz zapytać mnie o:</p>
-                                <p>• Informacje o filmach i serialach</p>
-                                <p>• Biografie aktorów i reżyserów</p>
-                                <p>• Rekomendacje filmów podobnych do twoich ulubionych</p>
-                                <p>• Nowości kinowe i nadchodzące premiery</p>
+                                <ul>
+                                    <li>Informacje o filmach i serialach</li>
+                                    <li>Biografie aktorów i reżyserów</li>
+                                    <li>Rekomendacje filmów podobnych do twoich ulubionych</li>
+                                    <li>Nowości kinowe i nadchodzące premiery</li>
+                                </ul>
                             </div>
                         )}
                         {messages.map((message, index) => (

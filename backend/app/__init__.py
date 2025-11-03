@@ -16,47 +16,6 @@ db = SQLAlchemy()
 oauth = OAuth()
 
 
-def init_oauth(app):
-    """Inicjalizacja OAuth providerów"""
-    oauth.init_app(app)
-
-    # Google OAuth
-    if app.config.get("GOOGLE_CLIENT_ID") and app.config.get("GOOGLE_CLIENT_SECRET"):
-        oauth.register(
-            name="google",
-            client_id=app.config["GOOGLE_CLIENT_ID"],
-            client_secret=app.config["GOOGLE_CLIENT_SECRET"],
-            server_metadata_url="https://accounts.google.com/.well-known/openid_configuration",
-            client_kwargs={"scope": "openid email profile"},
-        )
-
-    # Facebook OAuth
-    if app.config.get("FACEBOOK_CLIENT_ID") and app.config.get(
-        "FACEBOOK_CLIENT_SECRET"
-    ):
-        oauth.register(
-            name="facebook",
-            client_id=app.config["FACEBOOK_CLIENT_ID"],
-            client_secret=app.config["FACEBOOK_CLIENT_SECRET"],
-            access_token_url="https://graph.facebook.com/oauth/access_token",
-            authorize_url="https://www.facebook.com/dialog/oauth",
-            api_base_url="https://graph.facebook.com/",
-            client_kwargs={"scope": "email"},
-        )
-
-    # GitHub OAuth
-    if app.config.get("GITHUB_CLIENT_ID") and app.config.get("GITHUB_CLIENT_SECRET"):
-        oauth.register(
-            name="github",
-            client_id=app.config["GITHUB_CLIENT_ID"],
-            client_secret=app.config["GITHUB_CLIENT_SECRET"],
-            access_token_url="https://github.com/login/oauth/access_token",
-            authorize_url="https://github.com/login/oauth/authorize",
-            api_base_url="https://api.github.com/",
-            client_kwargs={"scope": "user:email"},
-        )
-
-
 def create_app():
     app = Flask(__name__, static_folder="static", static_url_path="/static")
     app.logger.setLevel(logging.DEBUG)
@@ -90,9 +49,6 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-
-    # Inicjalizacja OAuth
-    init_oauth(app)
 
     with app.app_context():
         # Import modeli PO inicjalizacji db

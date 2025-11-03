@@ -83,7 +83,7 @@ const SearchPage: React.FC = () => {
                         className={`${styles.tabButton} ${activeTab === "people" ? styles.active : ""}`}
                         onClick={() => setActiveTab("people")}
                     >
-                        Osoby <span className={styles.tabCount}>({peopleCount})</span>
+                        Postacie Kina <span className={styles.tabCount}>({peopleCount})</span>
                     </button>
                     <button
                         className={`${styles.tabButton} ${activeTab === "users" ? styles.active : ""}`}

@@ -47,7 +47,6 @@ const UpcomingMoviesPage: React.FC = () => {
 
             <div className={styles.pageContainer}>
                 <div className={styles.header}>
-                    <div className={styles.headerIcon}>🎬</div>
                     <h1>Nadchodzące Premiery</h1>
 
                 </div>

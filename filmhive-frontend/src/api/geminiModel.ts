@@ -1,4 +1,4 @@
-// api/geminiModel.ts
+
 export const generateContent = async (prompt: string): Promise<string> => {
     try {
         const response = await fetch('/api/ask', {

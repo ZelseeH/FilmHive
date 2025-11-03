@@ -23,7 +23,7 @@ def ask_gemini():
         if not question:
             return jsonify({"error": "Brak pytania w żądaniu"}), 400
 
-        model = GenerativeModel("gemini-1.5-flash")
+        model = GenerativeModel("gemini-2.0-flash")
         response = model.generate_content(question)
 
         return jsonify({"answer": response.text})

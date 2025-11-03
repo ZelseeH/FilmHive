@@ -127,33 +127,7 @@ const DashboardOverview: React.FC = () => {
                     </div>
                 </div>
 
-                {/* System Health */}
-                <div className={styles.dashboardCard}>
-                    <h3>Status systemu</h3>
-                    <div className={styles.healthGrid}>
-                        <div className={styles.healthItem}>
-                            <div className={styles.healthIcon}>🟢</div>
-                            <div className={styles.healthInfo}>
-                                <span className={styles.healthLabel}>Baza danych</span>
-                                <span className={styles.healthStatus}>Działa poprawnie</span>
-                            </div>
-                        </div>
-                        <div className={styles.healthItem}>
-                            <div className={styles.healthIcon}>🟢</div>
-                            <div className={styles.healthInfo}>
-                                <span className={styles.healthLabel}>API</span>
-                                <span className={styles.healthStatus}>Wszystkie endpointy aktywne</span>
-                            </div>
-                        </div>
-                        <div className={styles.healthItem}>
-                            <div className={styles.healthIcon}>🟢</div>
-                            <div className={styles.healthInfo}>
-                                <span className={styles.healthLabel}>Serwer</span>
-                                <span className={styles.healthStatus}>Uptime: 99.9%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* Recent Users */}
                 <div className={styles.dashboardCard}>

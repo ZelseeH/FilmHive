@@ -43,7 +43,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         onClose();
         setTimeout(() => {
           window.location.reload();
-        }, 100); // Odświeżenie po zamknięciu modala
+        }, 100); 
       }
     } catch (err: any) {
       console.error("Login error:", err);

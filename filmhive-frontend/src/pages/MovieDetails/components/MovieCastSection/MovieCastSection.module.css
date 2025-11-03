@@ -7,39 +7,17 @@
 .section-title {
     font-size: 1.4rem;
     font-weight: 600;
-    margin-bottom: 1.5rem;
     color: #1a1a1a;
     display: flex;
     align-items: center;
     padding: 0 10px;
+    justify-content: center;
+    margin-bottom: 1rem;
 }
 
 .arrow-icon {
     margin-left: 5px;
     color: #999;
-}
-
-.cast-slider-container {
-    position: relative;
-    width: 100%;
-}
-
-.cast-slider-wrapper {
-    position: relative;
-    overflow: hidden;
-}
-
-.cast-slider {
-    display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    padding: 20px 10px;
-    scrollbar-width: none;
-}
-
-.cast-slider::-webkit-scrollbar {
-    display: none;
 }
 
 .slider-arrow {
@@ -57,7 +35,10 @@
     cursor: pointer;
     font-size: 20px;
     z-index: 5;
-    transition: background-color 0.3s, transform 0.2s ease;
+    transition: all 0.3s ease;
+    user-select: none;
+    border: none;
+    outline: none;
 }
 
 .slider-arrow:hover {
@@ -65,35 +46,76 @@
     transform: translateY(-50%) scale(1.1);
 }
 
+.slider-arrow:focus {
+    box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.5);
+}
+
+.slider-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
 .left-arrow {
-    left: 10px;
+    left: 5px;
 }
 
 .right-arrow {
-    right: 10px;
+    right: 5px;
+}
+
+.cast-slider-container {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 60px;
+    overflow: hidden;
+}
+
+.cast-slider-container:not(:has(.slider-arrow)) {
+    padding: 0 20px;
+}
+
+.cast-slider-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.cast-slider {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    padding: 20px 10px;
+    scrollbar-width: none;
+    justify-content: flex-start;
+}
+
+.cast-slider.centered {
+    justify-content: center;
+    overflow: visible;
+}
+
+.cast-slider::-webkit-scrollbar {
+    display: none;
 }
 
 .cast-member {
     flex: 0 0 150px;
     text-align: center;
     text-decoration: none;
-    /* Usuwa podkreślenie linku */
     color: inherit;
-    /* Zachowuje oryginalny kolor tekstu */
     display: block;
-    /* Zapewnia, że link zachowuje się jak blok */
     transition: transform 0.2s ease;
-    /* Płynna animacja dla efektu hover */
+    min-width: 150px;
 }
 
 .cast-member:hover {
     transform: translateY(-3px);
-    /* Lekko podnosi cały element po najechaniu */
 }
 
 .cast-member:hover .actor-name {
     color: #f5c518;
-    /* Zmienia kolor nazwy aktora po najechaniu */
 }
 
 .actor-photo {
@@ -101,21 +123,31 @@
     height: 200px;
     margin-bottom: 10px;
     background-color: #f0f0f0;
-    border-radius: 4px;
+    border-radius: 8px;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
-    /* Płynna animacja cienia */
 }
 
 .cast-member:hover .actor-photo {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    /* Dodaje cień po najechaniu */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .actor-photo img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.no-poster {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    color: #999;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .placeholder-photo {
@@ -135,28 +167,34 @@
     margin-bottom: 3px;
     color: #333;
     transition: color 0.2s ease;
-    /* Płynna zmiana koloru */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
 }
 
 .actor-role {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #666;
-}
-
-.no-poster {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f0f0f0;
-    color: #999;
-    font-size: 14px;
+    margin-top: 2px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media (max-width: 768px) {
+    .cast-slider-container {
+        padding: 0 50px;
+    }
+
+    .cast-slider-container:not(:has(.slider-arrow)) {
+        padding: 0 15px;
+    }
+
     .cast-member {
         flex: 0 0 120px;
+        min-width: 120px;
     }
 
     .actor-photo {
@@ -173,8 +211,17 @@
 }
 
 @media (max-width: 480px) {
+    .cast-slider-container {
+        padding: 0 40px;
+    }
+
+    .cast-slider-container:not(:has(.slider-arrow)) {
+        padding: 0 10px;
+    }
+
     .cast-member {
         flex: 0 0 100px;
+        min-width: 100px;
     }
 
     .actor-photo {
@@ -190,13 +237,36 @@
     }
 
     .slider-arrow {
-        width: 30px;
-        height: 30px;
+        width: 32px;
+        height: 32px;
         font-size: 16px;
+    }
+
+    .left-arrow {
+        left: 2px;
+    }
+
+    .right-arrow {
+        right: 2px;
     }
 
     .section-title {
         text-align: center;
         justify-content: center;
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .cast-slider {
+        justify-content: center;
+    }
+
+    .slider-arrow {
+        display: none;
+    }
+
+    .cast-slider-container {
+        padding: 0 5px !important;
     }
 }

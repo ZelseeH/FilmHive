@@ -1,35 +1,67 @@
 .pageContainer {
     min-height: 100vh;
-    background: #ffffff;
-    padding-top: 80px;
-    padding-bottom: 50px;
-    margin-bottom: -60px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding-top: 60px;
+    padding-bottom: 80px;
+    margin-bottom: -80px;
 }
 
-/* Header - tylko dla recommendations view */
 .header {
     text-align: center;
-    margin-bottom: 40px;
     padding: 0 20px;
     max-width: 1100px;
     margin-left: auto;
     margin-right: auto;
 }
 
+.headerContent {
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
+}
+
+.headerTop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.headerIcon {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
 .header h1 {
-    font-size: 2.5rem;
-    color: #333333;
-    margin-bottom: 10px;
-    font-weight: 700;
+    font-size: 2.8rem;
+    color: #1a1a1a;
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
 .subtitle {
-    font-size: 1.1rem;
-    color: var(--text-secondary, #666666);
+    font-size: 1.2rem;
+    color: #666666;
     margin: 0;
 }
 
-/* Loading States */
+.subtitle strong {
+    color: #ffcc00;
+    font-weight: 700;
+}
+
 .loadingContainer {
     display: flex;
     flex-direction: column;
@@ -40,10 +72,10 @@
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid var(--border-color, #e0e0e0);
-    border-top: 4px solid var(--yellow, #ffcc00);
+    width: 60px;
+    height: 60px;
+    border: 5px solid rgba(255, 204, 0, 0.2);
+    border-top: 5px solid #ffcc00;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -58,220 +90,236 @@
     }
 }
 
-
 .centeredCard {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 70vh;
+    padding: 0 20px;
 }
 
-
-.loginCard {
-    padding: 60px 40px;
-    border-radius: 12px;
-    text-align: center;
-    max-width: 400px;
-    width: 100%;
-}
-
-.loginCard h2 {
-    color: #333333;
-    margin-bottom: 20px;
-    font-size: 1.8rem;
-    font-weight: 600;
-}
-
-.loginCard p {
-    color: var(--text-secondary, #666666);
-    margin-bottom: 30px;
-    line-height: 1.6;
-}
-
-.loginButton {
-    background: var(--yellow, #ffcc00);
-    color: #333333;
-    border: none;
-    padding: 16px 32px;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 200px;
-}
-
-.loginButton:hover {
-    background: #e6b800;
-    transform: translateY(-1px);
-}
-
-/* Progress Card */
-.ratingsCard {
-    background: white;
-    padding: 60px 40px;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px var(--shadow, rgba(0, 0, 0, 0.1));
+.loginCard,
+.ratingsCard,
+.welcomeCard {
+    padding: 60px 50px;
+    border-radius: 24px;
     text-align: center;
     max-width: 500px;
     width: 100%;
-    border: 1px solid var(--border-color, #e0e0e0);
+}
+
+.iconWrapper,
+.welcomeIcon {
+    margin-bottom: 24px;
+    animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loginCard h2,
+.ratingsCard h2,
+.welcomeCard h1 {
+    color: #1a1a1a;
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+
+.loginCard h2 {
+    font-size: 2rem;
 }
 
 .ratingsCard h2 {
-    color: #333333;
-    margin-bottom: 30px;
-    font-size: 1.8rem;
-    font-weight: 600;
+    font-size: 2rem;
+}
+
+.welcomeCard h1 {
+    font-size: 2.5rem;
+}
+
+.loginCard p,
+.welcomeCard .subtitle {
+    color: #666666;
+    margin-bottom: 32px;
+    line-height: 1.6;
+    font-size: 1.05rem;
 }
 
 .progressSection {
-    margin: 30px 0;
+    margin: 40px 0;
 }
 
 .progressInfo {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .currentRatings {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--yellow, #ffcc00);
+    font-size: 3rem;
+    font-weight: 800;
+    color: #ffcc00;
+    text-shadow: 0 2px 10px rgba(255, 204, 0, 0.3);
 }
 
 .separator {
     font-size: 2rem;
-    color: var(--text-secondary, #666666);
+    color: #cccccc;
 }
 
 .requiredRatings {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--text-secondary, #666666);
+    font-size: 3rem;
+    font-weight: 800;
+    color: #999999;
 }
 
 .progressBar {
     width: 100%;
-    height: 8px;
-    background: var(--border-color, #e0e0e0);
-    border-radius: 4px;
+    height: 12px;
+    background: #f0f0f0;
+    border-radius: 20px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .progressFill {
     height: 100%;
-    background: var(--yellow, #ffcc00);
-    transition: width 0.8s ease;
-    border-radius: 4px;
+    background: linear-gradient(90deg, #ffcc00 0%, #ffd700 100%);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(255, 204, 0, 0.4);
 }
 
 .progressText {
-    color: var(--text-secondary, #666666);
-    font-size: 1rem;
-    line-height: 1.5;
+    color: #666666;
+    font-size: 1.05rem;
+    line-height: 1.6;
 }
 
-.welcomeCard {
-    padding: 60px 40px;
-    border-radius: 12px;
-    text-align: center;
-    max-width: 500px;
-    width: 100%;
-}
-
-.welcomeCard h1 {
-    font-size: 2.5rem;
-    color: #333333;
-    margin-bottom: 10px;
+.progressText strong {
+    color: #ffcc00;
     font-weight: 700;
 }
 
-.welcomeCard .subtitle {
-    font-size: 1.1rem;
-    color: var(--text-secondary, #666666);
-    margin-bottom: 40px;
-}
-
-/* Buttons */
+.loginButton,
 .primaryButton,
 .generateButton {
-    background: var(--yellow, #ffcc00);
-    color: #333333;
+    background: linear-gradient(135deg, #ffcc00 0%, #ffd700 100%);
+    color: #1a1a1a;
     border: none;
-    padding: 20px 40px;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    font-weight: 600;
+    padding: 18px 40px;
+    border-radius: 12px;
+    font-size: 1.15rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 280px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 240px;
+    box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
+.loginButton:hover,
 .primaryButton:hover,
 .generateButton:hover {
-    background: #e6b800;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(255, 204, 0, 0.4);
 }
 
+.loginButton:active,
+.primaryButton:active,
+.generateButton:active {
+    transform: translateY(0);
+}
+
+.loginButton:disabled,
 .primaryButton:disabled,
 .generateButton:disabled {
     opacity: 0.6;
-    transform: none;
     cursor: not-allowed;
+    transform: none;
 }
 
-/* Recommendations Section - KONTENER 1100px */
 .recommendationsSection {
-    max-width: 1100px;
-    margin: 0 auto;
+    width: 1100px;
+    max-width: calc(100% - 40px);
+    margin-left: auto;
+    margin-right: auto;
     padding: 0 20px;
-    width: 100%;
 }
 
 .recommendationsHeader {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
     gap: 20px;
+    padding: 24px 30px;
+    border-radius: 16px;
 }
 
 .stats h3 {
-    color: #333333;
-    margin: 0 0 5px 0;
-    font-size: 1.5rem;
-    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.countBadge {
+    background: linear-gradient(135deg, #ffcc00 0%, #ffd700 100%);
+    color: #1a1a1a;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 1.4rem;
+    font-weight: 800;
+    box-shadow: 0 2px 10px rgba(255, 204, 0, 0.3);
 }
 
 .lastGenerated {
-    color: var(--text-secondary, #666666);
-    font-size: 0.9rem;
+    color: #999999;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
 }
 
 .reloadButton {
-    background: var(--yellow, #ffcc00);
-    color: #333333;
+    background: linear-gradient(135deg, #ffcc00 0%, #ffd700 100%);
+    color: #1a1a1a;
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 14px 28px;
+    border-radius: 12px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1rem;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
 }
 
 .reloadButton:hover:not(:disabled) {
-    background: #e6b800;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(255, 204, 0, 0.4);
 }
 
 .reloadButton:disabled {
@@ -281,158 +329,152 @@
 }
 
 .reloadSpinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(51, 51, 51, 0.3);
-    border-top: 2px solid #333333;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(26, 26, 26, 0.2);
+    border-top: 2px solid #1a1a1a;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
 }
 
-/* Grid Layout - RESPONSYWNY W KONTENERZE 1100px */
 .recommendationsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 24px;
     width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
 }
 
-/* Error States */
 .errorBanner {
-    background: #fff3cd;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffe8a3 100%);
     color: #856404;
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
     border: 1px solid #ffeaa7;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(133, 100, 4, 0.1);
 }
 
 .emptyState {
     text-align: center;
-    padding: 60px 20px;
-    color: var(--text-secondary, #666666);
+    padding: 80px 20px;
+    color: #999999;
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.emptyState svg {
+    margin-bottom: 24px;
 }
 
 .emptyState h3 {
-    color: #333333;
-    margin-bottom: 10px;
+    color: #666666;
+    margin-bottom: 12px;
+    font-size: 1.8rem;
 }
 
-/* Responsive Grid - BREAKPOINTY DLA KONTENERA 1100px */
-@media (min-width: 768px) {
-    .recommendationsGrid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 30px;
+.emptyState p {
+    color: #999999;
+    font-size: 1.1rem;
+}
+
+@media (min-width: 768px) and (max-width: 1139px) {
+    .recommendationsSection {
+        width: calc(100% - 40px);
     }
-}
 
-@media (min-width: 1024px) {
-    .recommendationsGrid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 32px;
-    }
-}
-
-@media (min-width: 1200px) {
     .recommendationsGrid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 36px;
+        gap: 20px;
     }
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .pageContainer {
         padding: 15px;
+        padding-top: 70px;
     }
 
-    .header {
-        margin-bottom: 30px;
-        padding: 0 15px;
-    }
-
-    .header h1,
-    .welcomeCard h1 {
+    .header h1 {
         font-size: 2rem;
     }
 
-    .welcomeCard,
-    .loginCard,
-    .ratingsCard {
-        padding: 40px 30px;
-        margin: 0 10px;
-    }
-
-    .recommendationsSection {
-        padding: 0 15px;
-    }
-
-    .recommendationsHeader {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-    }
-
-    .recommendationsGrid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .reloadButton {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .centeredCard {
-        min-height: 50vh;
-    }
-}
-
-@media (max-width: 480px) {
-    .pageContainer {
-        padding: 10px;
-    }
-
-    .welcomeCard,
-    .loginCard,
-    .ratingsCard {
+    .headerContent {
         padding: 30px 20px;
     }
 
-    .header h1,
-    .welcomeCard h1 {
-        font-size: 1.8rem;
-    }
-
-    .primaryButton,
-    .generateButton {
-        padding: 18px 32px;
-        font-size: 1.1rem;
-        min-width: 250px;
-    }
-
-    .recommendationsSection {
-        padding: 0 10px;
-    }
-
-    .recommendationsGrid {
-        gap: 16px;
-    }
-}
-
-/* Dodatkowe style dla bardzo małych ekranów */
-@media (max-width: 360px) {
-    .recommendationsGrid {
-        grid-template-columns: 1fr;
+    .headerTop {
+        flex-direction: column;
         gap: 12px;
     }
 
     .welcomeCard,
     .loginCard,
     .ratingsCard {
-        padding: 25px 15px;
+        padding: 40px 30px;
+    }
+
+    .recommendationsSection {
+        width: 100%;
+        padding: 0 15px;
+    }
+
+    .recommendationsHeader {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
+    }
+
+    .stats h3 {
+        font-size: 1.3rem;
+        flex-wrap: wrap;
+    }
+
+    .recommendationsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .reloadButton {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .welcomeCard h1 {
+        font-size: 2rem;
+    }
+
+    .currentRatings,
+    .requiredRatings {
+        font-size: 2.5rem;
+    }
+
+    .primaryButton,
+    .generateButton,
+    .loginButton {
+        min-width: 200px;
+        padding: 16px 32px;
+    }
+
+    .recommendationsGrid {
+        grid-template-columns: 1fr;
     }
 }

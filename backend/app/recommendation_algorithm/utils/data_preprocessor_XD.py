@@ -5,15 +5,14 @@ import logging
 import numpy as np
 from collections import Counter
 import re
+from sqlalchemy import func  # DODANE dla random()
 
 from ..config import (
     MIN_USER_RATINGS,
     POSITIVE_RATING_THRESHOLD,
     NEGATIVE_RATING_THRESHOLD,
     BATCH_SIZE,
-    TRAINING_POSITIVE_LIMIT,
-    TRAINING_NEGATIVE_LIMIT,
-    USE_ALL_NEGATIVES_IF_FEW,
+    RECENT_RATINGS_LIMIT,
     MAX_CANDIDATES,
     TFIDF_MAX_FEATURES,
     TFIDF_MIN_DF,
@@ -23,16 +22,9 @@ from ..config import (
     TOP_ENTITIES,
     ADAPTIVE_BASE_WEIGHT,
     ADAPTIVE_SCALING_FACTOR,
-    ADAPTIVE_BASE_GENRE_WEIGHT,
-    ADAPTIVE_BASE_ACTOR_WEIGHT,
-    ADAPTIVE_BASE_DIRECTOR_WEIGHT,
-    ADAPTIVE_BASE_COUNTRY_WEIGHT,
-    ADAPTIVE_BASE_YEAR_WEIGHT,
-    USE_SNOWBALL_STEMMER,
-    STEMMER_LANGUAGE,
-    MIN_POSITIVES_FOR_QUALITY,
-    TOP_ACTORS_IN_PATTERN,
-    MIN_PATTERN_OCCURRENCES,
+    ADAPTIVE_GENRE_WEIGHT,
+    ADAPTIVE_ACTOR_WEIGHT,
+    ADAPTIVE_DIRECTOR_WEIGHT,
 )
 from app.models.rating import Rating
 from app.models.movie import Movie
@@ -50,22 +42,17 @@ class DataPreprocessor:
     def __init__(self, db_session: Session):
         self.db = db_session
         self.logger = logging.getLogger(__name__)
-        self.tfidf_processor = TFIDFProcessor(
-            use_snowball=USE_SNOWBALL_STEMMER, language=STEMMER_LANGUAGE
-        )
+        self.tfidf_processor = TFIDFProcessor(use_snowball=True)
 
     def check_user_eligibility(self, user_id: int) -> bool:
+        """Sprawdza czy użytkownik ma minimum MIN_USER_RATINGS ocen"""
         rating_count = self.db.query(Rating).filter(Rating.user_id == user_id).count()
-        is_eligible = rating_count >= MIN_USER_RATINGS
+        return rating_count >= MIN_USER_RATINGS
 
-        if not is_eligible:
-            self.logger.warning(
-                f"User {user_id} has only {rating_count} ratings (minimum {MIN_USER_RATINGS} required)"
-            )
-
-        return is_eligible
-
-    def get_user_ratings(self, user_id: int) -> pd.DataFrame:
+    def get_user_ratings(
+        self, user_id: int, limit: int = RECENT_RATINGS_LIMIT
+    ) -> pd.DataFrame:
+        """Pobiera ostatnie oceny użytkownika z pełnymi metadanymi"""
         results = (
             self.db.query(
                 Rating.movie_id,
@@ -81,6 +68,7 @@ class DataPreprocessor:
             .join(Movie, Rating.movie_id == Movie.movie_id)
             .filter(Rating.user_id == user_id)
             .order_by(Rating.rated_at.desc())
+            .limit(limit)
             .all()
         )
 
@@ -93,7 +81,7 @@ class DataPreprocessor:
                 "description": result.description or "",
                 "release_date": result.release_date,
                 "duration_minutes": result.duration_minutes,
-                "country": result.country or "Unknown",
+                "country": result.country,
                 "original_language": result.original_language,
             }
             for result in results
@@ -104,75 +92,15 @@ class DataPreprocessor:
         df = self._add_actors_to_dataframe(df)
         df = self._add_directors_to_dataframe(df)
 
-        self.logger.info(f"Pobrano {len(df)} total ratings dla user {user_id}")
+        self.logger.info(f"Pobrano {len(df)} ratings dla user {user_id}")
         return df
 
-    def get_training_data(
-        self, user_ratings: pd.DataFrame
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, Dict[str, any]]:
-        stats = {
-            "total_ratings": len(user_ratings),
-            "positive_count": 0,
-            "negative_count": 0,
-            "neutral_count": 0,
-            "warnings": [],
-        }
-
-        positive = user_ratings[
-            user_ratings["rating"] >= POSITIVE_RATING_THRESHOLD
-        ].copy()
-        positive = positive.sort_values("rated_at", ascending=False)
-
-        negative = user_ratings[
-            user_ratings["rating"] <= NEGATIVE_RATING_THRESHOLD
-        ].copy()
-        negative = negative.sort_values("rated_at", ascending=False)
-
-        neutral = user_ratings[
-            (user_ratings["rating"] > NEGATIVE_RATING_THRESHOLD)
-            & (user_ratings["rating"] < POSITIVE_RATING_THRESHOLD)
-        ]
-
-        stats["positive_count"] = len(positive)
-        stats["negative_count"] = len(negative)
-        stats["neutral_count"] = len(neutral)
-
-        if len(positive) < MIN_POSITIVES_FOR_QUALITY:
-            warning = (
-                f"User ma tylko {len(positive)} pozytywnych ocen (≥{POSITIVE_RATING_THRESHOLD}). "
-                f"Rekomendacje mogą być niedokładne. Zachęć do ocenienia więcej filmów wysoko."
-            )
-            stats["warnings"].append(warning)
-            self.logger.warning(warning)
-
-        positive_training = positive.head(TRAINING_POSITIVE_LIMIT)
-
-        if len(negative) < TRAINING_NEGATIVE_LIMIT and USE_ALL_NEGATIVES_IF_FEW:
-            negative_training = negative
-            if len(negative) > 0:
-                self.logger.info(
-                    f"Using all {len(negative)} negative ratings (less than {TRAINING_NEGATIVE_LIMIT})"
-                )
-        else:
-            negative_training = negative.head(TRAINING_NEGATIVE_LIMIT)
-
-        if len(negative_training) == 0:
-            warning = (
-                f"User nie ma negatywnych ocen (≤{NEGATIVE_RATING_THRESHOLD}). "
-                f"Naive Bayes nie będzie mógł nauczyć się czego unikać."
-            )
-            stats["warnings"].append(warning)
-            self.logger.warning(warning)
-
-        self.logger.info(
-            f"Training data: {len(positive_training)} positive (≥{POSITIVE_RATING_THRESHOLD}), "
-            f"{len(negative_training)} negative (≤{NEGATIVE_RATING_THRESHOLD}), "
-            f"{len(neutral)} neutral (ignored)"
-        )
-
-        return positive_training, negative_training, stats
-
     def get_candidate_movies(self, user_id: int) -> pd.DataFrame:
+        """
+        Pobiera WSZYSTKIE nieocenione filmy z bazy (bez limitu)
+        Sortowanie: LOSOWE (aby k-NN i NB widziały filmy z różnych lat)
+        """
+        # Pobierz ID filmów już ocenionych przez użytkownika
         rated_movie_ids = [
             r.movie_id
             for r in self.db.query(Rating.movie_id)
@@ -180,6 +108,7 @@ class DataPreprocessor:
             .all()
         ]
 
+        # Query WSZYSTKICH nieocenionych filmów
         query = self.db.query(
             Movie.movie_id,
             Movie.title,
@@ -188,11 +117,15 @@ class DataPreprocessor:
             Movie.duration_minutes,
             Movie.country,
             Movie.original_language,
-        )
+        ).order_by(
+            func.random()
+        )  # ← ZMIANA: LOSOWA KOLEJNOŚĆ
 
+        # Wykluczenie już ocenionych
         if rated_movie_ids:
             query = query.filter(~Movie.movie_id.in_(rated_movie_ids))
 
+        # Pobierz WSZYSTKIE (USUNIĘTY .limit(MAX_CANDIDATES))
         results = query.all()
 
         data = [
@@ -202,58 +135,48 @@ class DataPreprocessor:
                 "description": result.description or "",
                 "release_date": result.release_date,
                 "duration_minutes": result.duration_minutes,
-                "country": result.country or "Unknown",
+                "country": result.country,
                 "original_language": result.original_language,
             }
             for result in results
         ]
 
         df = pd.DataFrame(data)
-
-        if not df.empty:
-            df = df.sample(frac=1.0, random_state=None).reset_index(drop=True)
-
         df = self._add_genres_to_dataframe(df)
         df = self._add_actors_to_dataframe(df)
         df = self._add_directors_to_dataframe(df)
 
-        self.logger.info(f"Pobrano {len(df)} candidate movies (all unrated, shuffled)")
+        self.logger.info(
+            f"Pobrano {len(df)} candidates (ALL unrated movies, random order)"
+        )
         return df
 
     def analyze_user_preferences(self, user_ratings: pd.DataFrame) -> Dict[str, float]:
+        """Adaptacyjna analiza wzorców w wysokich ocenach"""
         if user_ratings.empty:
-            return self._get_default_weights()
+            return {
+                "genres": ADAPTIVE_GENRE_WEIGHT,
+                "actors": ADAPTIVE_ACTOR_WEIGHT,
+                "directors": ADAPTIVE_DIRECTOR_WEIGHT,
+            }
 
         high_rated = user_ratings[user_ratings["rating"] >= POSITIVE_RATING_THRESHOLD]
 
         if len(high_rated) < 2:
-            self.logger.info(
-                "Za mało pozytywnych ocen (<2) – fallback do default weights"
-            )
-            return self._get_default_weights()
+            self.logger.info("Za mało high ratings – fallback wagi")
+            return {
+                "genres": ADAPTIVE_GENRE_WEIGHT,
+                "actors": ADAPTIVE_ACTOR_WEIGHT,
+                "directors": ADAPTIVE_DIRECTOR_WEIGHT,
+            }
 
         director_patterns = self._analyze_director_patterns(high_rated)
         actor_patterns = self._analyze_actor_patterns(high_rated)
         genre_patterns = self._analyze_genre_patterns(high_rated)
-        country_patterns = self._analyze_country_patterns(high_rated)
-        year_patterns = self._analyze_year_patterns(high_rated)
 
         return self._calculate_adaptive_weights(
-            director_patterns,
-            actor_patterns,
-            genre_patterns,
-            country_patterns,
-            year_patterns,
+            director_patterns, actor_patterns, genre_patterns
         )
-
-    def _get_default_weights(self) -> Dict[str, float]:
-        return {
-            "genres": ADAPTIVE_BASE_GENRE_WEIGHT,
-            "actors": ADAPTIVE_BASE_ACTOR_WEIGHT,
-            "directors": ADAPTIVE_BASE_DIRECTOR_WEIGHT,
-            "country": ADAPTIVE_BASE_COUNTRY_WEIGHT,
-            "year": ADAPTIVE_BASE_YEAR_WEIGHT,
-        }
 
     def _analyze_director_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
         director_counts = {}
@@ -262,12 +185,9 @@ class DataPreprocessor:
             if isinstance(directors, list):
                 for director in directors:
                     director_counts[director] = director_counts.get(director, 0) + 1
-
-        repeated = {
-            d: c for d, c in director_counts.items() if c >= MIN_PATTERN_OCCURRENCES
-        }
+        repeated = {d: c for d, c in director_counts.items() if c > 1}
         if repeated:
-            self.logger.info(f"Director patterns: {repeated}")
+            self.logger.info(f"Repeated directors: {repeated}")
         return repeated
 
     def _analyze_actor_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
@@ -275,14 +195,11 @@ class DataPreprocessor:
         for _, row in high_rated.iterrows():
             actors = row.get("actors", [])
             if isinstance(actors, list):
-                for actor in actors[:TOP_ACTORS_IN_PATTERN]:
+                for actor in actors[:5]:
                     actor_counts[actor] = actor_counts.get(actor, 0) + 1
-
-        repeated = {
-            a: c for a, c in actor_counts.items() if c >= MIN_PATTERN_OCCURRENCES
-        }
+        repeated = {a: c for a, c in actor_counts.items() if c > 1}
         if repeated:
-            self.logger.info(f"Actor patterns: {repeated}")
+            self.logger.info(f"Repeated actors: {repeated}")
         return repeated
 
     def _analyze_genre_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
@@ -292,45 +209,9 @@ class DataPreprocessor:
             if isinstance(genres, list):
                 for genre in genres:
                     genre_counts[genre] = genre_counts.get(genre, 0) + 1
-
-        repeated = {
-            g: c for g, c in genre_counts.items() if c >= MIN_PATTERN_OCCURRENCES
-        }
+        repeated = {g: c for g, c in genre_counts.items() if c > 1}
         if repeated:
-            self.logger.info(f"Genre patterns: {repeated}")
-        return repeated
-
-    def _analyze_country_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
-        country_counts = {}
-        for _, row in high_rated.iterrows():
-            country = row.get("country", "Unknown")
-            if country and country != "Unknown":
-                country_counts[country] = country_counts.get(country, 0) + 1
-
-        repeated = {
-            c: cnt
-            for c, cnt in country_counts.items()
-            if cnt >= MIN_PATTERN_OCCURRENCES
-        }
-        if repeated:
-            self.logger.info(f"Country patterns: {repeated}")
-        return repeated
-
-    def _analyze_year_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
-        year_counts = {}
-        for _, row in high_rated.iterrows():
-            release_date = row.get("release_date")
-            if pd.notna(release_date):
-                year = pd.to_datetime(release_date, errors="coerce").year
-                if year:
-                    decade = (year // 10) * 10
-                    year_counts[decade] = year_counts.get(decade, 0) + 1
-
-        repeated = {
-            d: c for d, c in year_counts.items() if c >= MIN_PATTERN_OCCURRENCES
-        }
-        if repeated:
-            self.logger.info(f"Year patterns (decades): {repeated}")
+            self.logger.info(f"Repeated genres: {repeated}")
         return repeated
 
     def _calculate_adaptive_weights(
@@ -338,67 +219,50 @@ class DataPreprocessor:
         director_patterns: Dict[str, int],
         actor_patterns: Dict[str, int],
         genre_patterns: Dict[str, int],
-        country_patterns: Dict[str, int],
-        year_patterns: Dict[str, int],
     ) -> Dict[str, float]:
+        """Adaptacyjne wagi proporcjonalne do siły wzorców"""
         director_strength = max(director_patterns.values()) if director_patterns else 0
         actor_strength = max(actor_patterns.values()) if actor_patterns else 0
         genre_strength = max(genre_patterns.values()) if genre_patterns else 0
-        country_strength = max(country_patterns.values()) if country_patterns else 0
-        year_strength = max(year_patterns.values()) if year_patterns else 0
 
-        total_strength = (
-            director_strength
-            + actor_strength
-            + genre_strength
-            + country_strength
-            + year_strength
-        )
+        total_strength = director_strength + actor_strength + genre_strength
 
         if total_strength == 0:
-            return self._get_default_weights()
+            weights = {
+                "genres": ADAPTIVE_GENRE_WEIGHT,
+                "actors": ADAPTIVE_ACTOR_WEIGHT,
+                "directors": ADAPTIVE_DIRECTOR_WEIGHT,
+            }
+        else:
+            director_w = (
+                ADAPTIVE_BASE_WEIGHT
+                + (director_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
+            )
+            actor_w = (
+                ADAPTIVE_BASE_WEIGHT
+                + (actor_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
+            )
+            genre_w = (
+                ADAPTIVE_BASE_WEIGHT
+                + (genre_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
+            )
 
-        director_w = (
-            ADAPTIVE_BASE_WEIGHT
-            + (director_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
-        )
-        actor_w = (
-            ADAPTIVE_BASE_WEIGHT
-            + (actor_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
-        )
-        genre_w = (
-            ADAPTIVE_BASE_WEIGHT
-            + (genre_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
-        )
-        country_w = (
-            ADAPTIVE_BASE_WEIGHT
-            + (country_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
-        )
-        year_w = (
-            ADAPTIVE_BASE_WEIGHT
-            + (year_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
-        )
-
-        total_w = director_w + actor_w + genre_w + country_w + year_w
-        weights = {
-            "directors": director_w / total_w,
-            "actors": actor_w / total_w,
-            "genres": genre_w / total_w,
-            "country": country_w / total_w,
-            "year": year_w / total_w,
-        }
-
-        self.logger.info(
-            f"Adaptive weights: genres={weights['genres']:.3f}, actors={weights['actors']:.3f}, "
-            f"directors={weights['directors']:.3f}, country={weights['country']:.3f}, "
-            f"year={weights['year']:.3f}"
-        )
+            total_w = director_w + actor_w + genre_w
+            weights = {
+                "directors": director_w / total_w,
+                "actors": actor_w / total_w,
+                "genres": genre_w / total_w,
+            }
+            self.logger.info(
+                f"Adaptive weights: dirs={weights['directors']:.2f}, actors={weights['actors']:.2f}, genres={weights['genres']:.2f}"
+            )
 
         return weights
 
     def align_features(
         self, features_rated: pd.DataFrame, features_candidates: pd.DataFrame
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """Wyrównuje przestrzeń cech między rated i candidates"""
         if features_rated.empty or features_candidates.empty:
             return features_rated, features_candidates
 
@@ -407,8 +271,7 @@ class DataPreprocessor:
         all_cols = sorted(rated_cols | candidate_cols)
 
         self.logger.info(
-            f"Feature alignment: rated {len(rated_cols)}, candidates {len(candidate_cols)}, "
-            f"union {len(all_cols)}"
+            f"Align: rated {len(rated_cols)}, candidates {len(candidate_cols)}, union {len(all_cols)}"
         )
 
         missing_rated = {
@@ -434,16 +297,21 @@ class DataPreprocessor:
         features_rated_aligned = features_rated[final_cols].fillna(0.0)
         features_candidates_aligned = features_candidates[final_cols].fillna(0.0)
 
+        director_cols = [col for col in all_cols if col.startswith("director_")]
+        self.logger.info(f"Director features: {len(director_cols)}")
+
         return features_rated_aligned, features_candidates_aligned
 
     def prepare_structural_features(
         self, movies_df: pd.DataFrame, user_ratings: pd.DataFrame = None
     ) -> pd.DataFrame:
+        """Strukturalne cechy z adaptacyjnymi wagami"""
         if movies_df.empty:
             return pd.DataFrame()
 
         features_df = movies_df[["movie_id"]].copy()
 
+        # One-hot genres
         all_genres = set()
         for genres_list in movies_df["genres"]:
             if isinstance(genres_list, list):
@@ -459,6 +327,7 @@ class DataPreprocessor:
                 [features_df, pd.DataFrame(genre_cols, index=features_df.index)], axis=1
             )
 
+        # Binary actors (top TOP_ENTITIES)
         all_actors = []
         for actors_list in movies_df["actors"]:
             if isinstance(actors_list, list):
@@ -477,6 +346,7 @@ class DataPreprocessor:
                 [features_df, pd.DataFrame(actor_cols, index=features_df.index)], axis=1
             )
 
+        # Binary directors (top TOP_ENTITIES)
         all_directors = []
         for directors_list in movies_df["directors"]:
             if isinstance(directors_list, list):
@@ -496,21 +366,7 @@ class DataPreprocessor:
                 axis=1,
             )
 
-        all_countries = movies_df["country"].dropna().unique().tolist()
-        all_countries = [c for c in all_countries if c != "Unknown"]
-        top_countries = Counter(all_countries).most_common(TOP_ENTITIES)
-
-        country_cols = {}
-        for country, _ in top_countries:
-            country_cols[f"country_{country}"] = movies_df["country"].apply(
-                lambda x: 1.0 if x == country else 0.0
-            )
-        if country_cols:
-            features_df = pd.concat(
-                [features_df, pd.DataFrame(country_cols, index=features_df.index)],
-                axis=1,
-            )
-
+        # Normalized numeric (year, duration)
         if "release_date" in movies_df.columns:
             movies_df_copy = movies_df.copy()
             movies_df_copy["release_year"] = pd.to_datetime(
@@ -540,34 +396,50 @@ class DataPreprocessor:
             else:
                 features_df["duration_normalized"] = 0.0
 
+        # Adaptive weights application
+        if user_ratings is not None and not user_ratings.empty:
+            adaptive_weights = self.analyze_user_preferences(user_ratings)
+            genre_weight = adaptive_weights["genres"]
+            actor_weight = adaptive_weights["actors"]
+            director_weight = adaptive_weights["directors"]
+        else:
+            genre_weight = ADAPTIVE_GENRE_WEIGHT
+            actor_weight = ADAPTIVE_ACTOR_WEIGHT
+            director_weight = ADAPTIVE_DIRECTOR_WEIGHT
+
+        for col in features_df.columns:
+            if col.startswith("genre_"):
+                features_df[col] *= genre_weight
+            elif col.startswith("actor_"):
+                features_df[col] *= actor_weight
+            elif col.startswith("director_"):
+                features_df[col] *= director_weight
+
         genre_count = len([c for c in features_df.columns if c.startswith("genre_")])
         actor_count = len([c for c in features_df.columns if c.startswith("actor_")])
         director_count = len(
             [c for c in features_df.columns if c.startswith("director_")]
         )
-        country_count = len(
-            [c for c in features_df.columns if c.startswith("country_")]
-        )
-
         self.logger.info(
-            f"Structural features: {genre_count} genres, {actor_count} actors, "
-            f"{director_count} directors, {country_count} countries + year/duration (RAW binary)"
+            f"Structural: {genre_count} genres ×{genre_weight:.2f}, {actor_count} actors ×{actor_weight:.2f}, {director_count} directors ×{director_weight:.2f}"
         )
 
         return features_df.fillna(0.0)
 
     def prepare_textual_features(self, movies_df: pd.DataFrame) -> pd.DataFrame:
+        """TF-IDF via TFIDFProcessor"""
         if movies_df.empty or "description" not in movies_df.columns:
             return pd.DataFrame({"movie_id": movies_df.get("movie_id", [])})
 
         descriptions = movies_df["description"].fillna("").tolist()
+
         valid_indices = [
             i for i, desc in enumerate(descriptions) if len(desc.strip()) >= 10
         ]
 
         if len(valid_indices) == 0:
             self.logger.warning(
-                "No valid descriptions for TF-IDF (all too short or empty)"
+                "No valid descriptions for TF-IDF (all too short/empty)"
             )
             return pd.DataFrame({"movie_id": movies_df["movie_id"]})
 
@@ -585,8 +457,7 @@ class DataPreprocessor:
             tfidf_df["movie_id"] = movies_df.iloc[valid_indices]["movie_id"].values
 
             self.logger.info(
-                f"TF-IDF: {len(feature_names)} terms from {len(valid_descriptions)} descriptions "
-                f"(Polish stemming: {USE_SNOWBALL_STEMMER})"
+                f"TF-IDF: {len(feature_names)} terms from {len(valid_descriptions)} descriptions"
             )
 
             full_tfidf = (
@@ -603,6 +474,7 @@ class DataPreprocessor:
     def create_semi_structured_features(
         self, movies_df: pd.DataFrame, user_ratings: pd.DataFrame = None
     ) -> pd.DataFrame:
+        """Łączy structural + textual"""
         structural = self.prepare_structural_features(movies_df, user_ratings)
         textual = self.prepare_textual_features(movies_df)
 
@@ -611,21 +483,21 @@ class DataPreprocessor:
             structural_cols = len(structural.columns) - 1
             textual_cols = len(textual.columns) - 1
             self.logger.info(
-                f"Semi-structured: {structural_cols} structural + {textual_cols} TF-IDF features"
+                f"Semi-structured: {structural_cols} structural + {textual_cols} TF-IDF"
             )
         else:
             semi = structural
-            self.logger.info("Only structural features (no TF-IDF)")
+            self.logger.info("Only structural (no TF-IDF)")
 
         return semi
 
     def _add_genres_to_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Dodaje genres (batch)"""
         if df.empty:
             return df
 
         movie_ids = df["movie_id"].tolist()
         genres_data = []
-
         for i in range(0, len(movie_ids), BATCH_SIZE):
             batch_ids = movie_ids[i : i + BATCH_SIZE]
             batch_results = (
@@ -656,12 +528,12 @@ class DataPreprocessor:
         return df
 
     def _add_actors_to_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Dodaje actors (batch)"""
         if df.empty:
             return df
 
         movie_ids = df["movie_id"].tolist()
         actors_data = []
-
         for i in range(0, len(movie_ids), BATCH_SIZE):
             batch_ids = movie_ids[i : i + BATCH_SIZE]
             batch_results = (
@@ -692,12 +564,12 @@ class DataPreprocessor:
         return df
 
     def _add_directors_to_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Dodaje directors (batch)"""
         if df.empty:
             return df
 
         movie_ids = df["movie_id"].tolist()
         directors_data = []
-
         for i in range(0, len(movie_ids), BATCH_SIZE):
             batch_ids = movie_ids[i : i + BATCH_SIZE]
             batch_results = (
@@ -732,13 +604,17 @@ class DataPreprocessor:
     def get_positive_negative_ratings(
         self, user_ratings: pd.DataFrame
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        self.logger.warning(
-            "get_positive_negative_ratings() is deprecated. Use get_training_data() instead."
-        )
-        positive, negative, _ = self.get_training_data(user_ratings)
+        """Podział dla Naive Bayes"""
+        positive = user_ratings[
+            user_ratings["rating"] >= POSITIVE_RATING_THRESHOLD
+        ].copy()
+        negative = user_ratings[
+            user_ratings["rating"] <= NEGATIVE_RATING_THRESHOLD
+        ].copy()
         return positive, negative
 
     def get_movie_descriptions(self, movie_ids: List[int]) -> pd.DataFrame:
+        """Pobiera opisy filmów dla Naive Bayes (z fallback do title)"""
         try:
             movies = (
                 self.db.query(Movie.movie_id, Movie.description, Movie.title)
@@ -760,13 +636,13 @@ class DataPreprocessor:
 
             df = pd.DataFrame(data)
 
+            non_empty = len([d for d in df["description"] if len(str(d)) > 0])
             if fallback_count > 0:
                 self.logger.warning(
-                    f"get_movie_descriptions: {fallback_count}/{len(df)} movies used fallback "
-                    f"(NULL or empty descriptions)"
+                    f"get_movie_descriptions: {fallback_count}/{len(df)} movies used fallback (NULL descriptions)"
                 )
+            self.logger.info(f"Pobrano {len(df)} opisów dla NB ({non_empty} non-empty)")
 
-            self.logger.info(f"Pobrano {len(df)} descriptions dla Naive Bayes")
             return df
 
         except Exception as e:

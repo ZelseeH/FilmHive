@@ -268,15 +268,7 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({
                                 {unreadCount > 0 && ` • ${unreadCount} nieprzeczytanych`}
                             </small>
                         </div>
-                        <button
-                            onClick={() => {
-                                navigate('/notifications');
-                                onClose();
-                            }}
-                            className={styles.viewAllButton}
-                        >
-                            Zobacz wszystkie powiadomienia
-                        </button>
+
                     </div>
                 )}
             </div>

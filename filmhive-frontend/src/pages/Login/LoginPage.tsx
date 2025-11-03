@@ -176,7 +176,7 @@ const LoginPage: React.FC = () => {
                                     </button>
                                 </form>
 
-                                <SocialLogin />
+
 
                                 <p className={styles.toggleText}>
                                     Nie masz konta?{' '}
@@ -308,7 +308,7 @@ const LoginPage: React.FC = () => {
                                     </button>
                                 </form>
 
-                                <SocialLogin />
+
 
                                 <p className={styles.toggleText}>
                                     Masz już konto?{' '}

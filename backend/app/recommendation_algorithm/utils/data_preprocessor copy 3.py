@@ -32,7 +32,6 @@ from ..config import (
     STEMMER_LANGUAGE,
     MIN_POSITIVES_FOR_QUALITY,
     TOP_ACTORS_IN_PATTERN,
-    MIN_PATTERN_OCCURRENCES,
 )
 from app.models.rating import Rating
 from app.models.movie import Movie
@@ -50,11 +49,13 @@ class DataPreprocessor:
     def __init__(self, db_session: Session):
         self.db = db_session
         self.logger = logging.getLogger(__name__)
+        # Polski stemmer dla TF-IDF
         self.tfidf_processor = TFIDFProcessor(
             use_snowball=USE_SNOWBALL_STEMMER, language=STEMMER_LANGUAGE
         )
 
     def check_user_eligibility(self, user_id: int) -> bool:
+        """Sprawdza czy użytkownik ma minimum MIN_USER_RATINGS ocen"""
         rating_count = self.db.query(Rating).filter(Rating.user_id == user_id).count()
         is_eligible = rating_count >= MIN_USER_RATINGS
 
@@ -66,6 +67,10 @@ class DataPreprocessor:
         return is_eligible
 
     def get_user_ratings(self, user_id: int) -> pd.DataFrame:
+        """
+        Pobiera WSZYSTKIE oceny użytkownika (bez limitu)
+        Filtrowanie na pozytywne/negatywne będzie w get_training_data
+        """
         results = (
             self.db.query(
                 Rating.movie_id,
@@ -80,7 +85,7 @@ class DataPreprocessor:
             )
             .join(Movie, Rating.movie_id == Movie.movie_id)
             .filter(Rating.user_id == user_id)
-            .order_by(Rating.rated_at.desc())
+            .order_by(Rating.rated_at.desc())  # Sortuj od najnowszych
             .all()
         )
 
@@ -110,6 +115,14 @@ class DataPreprocessor:
     def get_training_data(
         self, user_ratings: pd.DataFrame
     ) -> Tuple[pd.DataFrame, pd.DataFrame, Dict[str, any]]:
+        """
+        Zwraca balanced training set: 5 ostatnich pozytywnych + 5 ostatnich negatywnych
+
+        Returns:
+            positive_ratings: DataFrame z 5 ostatnimi pozytywnymi (≥6)
+            negative_ratings: DataFrame z 5 ostatnimi negatywnymi (≤4)
+            stats: Dict z statystykami (warnings, counts)
+        """
         stats = {
             "total_ratings": len(user_ratings),
             "positive_count": 0,
@@ -118,16 +131,19 @@ class DataPreprocessor:
             "warnings": [],
         }
 
+        # Filtruj pozytywne (≥6)
         positive = user_ratings[
             user_ratings["rating"] >= POSITIVE_RATING_THRESHOLD
         ].copy()
         positive = positive.sort_values("rated_at", ascending=False)
 
+        # Filtruj negatywne (≤4)
         negative = user_ratings[
             user_ratings["rating"] <= NEGATIVE_RATING_THRESHOLD
         ].copy()
         negative = negative.sort_values("rated_at", ascending=False)
 
+        # Neutralne (4 < rating < 6) - ignorowane
         neutral = user_ratings[
             (user_ratings["rating"] > NEGATIVE_RATING_THRESHOLD)
             & (user_ratings["rating"] < POSITIVE_RATING_THRESHOLD)
@@ -137,6 +153,7 @@ class DataPreprocessor:
         stats["negative_count"] = len(negative)
         stats["neutral_count"] = len(neutral)
 
+        # Warning jeśli za mało pozytywnych
         if len(positive) < MIN_POSITIVES_FOR_QUALITY:
             warning = (
                 f"User ma tylko {len(positive)} pozytywnych ocen (≥{POSITIVE_RATING_THRESHOLD}). "
@@ -145,9 +162,12 @@ class DataPreprocessor:
             stats["warnings"].append(warning)
             self.logger.warning(warning)
 
+        # Wybierz 5 ostatnich pozytywnych (lub wszystkie jeśli <5)
         positive_training = positive.head(TRAINING_POSITIVE_LIMIT)
 
+        # Wybierz 5 ostatnich negatywnych
         if len(negative) < TRAINING_NEGATIVE_LIMIT and USE_ALL_NEGATIVES_IF_FEW:
+            # Użyj wszystkich negatywnych jeśli <5
             negative_training = negative
             if len(negative) > 0:
                 self.logger.info(
@@ -156,6 +176,7 @@ class DataPreprocessor:
         else:
             negative_training = negative.head(TRAINING_NEGATIVE_LIMIT)
 
+        # Warning jeśli brak negatywnych
         if len(negative_training) == 0:
             warning = (
                 f"User nie ma negatywnych ocen (≤{NEGATIVE_RATING_THRESHOLD}). "
@@ -173,6 +194,11 @@ class DataPreprocessor:
         return positive_training, negative_training, stats
 
     def get_candidate_movies(self, user_id: int) -> pd.DataFrame:
+        """
+        Pobiera wszystkie nieocenione filmy (bez limitu)
+        Random shuffle w Pythonie (szybsze niż SQL ORDER BY random())
+        """
+        # Pobierz ID filmów już ocenionych
         rated_movie_ids = [
             r.movie_id
             for r in self.db.query(Rating.movie_id)
@@ -180,6 +206,7 @@ class DataPreprocessor:
             .all()
         ]
 
+        # Query wszystkich nieocenionych
         query = self.db.query(
             Movie.movie_id,
             Movie.title,
@@ -193,6 +220,7 @@ class DataPreprocessor:
         if rated_movie_ids:
             query = query.filter(~Movie.movie_id.in_(rated_movie_ids))
 
+        # Pobierz bez ORDER BY (szybsze)
         results = query.all()
 
         data = [
@@ -210,6 +238,7 @@ class DataPreprocessor:
 
         df = pd.DataFrame(data)
 
+        # Random shuffle w Pythonie
         if not df.empty:
             df = df.sample(frac=1.0, random_state=None).reset_index(drop=True)
 
@@ -221,6 +250,10 @@ class DataPreprocessor:
         return df
 
     def analyze_user_preferences(self, user_ratings: pd.DataFrame) -> Dict[str, float]:
+        """
+        Adaptacyjna analiza wzorców w pozytywnych ocenach
+        Zwraca 5 wag: genres, actors, directors, country, year
+        """
         if user_ratings.empty:
             return self._get_default_weights()
 
@@ -232,6 +265,7 @@ class DataPreprocessor:
             )
             return self._get_default_weights()
 
+        # Analizuj patterns
         director_patterns = self._analyze_director_patterns(high_rated)
         actor_patterns = self._analyze_actor_patterns(high_rated)
         genre_patterns = self._analyze_genre_patterns(high_rated)
@@ -247,6 +281,7 @@ class DataPreprocessor:
         )
 
     def _get_default_weights(self) -> Dict[str, float]:
+        """Zwraca domyślne wagi (gdy brak danych do analizy patterns)"""
         return {
             "genres": ADAPTIVE_BASE_GENRE_WEIGHT,
             "actors": ADAPTIVE_BASE_ACTOR_WEIGHT,
@@ -256,6 +291,7 @@ class DataPreprocessor:
         }
 
     def _analyze_director_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
+        """Zlicza powtarzających się reżyserów w pozytywnych ocenach"""
         director_counts = {}
         for _, row in high_rated.iterrows():
             directors = row.get("directors", [])
@@ -263,29 +299,29 @@ class DataPreprocessor:
                 for director in directors:
                     director_counts[director] = director_counts.get(director, 0) + 1
 
-        repeated = {
-            d: c for d, c in director_counts.items() if c >= MIN_PATTERN_OCCURRENCES
-        }
+        # Tylko ci którzy występują >1 raz (pattern)
+        repeated = {d: c for d, c in director_counts.items() if c > 1}
         if repeated:
             self.logger.info(f"Director patterns: {repeated}")
         return repeated
 
     def _analyze_actor_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
+        """Zlicza powtarzających się aktorów w pozytywnych ocenach"""
         actor_counts = {}
         for _, row in high_rated.iterrows():
             actors = row.get("actors", [])
             if isinstance(actors, list):
+                # Bierz tylko top TOP_ACTORS_IN_PATTERN aktorów z każdego filmu
                 for actor in actors[:TOP_ACTORS_IN_PATTERN]:
                     actor_counts[actor] = actor_counts.get(actor, 0) + 1
 
-        repeated = {
-            a: c for a, c in actor_counts.items() if c >= MIN_PATTERN_OCCURRENCES
-        }
+        repeated = {a: c for a, c in actor_counts.items() if c > 1}
         if repeated:
             self.logger.info(f"Actor patterns: {repeated}")
         return repeated
 
     def _analyze_genre_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
+        """Zlicza powtarzające się gatunki w pozytywnych ocenach"""
         genre_counts = {}
         for _, row in high_rated.iterrows():
             genres = row.get("genres", [])
@@ -293,42 +329,40 @@ class DataPreprocessor:
                 for genre in genres:
                     genre_counts[genre] = genre_counts.get(genre, 0) + 1
 
-        repeated = {
-            g: c for g, c in genre_counts.items() if c >= MIN_PATTERN_OCCURRENCES
-        }
+        repeated = {g: c for g, c in genre_counts.items() if c > 1}
         if repeated:
             self.logger.info(f"Genre patterns: {repeated}")
         return repeated
 
     def _analyze_country_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
+        """Zlicza powtarzające się kraje w pozytywnych ocenach"""
         country_counts = {}
         for _, row in high_rated.iterrows():
             country = row.get("country", "Unknown")
             if country and country != "Unknown":
                 country_counts[country] = country_counts.get(country, 0) + 1
 
-        repeated = {
-            c: cnt
-            for c, cnt in country_counts.items()
-            if cnt >= MIN_PATTERN_OCCURRENCES
-        }
+        repeated = {c: cnt for c, cnt in country_counts.items() if cnt > 1}
         if repeated:
             self.logger.info(f"Country patterns: {repeated}")
         return repeated
 
     def _analyze_year_patterns(self, high_rated: pd.DataFrame) -> Dict[str, int]:
+        """
+        Zlicza powtarzające się dekady w pozytywnych ocenach
+        Np. jeśli user lubi filmy z lat 90', boost year weight
+        """
         year_counts = {}
         for _, row in high_rated.iterrows():
             release_date = row.get("release_date")
             if pd.notna(release_date):
                 year = pd.to_datetime(release_date, errors="coerce").year
                 if year:
+                    # Grupuj po dekadach (1990-1999 → 1990)
                     decade = (year // 10) * 10
                     year_counts[decade] = year_counts.get(decade, 0) + 1
 
-        repeated = {
-            d: c for d, c in year_counts.items() if c >= MIN_PATTERN_OCCURRENCES
-        }
+        repeated = {d: c for d, c in year_counts.items() if c > 1}
         if repeated:
             self.logger.info(f"Year patterns (decades): {repeated}")
         return repeated
@@ -341,6 +375,10 @@ class DataPreprocessor:
         country_patterns: Dict[str, int],
         year_patterns: Dict[str, int],
     ) -> Dict[str, float]:
+        """
+        Oblicza adaptive weights na podstawie siły patterns
+        Im silniejszy pattern, tym wyższa waga dla tej cechy
+        """
         director_strength = max(director_patterns.values()) if director_patterns else 0
         actor_strength = max(actor_patterns.values()) if actor_patterns else 0
         genre_strength = max(genre_patterns.values()) if genre_patterns else 0
@@ -356,8 +394,10 @@ class DataPreprocessor:
         )
 
         if total_strength == 0:
+            # Brak patterns → default weights
             return self._get_default_weights()
 
+        # Oblicz adaptive weights: base + proporcja strength
         director_w = (
             ADAPTIVE_BASE_WEIGHT
             + (director_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
@@ -379,6 +419,7 @@ class DataPreprocessor:
             + (year_strength / total_strength) * ADAPTIVE_SCALING_FACTOR
         )
 
+        # Normalizuj do sumy 1.0
         total_w = director_w + actor_w + genre_w + country_w + year_w
         weights = {
             "directors": director_w / total_w,
@@ -399,6 +440,10 @@ class DataPreprocessor:
     def align_features(
         self, features_rated: pd.DataFrame, features_candidates: pd.DataFrame
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Wyrównuje przestrzeń cech między rated i candidates
+        (Oba muszą mieć te same kolumny dla cosine similarity)
+        """
         if features_rated.empty or features_candidates.empty:
             return features_rated, features_candidates
 
@@ -411,6 +456,7 @@ class DataPreprocessor:
             f"union {len(all_cols)}"
         )
 
+        # Dodaj brakujące kolumny (wypełnione 0.0)
         missing_rated = {
             col: 0.0 for col in all_cols if col not in features_rated.columns
         }
@@ -430,6 +476,7 @@ class DataPreprocessor:
                 [features_candidates, missing_candidates_df], axis=1
             )
 
+        # Upewnij się że kolumny są w tej samej kolejności
         final_cols = ["movie_id"] + all_cols
         features_rated_aligned = features_rated[final_cols].fillna(0.0)
         features_candidates_aligned = features_candidates[final_cols].fillna(0.0)
@@ -439,11 +486,18 @@ class DataPreprocessor:
     def prepare_structural_features(
         self, movies_df: pd.DataFrame, user_ratings: pd.DataFrame = None
     ) -> pd.DataFrame:
+        """
+        Przygotowuje strukturalne cechy: genres, actors, directors, country, year, duration
+
+        WAŻNE: NIE stosuje adaptive weights tutaj - to jest w k-NN similarity!
+        Zwraca RAW binary features (0/1) + normalized numeric
+        """
         if movies_df.empty:
             return pd.DataFrame()
 
         features_df = movies_df[["movie_id"]].copy()
 
+        # ===== GENRES (one-hot binary) =====
         all_genres = set()
         for genres_list in movies_df["genres"]:
             if isinstance(genres_list, list):
@@ -459,6 +513,7 @@ class DataPreprocessor:
                 [features_df, pd.DataFrame(genre_cols, index=features_df.index)], axis=1
             )
 
+        # ===== ACTORS (binary, top TOP_ENTITIES) =====
         all_actors = []
         for actors_list in movies_df["actors"]:
             if isinstance(actors_list, list):
@@ -477,6 +532,7 @@ class DataPreprocessor:
                 [features_df, pd.DataFrame(actor_cols, index=features_df.index)], axis=1
             )
 
+        # ===== DIRECTORS (binary, top TOP_ENTITIES) =====
         all_directors = []
         for directors_list in movies_df["directors"]:
             if isinstance(directors_list, list):
@@ -496,6 +552,7 @@ class DataPreprocessor:
                 axis=1,
             )
 
+        # ===== COUNTRY (binary, top TOP_ENTITIES) =====
         all_countries = movies_df["country"].dropna().unique().tolist()
         all_countries = [c for c in all_countries if c != "Unknown"]
         top_countries = Counter(all_countries).most_common(TOP_ENTITIES)
@@ -511,6 +568,7 @@ class DataPreprocessor:
                 axis=1,
             )
 
+        # ===== YEAR (normalized [0,1]) =====
         if "release_date" in movies_df.columns:
             movies_df_copy = movies_df.copy()
             movies_df_copy["release_year"] = pd.to_datetime(
@@ -525,6 +583,7 @@ class DataPreprocessor:
             else:
                 features_df["release_year_normalized"] = 0.0
 
+        # ===== DURATION (normalized [0,1]) =====
         if "duration_minutes" in movies_df.columns:
             duration_series = pd.to_numeric(
                 movies_df["duration_minutes"], errors="coerce"
@@ -557,10 +616,15 @@ class DataPreprocessor:
         return features_df.fillna(0.0)
 
     def prepare_textual_features(self, movies_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        TF-IDF features z opisów filmów (z polskim stemmingiem)
+        """
         if movies_df.empty or "description" not in movies_df.columns:
             return pd.DataFrame({"movie_id": movies_df.get("movie_id", [])})
 
         descriptions = movies_df["description"].fillna("").tolist()
+
+        # Filtruj zbyt krótkie opisy (<10 znaków)
         valid_indices = [
             i for i, desc in enumerate(descriptions) if len(desc.strip()) >= 10
         ]
@@ -589,6 +653,7 @@ class DataPreprocessor:
                 f"(Polish stemming: {USE_SNOWBALL_STEMMER})"
             )
 
+            # Merge z oryginalnym DataFrame (filmy bez opisów dostaną 0.0)
             full_tfidf = (
                 movies_df[["movie_id"]]
                 .merge(tfidf_df, on="movie_id", how="left")
@@ -603,6 +668,10 @@ class DataPreprocessor:
     def create_semi_structured_features(
         self, movies_df: pd.DataFrame, user_ratings: pd.DataFrame = None
     ) -> pd.DataFrame:
+        """
+        Łączy structural + textual features w jeden DataFrame
+        (Używane jeśli chcesz jedną przestrzeń cech dla hybrid)
+        """
         structural = self.prepare_structural_features(movies_df, user_ratings)
         textual = self.prepare_textual_features(movies_df)
 
@@ -619,7 +688,12 @@ class DataPreprocessor:
 
         return semi
 
+    # ========================================================================
+    # HELPER FUNCTIONS (batch queries dla genres, actors, directors)
+    # ========================================================================
+
     def _add_genres_to_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Dodaje kolumnę 'genres' (lista) do DataFrame"""
         if df.empty:
             return df
 
@@ -656,6 +730,7 @@ class DataPreprocessor:
         return df
 
     def _add_actors_to_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Dodaje kolumnę 'actors' (lista) do DataFrame"""
         if df.empty:
             return df
 
@@ -692,6 +767,7 @@ class DataPreprocessor:
         return df
 
     def _add_directors_to_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Dodaje kolumnę 'directors' (lista) do DataFrame"""
         if df.empty:
             return df
 
@@ -729,16 +805,29 @@ class DataPreprocessor:
         )
         return df
 
+    # ========================================================================
+    # LEGACY FUNCTIONS (dla backward compatibility)
+    # ========================================================================
+
     def get_positive_negative_ratings(
         self, user_ratings: pd.DataFrame
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        DEPRECATED: Użyj get_training_data() zamiast tego
+
+        Zachowane dla backward compatibility z starym kodem
+        """
         self.logger.warning(
             "get_positive_negative_ratings() is deprecated. Use get_training_data() instead."
         )
+
         positive, negative, _ = self.get_training_data(user_ratings)
         return positive, negative
 
     def get_movie_descriptions(self, movie_ids: List[int]) -> pd.DataFrame:
+        """
+        Pobiera opisy filmów dla Naive Bayes (z fallback do title)
+        """
         try:
             movies = (
                 self.db.query(Movie.movie_id, Movie.description, Movie.title)
@@ -753,6 +842,7 @@ class DataPreprocessor:
                 desc = m.description
 
                 if not desc or len(str(desc).strip()) == 0:
+                    # Fallback do tytułu jeśli brak opisu
                     desc = f"Film: {m.title}" if m.title else "Film bez opisu"
                     fallback_count += 1
 

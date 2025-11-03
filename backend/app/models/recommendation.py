@@ -12,6 +12,14 @@ from .base import (
     validates,
 )
 from app.extensions import db
+from enum import Enum
+
+
+# Enum dla typów algorytmów
+class AlgorithmType(str, Enum):
+    KNN = "knn"
+    NAIVE_BAYES = "naive_bayes"
+    HYBRID = "hybrid"
 
 
 class Recommendation(db.Model):
@@ -27,11 +35,25 @@ class Recommendation(db.Model):
         ForeignKey("movies.movie_id", ondelete="CASCADE"), nullable=False, index=True
     )
     score: Mapped[float] = mapped_column(Float, nullable=False)
+
+    # ← DODANE: Typ algorytmu rekomendacji
+    algorithm_type: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default=AlgorithmType.KNN.value,
+        index=True,  # Index dla szybkiego filtrowania
+    )
+
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (
+        # Zmieniony constraint: user + movie + algorithm może być unikalne
+        # (ten sam film może mieć różne score dla KNN i NB)
         db.UniqueConstraint(
-            "user_id", "movie_id", name="unique_user_movie_recommendation"
+            "user_id",
+            "movie_id",
+            "algorithm_type",
+            name="unique_user_movie_algorithm_recommendation",
         ),
     )
 
@@ -41,13 +63,27 @@ class Recommendation(db.Model):
             raise ValueError("Score must be between 0 and 1.")
         return value
 
+    @validates("algorithm_type")
+    def validate_algorithm_type(self, key, value):
+        """Walidacja algorithm_type (tylko knn/naive_bayes/hybrid)"""
+        valid_types = [
+            AlgorithmType.KNN.value,
+            AlgorithmType.NAIVE_BAYES.value,
+            AlgorithmType.HYBRID.value,
+        ]
+        if value not in valid_types:
+            raise ValueError(
+                f"algorithm_type must be one of {valid_types}, got '{value}'"
+            )
+        return value
+
     user: Mapped["User"] = relationship("User", back_populates="recommendations")
     movie: Mapped["Movie"] = relationship("Movie", back_populates="recommendations")
 
     def __repr__(self):
         return (
             f"<Recommendation(id={self.recommendation_id}, user_id={self.user_id}, "
-            f"movie_id={self.movie_id}, score={self.score})>"
+            f"movie_id={self.movie_id}, score={self.score}, algorithm={self.algorithm_type})>"
         )
 
     def serialize(self, include_user=False, include_movie=False):
@@ -56,6 +92,7 @@ class Recommendation(db.Model):
             "user_id": self.user_id,
             "movie_id": self.movie_id,
             "score": self.score,
+            "algorithm_type": self.algorithm_type,  # ← DODANE
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 

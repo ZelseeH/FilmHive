@@ -13,7 +13,7 @@
     flex-direction: column;
     min-height: 100vh;
     width: calc(100% - 200px);
-    /* Dodane dla zapewnienia poprawnej szerokości */
+
 }
 
 .mainContent.expanded {
@@ -45,13 +45,11 @@
     .mainContent {
         margin-left: 0;
         width: 100%;
-        /* Pełna szerokość na mniejszych ekranach */
     }
 
     .mainContent.expanded {
         margin-left: 0;
         width: 100%;
-        /* Pełna szerokość niezależnie od stanu sidebara */
     }
 
     .footer {
@@ -63,6 +61,5 @@
 @media (max-width: 576px) {
     .content {
         padding: 0;
-        /* Mniejsze paddingi na bardzo małych ekranach */
     }
 }

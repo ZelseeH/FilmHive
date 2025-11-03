@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAllMovieComments } from '../../hooks/useAllMovieComments';
+import { useAuth } from '../../../../contexts/AuthContext';
 import ThreadModal from './ThreadModal';
 import styles from './AllMovieComments.module.css';
 
@@ -9,6 +10,7 @@ interface AllMovieCommentsProps {
 }
 
 const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
+    const { user } = useAuth();
     const {
         comments,
         pagination,
@@ -47,7 +49,7 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
             month: '2-digit',
             year: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
         });
     };
 
@@ -68,10 +70,10 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                     ...prev,
                     [commentId]: {
                         count: data.data.replies_count,
-                        firstReply: data.data.replies[0] || null
-                    }
+                        firstReply: data.data.replies[0] || null,
+                    },
                 }));
-                return data.data.replies; // Zwróć replies dla hash checking
+                return data.data.replies;
             }
         } catch (error) {
             console.error('Błąd podczas pobierania odpowiedzi:', error);
@@ -87,7 +89,6 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
         }
     }, [comments]);
 
-    // ✨ NOWA LOGIKA - Auto-otwieranie ThreadModal dla #reply-
     useEffect(() => {
         const hash = window.location.hash;
         console.log('🔍 AllMovieComments - Checking hash:', hash);
@@ -109,7 +110,6 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                                 console.log('🔍 AllMovieComments - Opening ThreadModal for comment:', comment.id);
                                 setSelectedCommentId(comment.id);
 
-                                // Usuń hash z URL żeby uniknąć konfliktów ze ScrollAnchor
                                 window.history.replaceState(null, '', window.location.pathname);
                                 return;
                             }
@@ -132,9 +132,17 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
         }
     };
 
+    const canReplyToComment = (comment: any, hasReplies: boolean) => {
+        if (!user) return true;
+        if (hasReplies) return true;
+
+        const currentUserId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+        return comment.user_id !== currentUserId;
+    };
+
     return (
         <>
-            <h2 className={styles['title']}>Wszystkie komentarze ({pagination.total})</h2>
+            <h2 className={styles.title}>Wszystkie komentarze ({pagination.total})</h2>
 
             <div className={styles['sorting-controls']}>
                 <label htmlFor="sort-select">Sortuj według:</label>
@@ -152,25 +160,22 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                 </select>
             </div>
 
-            {error && <p className={styles['error']}>{error}</p>}
+            {error && <p className={styles.error}>{error}</p>}
 
             {isLoading && comments.length === 0 ? (
-                <div className={styles['loading']}>Ładowanie komentarzy...</div>
+                <div className={styles.loading}>Ładowanie komentarzy...</div>
             ) : comments.length > 0 ? (
                 <>
                     <div className={styles['comments-list']}>
-                        {comments.map((comment) => {
+                        {comments.map(comment => {
                             const replyData = repliesData[comment.id];
                             const commentRating = getRatingValue(comment.user_rating);
                             const hasReplies = replyData?.count > 0;
+                            const canReply = canReplyToComment(comment, hasReplies);
 
                             return (
                                 <div key={comment.id} className={styles['comment-thread']}>
-                                    {/* GŁÓWNY KOMENTARZ Z ID */}
-                                    <div
-                                        id={`comment-${comment.id}`}
-                                        className={styles['comment-item']}
-                                    >
+                                    <div id={`comment-${comment.id}`} className={styles['comment-item']}>
                                         <div className={styles['comment-header']}>
                                             <div className={styles['user-info']}>
                                                 {comment.user?.profile_picture ? (
@@ -203,14 +208,21 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                                         </div>
 
                                         <p className={styles['comment-text']}>{comment.text}</p>
+
+                                        {canReply && (
+                                            <div className={styles['main-comment-actions']}>
+                                                <button
+                                                    onClick={() => setSelectedCommentId(comment.id)}
+                                                    className={styles['reply-button']}
+                                                >
+                                                    Odpowiedz
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* PIERWSZA ODPOWIEDŹ Z ID */}
-                                    {replyData?.firstReply && (
-                                        <div
-                                            id={`reply-${replyData.firstReply.id}`}
-                                            className={styles['first-reply']}
-                                        >
+                                    {hasReplies && replyData?.firstReply && (
+                                        <div id={`reply-${replyData.firstReply.id}`} className={styles['first-reply']}>
                                             <div className={styles['reply-header']}>
                                                 <div className={styles['user-info']}>
                                                     {replyData.firstReply.reply_user?.profile_picture ? (
@@ -250,7 +262,6 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                                             </div>
                                             <p className={styles['reply-text']}>{replyData.firstReply.text}</p>
 
-                                            {/* PRZYCISK DO WĄTKU */}
                                             <div className={styles['first-reply-actions']}>
                                                 <button
                                                     onClick={() => setSelectedCommentId(comment.id)}
@@ -266,7 +277,6 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                         })}
                     </div>
 
-                    {/* PAGINACJA */}
                     {pagination.total_pages > 1 && (
                         <div className={styles['pagination']}>
                             <button
@@ -279,7 +289,7 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
 
                             <div className={styles['page-numbers']}>
                                 {pagination.total_pages <= 7 ? (
-                                    Array.from({ length: pagination.total_pages }, (_, i) => i + 1).map((page) => (
+                                    Array.from({ length: pagination.total_pages }, (_, i) => i + 1).map(page => (
                                         <button
                                             key={page}
                                             onClick={() => changePage(page)}
@@ -302,8 +312,8 @@ const AllMovieComments: React.FC<AllMovieCommentsProps> = ({ movieId }) => {
                                         {pagination.page > 3 && <span className={styles['ellipsis']}>...</span>}
 
                                         {Array.from({ length: pagination.total_pages }, (_, i) => i + 1)
-                                            .filter((page) => Math.abs(page - pagination.page) <= 1 && page !== 1 && page !== pagination.total_pages)
-                                            .map((page) => (
+                                            .filter(page => Math.abs(page - pagination.page) <= 1 && page !== 1 && page !== pagination.total_pages)
+                                            .map(page => (
                                                 <button
                                                     key={page}
                                                     onClick={() => changePage(page)}

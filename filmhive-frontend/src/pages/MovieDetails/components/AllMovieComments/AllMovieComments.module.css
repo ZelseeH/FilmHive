@@ -45,6 +45,7 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     width: 75%;
     min-width: 700px;
+    border: 1px solid #eaeaea;
 }
 
 .comment-item:hover {
@@ -133,18 +134,15 @@
     color: #333;
     word-break: break-word;
     white-space: pre-wrap;
+    margin-bottom: 0.5rem;
 }
 
-/* KONTENER DLA PRZYCISKU ODPOWIEDZI - BEZ BORDER */
 .main-comment-actions {
-    margin-top: 1rem;
     display: flex;
     justify-content: flex-end;
-    padding-top: 0;
-    border-top: none;
+    padding-top: 0.5rem;
 }
 
-/* PRZYCISK ODPOWIEDZI */
 .reply-button {
     background-color: #007bff;
     color: white;
@@ -174,6 +172,8 @@
     border: 1px solid #e8eeff;
     box-shadow: 0 2px 6px rgba(102, 126, 234, 0.08);
     position: relative;
+    width: calc(75% - 2.5rem);
+    min-width: calc(700px - 2.5rem);
 }
 
 .first-reply .reply-header {
@@ -254,18 +254,17 @@
 }
 
 .first-reply .reply-text {
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 0.5rem 0;
     font-size: 0.875rem;
     line-height: 1.5;
     color: #333;
     word-break: break-word;
 }
 
-/* PRZYCISK WĄTKU NA PIERWSZEJ ODPOWIEDZI */
 .first-reply-actions {
     display: flex;
     justify-content: flex-end;
-    margin-top: 0.75rem;
+    padding-top: 0.5rem;
 }
 
 .thread-button {
@@ -324,7 +323,6 @@
     cursor: not-allowed;
 }
 
-/* W AllMovieComments.module.css - DODAJ */
 .comment-item:target {
     background-color: #fff3cd;
     border-left: 4px solid #ffc107;
@@ -386,6 +384,8 @@
     .first-reply {
         margin-left: 1rem;
         padding: 0.6rem;
+        width: calc(100% - 1rem);
+        min-width: 0px;
     }
 
     .first-reply .reply-header {
