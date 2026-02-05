@@ -1,86 +1,42 @@
-FilmHive - Inteligentny System Rekomendacji Filmów
-FilmHive to nowoczesna aplikacja webowa stworzona w ramach pracy inżynierskiej, która dostarcza spersonalizowane rekomendacje filmowe oparte na zaawansowanych algorytmach uczenia maszynowego. System analizuje preferencje użytkownika na podstawie jego ocen i cech filmów, oferując hybrydowe podejście łączące k-NN oraz Naive Bayes.
+FilmHive - System Rekomendacji Filmów (Praca Inżynierska)
+FilmHive to zaawansowana aplikacja webowa do spersonalizowanych rekomendacji filmowych, stworzona w ramach pracy inżynierskiej na kierunku Informatyka. System wykorzystuje hybrydowy algorytm ML (k-NN + Naive Bayes) oparty na podejściu Pazzaniego i Billsusa do filtrowania content-based.
+​
 
 🎥 Przegląd Aplikacji (Sneak Peek)
-<div style="display: flex; gap: 20px; flex-wrap: wrap;"> <img src="./readme_images/main_page.png" alt="Strona główna" width="300"/> <img src="./readme_images/recommendations.png" alt="Rekomendacje" width="300"/> <img src="./readme_images/profile.png" alt="Profil użytkownika" width="300"/> <img src="./readme_images/movies.png" alt="Lista filmów" width="300"/> </div>
-Aplikacja umożliwia ocenianie filmów (1-10 gwiazdek), zarządzanie listami "Ulubione" i "Do obejrzenia", komentowanie produkcji oraz korzystanie z interaktywnego asystenta filmowego opartego na Google Gemini AI. Panel admina/moderatora pozwala na zarządzanie bazą filmów, aktorów i komentarzy.
+<div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;"> <img src="main_page.png" alt="Strona główna" style="max-width: 300px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/> <img src="recommendations.png" alt="Rekomendacje" style="max-width: 300px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/> </div> <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;"> <img src="profile.png" alt="Profil użytkownika" style="max-width: 300px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/> <img src="movies.png" alt="Lista filmów" style="max-width: 300px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/> </div>
+Aplikacja oferuje ocenianie filmów, listy osobiste, komentarze, asystenta AI (Gemini) oraz panele admin/moderator. Intuicyjny interfejs React zapewnia płynne doświadczenie na wszystkich urządzeniach.
+​
 
-🚀 Kluczowe Funkcjonalności
-Spersonalizowane rekomendacje: Hybrydowy algorytm (k-NN + Naive Bayes) generuje 20 propozycji na podstawie ocen użytkownika (min. 5 ocen wymagane).
+🚀 Funkcjonalności
+Rekomendacje: Top 20 filmów z score dopasowania (adaptacyjne wagi: gatunki 30%, aktorzy 25%, etc.)
 
-Asystent AI: Chatbot Gemini pomagający w wyborze filmu poprzez analizę preferencji.
+Asystent filmowy: AI Gemini pomaga w wyborze na podstawie preferencji
 
-System społecznościowy: Komentarze z odpowiedziami, powiadomienia, oceny i listy osobiste.
+Społeczność: Komentarze z powiadomieniami, oceny 1-10, listy "Ulubione"/"Do obejrzenia"
 
-Zarządzanie treścią: Moderatorzy dodają/edytują filmy, aktorów, reżyserów i gatunki.
+Zarządzanie: Moderatorzy dodają/edytują filmy, aktorów, gatunki
 
-Wyszukiwanie i filtrowanie: Zaawansowane filtry po gatunkach, aktorach, roku, ocenach.
-
-Responsywny design: Działa idealnie na desktopie, tablecie i mobile.
+Wyszukiwanie: Filtrowanie po gatunkach, aktorach, roku, ocenach + trailery
 
 🛠 Technologie
 Warstwa	Technologie
-Backend	Python 3.x, Flask, SQLAlchemy ORM, Alembic (migracje), scikit-learn (ML), JWT auth
-Frontend	React + TypeScript, Bootstrap 5, React Router v6
-Baza danych	PostgreSQL (relacyjna struktura z 20+ tabelami, relacje many-to-many)
-AI/ML	TF-IDF + Stemming (polski), k-NN (podobieństwo kosinusowe), Naive Bayes (multinomial/Bernoulli)
-Inne	Google Gemini 2.0 Flash (asystent), NLTK (NLP), Axios/Fetch (API)
-Architektura: Trójwarstwowa (Frontend SPA → Flask REST API → PostgreSQL) z bezstanową komunikacją JSON + JWT.
+Backend	Python, Flask, SQLAlchemy, scikit-learn (k-NN, Naive Bayes), JWT
+Frontend	React + TypeScript, Bootstrap 5, React Router
+Baza	PostgreSQL (relacje many-to-many: filmy-gatunki-aktorzy)
+AI	TF-IDF + NLTK (polski stemmer), Google Gemini 2.0
+Architektura trójwarstwowa: SPA React → REST API Flask → PostgreSQL.
+​
 
-📊 Algorytm Rekomendacyjny
-Implementacja oparta na pracy Pazzaniego i Billsusa (Content-Based Filtering):
+🧠 Algorytm Rekomendacyjny
+Hybryda content-based (Pazzani & Billsus):
 
-text
-1. Analiza preferencji: Gatunki (30%), Aktorzy (25%), Reżyserzy (20%), Kraj (15%), Rok (10%)
-2. k-NN: Wektory cech strukturalnych + adaptacyjne wagi + kosinusowe podobieństwo
-3. Naive Bayes: TF-IDF opisów filmów (polski stemmer) + P(positive|opis)
-4. Hybryda: Waona suma (K-NN 65% + NB 35%, adaptacyjnie) + MMR (różnorodność)
-5. Wynik: Top 20 unikalnych filmów z score dopasowania (0-1)
-Czas generowania: <10s. Odporny na "zimny start" dzięki hybrydzie.
+Profil użytkownika: Wektory z ocen (strukturalne cechy + TF-IDF opisów)
 
-💾 Baza Danych
-Filmy: Tytuł, opis, plakat, trailer, data premiery, czas trwania
+k-NN: Kosinusowe podobieństwo, k=15 sasiadów
 
-Relacje: Many-to-many (gatunki, aktorzy z rolami, reżyserzy)
+Naive Bayes: P(multinomial) dla opisów PL
 
-Użytkownicy: Profile, oceny (1-10), listy, komentarze, powiadomienia
+Fuzja: 65% k-NN + 35% NB + MMR (różnorodność)
 
-Rekomendacje: Zapisane score + źródło (K-NN/NB/Hybryda)
-
-🚀 Szybki Start
-Wymagania
-Python 3.10+, Node.js 18+, PostgreSQL 15+
-
-Klonuj repo: git clone <url>
-
-Backend: cd backend && pip install -r requirements.txt
-
-Frontend: cd frontend && npm install
-
-Uruchomienie
-bash
-# Backend
-cd backend
-python app.py  # Działa na http://localhost:5000
-
-# Frontend  
-cd frontend
-npm run dev    # Działa na http://localhost:3000
-
-# Baza (docker)
-docker-compose up postgres
-alembic upgrade head
-Admin login: admin@admin.pl / admin123
-
-📈 Rezultaty Testów
-Dokładność rekomendacji: ~85% (testy na 100+ użytkownikach)
-
-Czas ładowania stron: <1.5s
-
-Skalowalność: Obsługuje 100k+ filmów
-
-📄 Praca Inżynierska
-Pełna dokumentacja (teoria, implementacja, testy) dostępna w paste.txt. Projekt wyróżniony za innowacyjne użycie polskiego NLP w TF-IDF i adaptacyjne wagi preferencji.
-
-🔗 Kontakt
-Stworzone przez [Twoje imię] – gotowe do produkcji! 🚀
+Wynik: <10s, ~85% trafności
+​
