@@ -1,7 +1,6 @@
 <p align="center">
   <img src="FilmHiveLogo.png" alt="FilmHive Logo" width="200"/>
 </p>
-<h1 align="center">FilmHive</h1>
 <p align="center">
   System Rekomendacji Filmów oparty na uczeniu maszynowym<br/>
   <i>Praca inżynierska – Informatyka</i>
