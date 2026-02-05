@@ -7,7 +7,7 @@ FilmHive to zaawansowana aplikacja webowa do spersonalizowanych rekomendacji fil
 Aplikacja oferuje ocenianie filmów, listy osobiste, komentarze, asystenta AI (Gemini) oraz panele admin/moderator. Intuicyjny interfejs React zapewnia płynne doświadczenie na wszystkich urządzeniach.
 ​
 
-🚀 Funkcjonalności
+Funkcjonalności
 Rekomendacje: Top 20 filmów z score dopasowania (adaptacyjne wagi: gatunki 30%, aktorzy 25%, etc.)
 
 Asystent filmowy: AI Gemini pomaga w wyborze na podstawie preferencji
@@ -18,7 +18,7 @@ Zarządzanie: Moderatorzy dodają/edytują filmy, aktorów, gatunki
 
 Wyszukiwanie: Filtrowanie po gatunkach, aktorach, roku, ocenach + trailery
 
-🛠 Technologie
+Technologie
 Warstwa	Technologie
 Backend	Python, Flask, SQLAlchemy, scikit-learn (k-NN, Naive Bayes), JWT
 Frontend	React + TypeScript, Bootstrap 5, React Router
@@ -27,7 +27,7 @@ AI	TF-IDF + NLTK (polski stemmer), Google Gemini 2.0
 Architektura trójwarstwowa: SPA React → REST API Flask → PostgreSQL.
 ​
 
-🧠 Algorytm Rekomendacyjny
+Algorytm Rekomendacyjny
 Hybryda content-based (Pazzani & Billsus):
 
 Profil użytkownika: Wektory z ocen (strukturalne cechy + TF-IDF opisów)
