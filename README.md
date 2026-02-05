@@ -2,7 +2,7 @@ FilmHive - System Rekomendacji Filmów (Praca Inżynierska)
 FilmHive to zaawansowana aplikacja webowa do spersonalizowanych rekomendacji filmowych, stworzona w ramach pracy inżynierskiej na kierunku Informatyka. System wykorzystuje hybrydowy algorytm ML (k-NN + Naive Bayes) oparty na podejściu Pazzaniego i Billsusa do filtrowania content-based.
 ​
 
-🎥 Przegląd Aplikacji (Sneak Peek)
+Przegląd Aplikacji (Sneak Peek)
 <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;"> <img src="main_page.png" alt="Strona główna" style="max-width: 300px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/> <img src="recommendations.png" alt="Rekomendacje" style="max-width: 300px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/> </div> <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;"> <img src="profile.png" alt="Profil użytkownika" style="max-width: 300px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/> <img src="movies.png" alt="Lista filmów" style="max-width: 300px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/> </div>
 Aplikacja oferuje ocenianie filmów, listy osobiste, komentarze, asystenta AI (Gemini) oraz panele admin/moderator. Intuicyjny interfejs React zapewnia płynne doświadczenie na wszystkich urządzeniach.
 ​
@@ -38,5 +38,4 @@ Naive Bayes: P(multinomial) dla opisów PL
 
 Fuzja: 65% k-NN + 35% NB + MMR (różnorodność)
 
-Wynik: <10s, ~85% trafności
 ​
