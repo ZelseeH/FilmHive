@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/FilmHiveLogo.png" alt="FilmHive Logo" width="200"/>
+  <img src="FilmHiveLogo.png" alt="FilmHive Logo" width="200"/>
 </p>
 <h1 align="center">FilmHive</h1>
 <p align="center">
