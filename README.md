@@ -18,13 +18,13 @@ Zarządzanie: Moderatorzy dodają/edytują filmy, aktorów, gatunki
 
 Wyszukiwanie: Filtrowanie po gatunkach, aktorach, roku, ocenach + trailery
 
-Technologie
-Warstwa	Technologie
-Backend	Python, Flask, SQLAlchemy, scikit-learn (k-NN, Naive Bayes), JWT
-Frontend	React + TypeScript, Bootstrap 5, React Router
-Baza	PostgreSQL (relacje many-to-many: filmy-gatunki-aktorzy)
-AI	TF-IDF + NLTK (polski stemmer), Google Gemini 2.0
-Architektura trójwarstwowa: SPA React → REST API Flask → PostgreSQL.
+| Warstwa     | Technologie                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| Backend     | Python 3.x, Flask, SQLAlchemy ORM, Alembic (migracje), scikit-learn (ML), JWT auth              |
+| Frontend    | React + TypeScript, Bootstrap 5, React Router v6                                                |
+| Baza danych | PostgreSQL (relacyjna struktura z 20+ tabelami, relacje many-to-many)                           |
+| AI/ML       | TF-IDF + Stemming (polski), k-NN (podobieństwo kosinusowe), Naive Bayes (multinomial/Bernoulli) |
+| Inne        | Google Gemini 2.0 Flash (asystent), NLTK (NLP), Axios/Fetch (API)                               |
 ​
 
 Algorytm Rekomendacyjny
