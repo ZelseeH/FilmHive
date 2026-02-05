@@ -245,7 +245,7 @@ class PeopleRepository:
             Actor.actor_id.label("id"),
             Actor.actor_name.label("name"),
             Actor.birth_date,
-            Actor.photo_url,  # dodane pole zdjęcia aktora
+            Actor.photo_url,  
             func.extract("year", func.age(Actor.birth_date)).label("age"),
         ).where(
             func.extract("month", Actor.birth_date)

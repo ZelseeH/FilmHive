@@ -94,27 +94,20 @@ class MovieRecommender:
                 f"max_strength={preference_strength:.3f}"
             )
 
-            # 1. KNN Recommendations
             self._knn_scores = self._get_knn_recommendations(
-                positive_ratings, negative_ratings, candidate_movies
+                positive_ratings, candidate_movies
             )
-
-            # 2. Naive Bayes Recommendations
             self._nb_scores = self._get_nb_recommendations(
                 positive_ratings, negative_ratings, candidate_movies
             )
-
-            # 3. Hybrid Recommendations (Ensemble)
             hybrid_scores = self._get_hybrid_recommendations(
                 self._knn_scores, self._nb_scores, preference_strength
             )
 
-            # 4. Selection & Ranking
             top_recommendations = self._select_top_recommendations(
                 self._knn_scores, self._nb_scores, hybrid_scores, candidate_movies
             )
 
-            # 5. Save to DB
             self._save_recommendations(user_id, top_recommendations)
 
             return {
@@ -146,29 +139,16 @@ class MovieRecommender:
             }
 
     def _get_knn_recommendations(
-        self,
-        positive_ratings: pd.DataFrame,
-        negative_ratings: pd.DataFrame,
-        candidate_movies: pd.DataFrame,
+        self, positive_ratings: pd.DataFrame, candidate_movies: pd.DataFrame
     ) -> Dict[int, float]:
         try:
             self.logger.info(
-                f"K-NN: training on {len(positive_ratings)} positive + "
-                f"{len(negative_ratings)} negative ratings"
+                f"K-NN: training on {len(positive_ratings)} positive ratings"
             )
 
             positive_features = self.preprocessor.prepare_structural_features(
                 positive_ratings, user_ratings=positive_ratings
             )
-
-            negative_features = (
-                self.preprocessor.prepare_structural_features(
-                    negative_ratings, user_ratings=positive_ratings
-                )
-                if not negative_ratings.empty
-                else pd.DataFrame()
-            )
-
             candidate_features = self.preprocessor.prepare_structural_features(
                 candidate_movies, user_ratings=positive_ratings
             )
@@ -177,18 +157,9 @@ class MovieRecommender:
                 positive_features, candidate_features
             )
 
-            if not negative_features.empty:
-                negative_aligned, _ = self.preprocessor.align_features(
-                    negative_features, candidates_aligned
-                )
-            else:
-                negative_aligned = pd.DataFrame()
-
             knn_scores = self.knn_recommender.recommend(
                 positive_ratings=positive_ratings,
                 positive_features=positive_aligned,
-                negative_ratings=negative_ratings,
-                negative_features=negative_aligned,
                 candidate_features=candidates_aligned,
                 adaptive_weights=self._adaptive_weights,
                 top_k=len(candidate_movies),
@@ -251,17 +222,12 @@ class MovieRecommender:
                 top_k=len(candidate_descriptions),
             )
 
-            # --- FIX: Slight confidence dampening for Naive Bayes ---
-            # NB often returns 0.99-1.0. We dampen it slightly (x0.95) to allow KNN
-            # (which is usually lower) to compete better in the hybrid mix.
-            nb_scores_dict = {
-                movie_id: min(1.0, score * 0.95) for movie_id, score in nb_predictions
-            }
+            nb_scores_dict = {movie_id: score for movie_id, score in nb_predictions}
 
             if nb_scores_dict:
                 avg = sum(nb_scores_dict.values()) / len(nb_scores_dict)
                 self.logger.info(
-                    f"Naive Bayes: {len(nb_scores_dict)} predictions, avg={avg:.3f} (dampened)"
+                    f"Naive Bayes: {len(nb_scores_dict)} predictions, avg={avg:.3f}"
                 )
 
             return nb_scores_dict
@@ -277,11 +243,8 @@ class MovieRecommender:
         preference_strength: float,
     ) -> Dict[int, float]:
         try:
-            # Dynamic weighting based on user profile strength
             if preference_strength > 0.5:
-                # If user has strong preferences (e.g. loves specific actor),
-                # boost KNN weight because KNN captures structural features (actors) better.
-                knn_weight = min(0.80, ENSEMBLE_KNN_WEIGHT + 0.20)
+                knn_weight = min(0.75, ENSEMBLE_KNN_WEIGHT + 0.15)
                 nb_weight = 1.0 - knn_weight
                 self.logger.info(
                     f"Strong patterns ({preference_strength:.3f}) → boost KNN weight to {knn_weight:.2f}"
@@ -316,7 +279,6 @@ class MovieRecommender:
     ) -> Dict[str, List[Dict]]:
         used_ids = set()
 
-        # 1. Select top KNN
         top_knn_items = sorted(knn_scores.items(), key=lambda x: x[1], reverse=True)[
             :KNN_RECOMMENDATIONS
         ]
@@ -340,7 +302,6 @@ class MovieRecommender:
             except Exception as e:
                 self.logger.error(f"Error serializing KNN movie {movie_id}: {e}")
 
-        # 2. Select top Naive Bayes (skipping duplicates)
         nb_candidates = sorted(nb_scores.items(), key=lambda x: x[1], reverse=True)
         top_nb = []
         nb_skipped = 0
@@ -371,7 +332,6 @@ class MovieRecommender:
             except Exception as e:
                 self.logger.error(f"Error serializing NB movie {movie_id}: {e}")
 
-        # 3. Select top Hybrid (skipping duplicates if configured)
         top_hybrid = []
         duplicates_skipped = 0
         sorted_hybrid = sorted(hybrid_scores.items(), key=lambda x: x[1], reverse=True)
@@ -398,7 +358,6 @@ class MovieRecommender:
                         "breakdown": {
                             "knn_score": float(knn_score),
                             "nb_score": float(nb_score),
-                            # Note: These are base config weights, actual weights might differ if boosted
                             "knn_weight": ENSEMBLE_KNN_WEIGHT,
                             "nb_weight": ENSEMBLE_NB_WEIGHT,
                         },
@@ -549,14 +508,13 @@ class MovieRecommender:
 
     def get_system_info(self) -> Dict[str, any]:
         return {
-            "algorithm": "Adaptive Hybrid Content-Based Filtering with Negative Feedback",
+            "algorithm": "Adaptive Hybrid Content-Based Filtering",
             "theory_base": "Pazzani & Billsus (2007) with adaptive weighting",
             "components": {
                 "knn": {
                     "method": "K-Nearest Neighbors",
                     "features": "genres, actors, directors, country, year (structural)",
                     "metric": "weighted cosine similarity",
-                    "negative_feedback": "Subtracts 30% of negative profile from positive profile",
                     "output": f"Top {KNN_RECOMMENDATIONS} recommendations",
                 },
                 "naive_bayes": {
@@ -576,8 +534,8 @@ class MovieRecommender:
             "training_data": {
                 "positive": f"{TRAINING_POSITIVE_LIMIT} last positive ratings (≥{POSITIVE_RATING_THRESHOLD})",
                 "negative": f"{TRAINING_NEGATIVE_LIMIT} last negative ratings (≤{NEGATIVE_RATING_THRESHOLD})",
-                "strategy": "Balanced positive/negative examples with negative feedback",
+                "strategy": "Balanced positive/negative examples",
             },
             "adaptive_features": ["genres", "actors", "directors", "country", "year"],
-            "innovation": "Adaptive weighting + negative feedback + 3-section output (KNN/NB/Hybrid)",
+            "innovation": "Adaptive weighting based on user patterns + 3-section output (KNN/NB/Hybrid)",
         }

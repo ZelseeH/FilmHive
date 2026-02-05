@@ -9,13 +9,15 @@ import {
     NotificationItem
 } from '../services/notificationService';
 
+const POLLING_INTERVAL = 10000; // 10 sekund
+
 export const useNotifications = () => {
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
     const [unreadCount, setUnreadCount] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Pobiera powiadomienia
+    // Pobiera powiadomienia (CIĘŻKA operacja - cała lista)
     const fetchNotifications = useCallback(async (limit: number = 50) => {
         setIsLoading(true);
         setError(null);
@@ -35,7 +37,7 @@ export const useNotifications = () => {
         }
     }, []);
 
-    // Pobiera licznik nieprzeczytanych
+    // Pobiera licznik nieprzeczytanych (LEKKA operacja - tylko liczba)
     const fetchUnreadCount = useCallback(async () => {
         try {
             const response = await getUnreadCount();
@@ -48,48 +50,55 @@ export const useNotifications = () => {
     // Oznacza powiadomienie jako przeczytane
     const handleMarkAsRead = useCallback(async (notificationId: number) => {
         try {
+            // Optymistycznie aktualizuj UI
+            setNotifications(prev =>
+                prev.map(n =>
+                    n.id === notificationId
+                        ? { ...n, is_read: true }
+                        : n
+                )
+            );
+            setUnreadCount(prev => Math.max(0, prev - 1));
+
             const response = await markNotificationAsRead(notificationId);
-            if (response.success) {
-                // Aktualizuj lokalne powiadomienia
-                setNotifications(prev =>
-                    prev.map(n =>
-                        n.id === notificationId
-                            ? { ...n, is_read: true }
-                            : n
-                    )
-                );
-                // Aktualizuj licznik
-                setUnreadCount(prev => Math.max(0, prev - 1));
+            if (!response.success) {
+                // Przywróć stan w razie błędu
+                fetchNotifications();
             }
         } catch (err: any) {
             console.error('Error marking notification as read:', err);
             setError(err.message || 'Błąd podczas oznaczania powiadomienia');
+            fetchNotifications(); // Przywróć stan
         }
-    }, []);
+    }, [fetchNotifications]);
 
     // Oznacza wszystkie jako przeczytane
     const handleMarkAllAsRead = useCallback(async () => {
         try {
+            // Optymistycznie aktualizuj UI
+            setNotifications(prev =>
+                prev.map(n => ({ ...n, is_read: true }))
+            );
+            setUnreadCount(0);
+
             const response = await markAllNotificationsAsRead();
-            if (response.success) {
-                // Aktualizuj wszystkie powiadomienia na przeczytane
-                setNotifications(prev =>
-                    prev.map(n => ({ ...n, is_read: true }))
-                );
-                setUnreadCount(0);
+            if (!response.success) {
+                fetchNotifications();
             }
         } catch (err: any) {
             console.error('Error marking all notifications as read:', err);
             setError(err.message || 'Błąd podczas oznaczania powiadomień');
+            fetchNotifications();
         }
-    }, []);
+    }, [fetchNotifications]);
 
     // Obsługuje kliknięcie w powiadomienie
     const handleNotificationClick = useCallback(async (notificationId: number) => {
         try {
-            const response = await clickNotification(notificationId);
-            if (response.success) {
-                // Oznacz jako przeczytane lokalnie
+            const notification = notifications.find(n => n.id === notificationId);
+
+            // Optymistycznie oznacz jako przeczytane
+            if (notification && !notification.is_read) {
                 setNotifications(prev =>
                     prev.map(n =>
                         n.id === notificationId
@@ -97,12 +106,11 @@ export const useNotifications = () => {
                             : n
                     )
                 );
-                // Zmniejsz licznik jeśli było nieprzeczytane
-                const notification = notifications.find(n => n.id === notificationId);
-                if (notification && !notification.is_read) {
-                    setUnreadCount(prev => Math.max(0, prev - 1));
-                }
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
 
+            const response = await clickNotification(notificationId);
+            if (response.success) {
                 return response.redirect_url;
             }
         } catch (err: any) {
@@ -112,20 +120,26 @@ export const useNotifications = () => {
         return null;
     }, [notifications]);
 
-    // Inicjalne pobieranie przy montowaniu
+    // ✅ POLLING - Automatyczne odświeżanie licznika co 10 sekund
+    useEffect(() => {
+        // Pierwsze pobranie przy montowaniu
+        fetchUnreadCount();
+
+        // Ustaw interwał pollingu
+        const intervalId = setInterval(() => {
+            fetchUnreadCount();
+        }, POLLING_INTERVAL);
+
+        // Cleanup przy unmount
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, [fetchUnreadCount]);
+
+    // ✅ Inicjalne pobieranie pełnej listy powiadomień
     useEffect(() => {
         fetchNotifications();
-        fetchUnreadCount();
-    }, [fetchNotifications, fetchUnreadCount]);
-
-    // Auto-refresh co 30 sekund (opcjonalne)
-    useEffect(() => {
-        const interval = setInterval(() => {
-            fetchUnreadCount();
-        }, 30000);
-
-        return () => clearInterval(interval);
-    }, [fetchUnreadCount]);
+    }, [fetchNotifications]);
 
     return {
         notifications,
@@ -133,9 +147,9 @@ export const useNotifications = () => {
         isLoading,
         error,
         fetchNotifications,
-        markAsRead: handleMarkAsRead,           // ← zmiana nazwy
-        markAllAsRead: handleMarkAllAsRead,     // ← zmiana nazwy  
-        notificationClick: handleNotificationClick, // ← zmiana nazwy
+        markAsRead: handleMarkAsRead,
+        markAllAsRead: handleMarkAllAsRead,
+        notificationClick: handleNotificationClick,
         refreshNotifications: fetchNotifications,
         refreshUnreadCount: fetchUnreadCount
     };

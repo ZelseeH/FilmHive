@@ -24,10 +24,6 @@ from ..config import (
 
 
 class SimilarityMetrics:
-    """
-    Klasa z metrykami podobieństwa dla content-based recsys (Pazzani & Billsus).
-    Wspiera hybrydę strukturalną (cosine/Jaccard) + tekstową (TF-IDF cosine).
-    """
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)

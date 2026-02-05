@@ -30,7 +30,7 @@ const DashboardPanelContent: React.FC = () => {
 
     const panelType = isAdmin() ? "Administrator" : isModerator() ? "Moderator" : "Użytkownik";
 
-    // Sprawdź czy jesteśmy na głównej stronie dashboard
+
     const isDashboardHome = location.pathname === '/dashboardpanel' || location.pathname === '/dashboardpanel/';
 
     return (
@@ -52,7 +52,7 @@ const DashboardPanelContent: React.FC = () => {
     );
 };
 
-// Główny komponent owinięty w ThemeProvider
+
 const DashboardPanel: React.FC<React.PropsWithChildren<{}>> = () => {
     return (
         <ThemeProvider>

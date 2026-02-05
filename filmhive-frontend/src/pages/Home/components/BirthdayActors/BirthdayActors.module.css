@@ -12,6 +12,7 @@
     align-items: center;
     padding: 0 10px;
     justify-content: center;
+    margin-bottom: 1rem;
 }
 
 .arrow {
@@ -62,10 +63,8 @@
     margin: 0 auto;
     padding: 0 60px;
     overflow: hidden;
-    /* Dodane żeby strzałki nie powodowały przewijania */
 }
 
-/* DODANE: Gdy nie ma strzałek, usuń padding */
 .slider-container:not(:has(.arrow)) {
     padding: 0 20px;
 }
@@ -87,11 +86,9 @@
     justify-content: flex-start;
 }
 
-/* DODANE: Centrowanie gdy mało elementów */
 .slider.centered {
     justify-content: center;
     overflow: visible;
-    /* Usuń overflow gdy wycentrowane */
 }
 
 .slider::-webkit-scrollbar {
@@ -167,14 +164,40 @@
     line-height: 1.2;
 }
 
-/* Responsive */
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .slider-container {
+        padding: 0 55px;
+    }
+
+    .slider-item {
+        flex: 0 0 140px;
+        min-width: 140px;
+    }
+
+    .photo-container {
+        height: 180px;
+    }
+}
+
+/* Mobile landscape / Small tablet (576px - 768px) */
 @media (max-width: 768px) {
+    .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 0.8rem;
+    }
+
     .slider-container {
         padding: 0 50px;
     }
 
     .slider-container:not(:has(.arrow)) {
         padding: 0 15px;
+    }
+
+    .slider {
+        gap: 12px;
+        padding: 15px 8px;
     }
 
     .slider-item {
@@ -184,6 +207,7 @@
 
     .photo-container {
         height: 160px;
+        border-radius: 6px;
     }
 
     .person-name {
@@ -193,15 +217,83 @@
     .birth-info {
         font-size: 0.75rem;
     }
+
+    .arrow {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
 }
 
+/* Mobile portrait (480px - 576px) */
+@media (max-width: 576px) {
+    .section-title {
+        font-size: 1.2rem;
+        padding: 0 5px;
+    }
+
+    .slider-container {
+        padding: 0 45px;
+    }
+
+    .slider-container:not(:has(.arrow)) {
+        padding: 0 10px;
+    }
+
+    .slider {
+        gap: 10px;
+        padding: 12px 5px;
+    }
+
+    .slider-item {
+        flex: 0 0 110px;
+        min-width: 110px;
+    }
+
+    .photo-container {
+        height: 145px;
+    }
+
+    .person-name {
+        font-size: 0.82rem;
+    }
+
+    .birth-info {
+        font-size: 0.72rem;
+    }
+
+    .arrow {
+        width: 34px;
+        height: 34px;
+        font-size: 17px;
+    }
+
+    .left-arrow {
+        left: 3px;
+    }
+
+    .right-arrow {
+        right: 3px;
+    }
+}
+
+/* Small mobile (320px - 480px) */
 @media (max-width: 480px) {
+    .section-title {
+        font-size: 1.1rem;
+    }
+
     .slider-container {
         padding: 0 40px;
     }
 
     .slider-container:not(:has(.arrow)) {
-        padding: 0 10px;
+        padding: 0 8px;
+    }
+
+    .slider {
+        gap: 8px;
+        padding: 10px 5px;
     }
 
     .slider-item {
@@ -210,11 +302,13 @@
     }
 
     .photo-container {
-        height: 140px;
+        height: 130px;
+        border-radius: 5px;
     }
 
     .person-name {
         font-size: 0.8rem;
+        margin-bottom: 2px;
     }
 
     .birth-info {
@@ -234,26 +328,96 @@
     .right-arrow {
         right: 2px;
     }
+}
 
+/* Extra small mobile (< 360px) */
+@media (max-width: 360px) {
     .section-title {
-        text-align: center;
-        justify-content: center;
-        font-size: 1.2rem;
+        font-size: 1rem;
+    }
+
+    .slider-item {
+        flex: 0 0 90px;
+        min-width: 90px;
+    }
+
+    .photo-container {
+        height: 120px;
+    }
+
+    .person-name {
+        font-size: 0.75rem;
+    }
+
+    .birth-info {
+        font-size: 0.68rem;
+    }
+
+    .arrow {
+        width: 30px;
+        height: 30px;
+        font-size: 15px;
     }
 }
 
-/* Dla bardzo małych ekranów - wycentruj zawsze */
+/* Very small screens - hide arrows, center content */
 @media (max-width: 320px) {
+    .section-title {
+        font-size: 0.95rem;
+    }
+
     .slider {
         justify-content: center;
     }
 
     .arrow {
         display: none;
-        /* Ukryj na bardzo małych ekranach */
     }
 
     .slider-container {
         padding: 0 5px !important;
+    }
+
+    .slider-item {
+        flex: 0 0 85px;
+        min-width: 85px;
+    }
+
+    .photo-container {
+        height: 110px;
+    }
+
+    .person-name {
+        font-size: 0.72rem;
+    }
+
+    .birth-info {
+        font-size: 0.65rem;
+    }
+}
+
+/* Landscape mode dla małych ekranów */
+@media (max-height: 500px) and (orientation: landscape) {
+    .birthday-section {
+        margin-top: 1rem;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .slider {
+        padding: 10px 5px;
+    }
+
+    .photo-container {
+        height: 100px;
+    }
+
+    .arrow {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
     }
 }

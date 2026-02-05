@@ -23,7 +23,6 @@ const Navbar: React.FC = () => {
   const { mobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useMobileMenu();
   const { showUserMenu, menuPosition, avatarRef, toggleUserMenu, closeUserMenu } = useUserMenu();
 
-  // Stan dla powiadomień
   const [showNotificationsPopup, setShowNotificationsPopup] = useState(false);
   const {
     notifications,
@@ -31,6 +30,7 @@ const Navbar: React.FC = () => {
     isLoading,
     markAsRead,
     markAllAsRead,
+    refreshNotifications, // ← Funkcja do odświeżania z hooka
   } = useNotifications();
 
   const onLogout = () => handleLogout(logout, closeUserMenu, navigate);
@@ -141,7 +141,6 @@ const Navbar: React.FC = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
       <Menu
         right
         isOpen={mobileMenuOpen}
@@ -180,7 +179,6 @@ const Navbar: React.FC = () => {
                     />
                   </div>
                   <span className={styles.mobileUsername}>{user.username}</span>
-                  {/* Badge pod nickiem w mobile */}
                   <div className={styles.mobileNotificationContainer}>
                     <NotificationBadge
                       count={unreadCount}
@@ -205,7 +203,6 @@ const Navbar: React.FC = () => {
                 >
                   Ustawienia
                 </Link>
-                {/* Panel Administratora - tylko dla roli 1 (admin) */}
                 {user.role === 1 && (
                   <Link
                     to="/dashboardpanel"
@@ -216,7 +213,6 @@ const Navbar: React.FC = () => {
                   </Link>
                 )}
 
-                {/* Panel Moderatora - tylko dla roli 2 (moderator) */}
                 {user.role === 2 && (
                   <Link
                     to="/dashboardpanel"
@@ -269,7 +265,6 @@ const Navbar: React.FC = () => {
         </div>
       </Menu>
 
-      {/* User Menu Desktop */}
       {showUserMenu && user && (
         <UserMenu
           username={user.username}
@@ -280,13 +275,15 @@ const Navbar: React.FC = () => {
         />
       )}
 
-      {/* Popup z powiadomieniami */}
+      {/* ✅ POPRAWIONY POPUP - dodane onRefresh i unreadCountFromParent */}
       <NotificationsPopup
         notifications={notifications}
         isOpen={showNotificationsPopup}
         onClose={handleCloseNotifications}
         onMarkAsRead={markAsRead}
         onMarkAllAsRead={markAllAsRead}
+        onRefresh={refreshNotifications} // ← DODANE!
+        unreadCountFromParent={unreadCount} // ← DODANE!
         isLoading={isLoading}
       />
     </div>

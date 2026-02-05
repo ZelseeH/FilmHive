@@ -56,7 +56,7 @@ export const handlePersonImageError = (
     fallbackSrc?: string
 ): void => {
     const target = e.target as HTMLImageElement;
-    const defaultFallback = type === 'actor' ? '/placeholder-actor.jpg' : '/placeholder-director.jpg';
+    const defaultFallback = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3QgZmlsbD0iI2NjYyIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiLz48L3N2Zz4=';
     target.src = fallbackSrc || defaultFallback;
     target.onerror = null;
 };

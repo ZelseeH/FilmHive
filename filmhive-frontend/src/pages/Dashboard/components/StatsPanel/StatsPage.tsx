@@ -81,14 +81,14 @@ const StatsPage: React.FC = () => {
                 value={statistics.actors.total_actors}
                 icon="🎭"
                 color="green"
-                subtitle={`${statistics.actors.photo_statistics.photo_percentage}% ze zdjęciami`}
+
             />
             <StatCard
                 title="Łączna liczba reżyserów"
                 value={statistics.directors.total_directors}
                 icon="🎯"
                 color="purple"
-                subtitle={`${statistics.directors.photo_statistics.photo_percentage}% ze zdjęciami`}
+
             />
             <StatCard
                 title="Łączna liczba gatunków"
@@ -136,25 +136,7 @@ const StatsPage: React.FC = () => {
                 />
             </div>
 
-            <div className={styles.chartsGrid}>
-                <ChartCard
-                    title="Rozkład ról użytkowników"
-                    type="pie"
-                    data={[
-                        { label: 'Administratorzy', value: statistics.users.role_distribution.admins, color: '#ff4757' },
-                        { label: 'Moderatorzy', value: statistics.users.role_distribution.moderators, color: '#ffa502' },
-                        { label: 'Zwykli użytkownicy', value: statistics.users.role_distribution.regular_users, color: '#3742fa' }
-                    ]}
-                />
-                <ChartCard
-                    title="Typy uwierzytelniania"
-                    type="pie"
-                    data={[
-                        { label: 'OAuth', value: statistics.users.authentication_types.oauth_users, color: '#2ed573' },
-                        { label: 'Zwykłe logowanie', value: statistics.users.authentication_types.regular_login_users, color: '#1e90ff' }
-                    ]}
-                />
-            </div>
+
 
             <div className={styles.additionalStats}>
                 <div className={styles.statRow}>
@@ -262,14 +244,7 @@ const StatsPage: React.FC = () => {
                         { label: 'Nieznana', value: statistics.actors.gender_distribution.unknown, color: '#747d8c' }
                     ]}
                 />
-                <ChartCard
-                    title="Zdjęcia profilowe"
-                    type="pie"
-                    data={[
-                        { label: 'Ze zdjęciami', value: statistics.actors.photo_statistics.with_photos, color: '#2ed573' },
-                        { label: 'Bez zdjęć', value: statistics.actors.photo_statistics.without_photos, color: '#ff4757' }
-                    ]}
-                />
+
             </div>
         </div>
     );

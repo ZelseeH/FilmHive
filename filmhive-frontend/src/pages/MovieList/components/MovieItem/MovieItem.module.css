@@ -78,6 +78,8 @@
 .movieHeader {
     margin-bottom: 5px;
     width: 100%;
+    overflow: hidden;
+    /* ← DODANE */
 }
 
 .movieTitle {
@@ -88,12 +90,22 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
+    max-width: calc(100% - 80px);
+    display: block;
+    /* ← DODANE - ważne dla ellipsis */
 }
 
 .movieTitle a {
     color: #000;
     text-decoration: none;
+    display: block;
+    /* ← DODANE */
+    white-space: nowrap;
+    /* ← DODANE */
+    overflow: hidden;
+    /* ← DODANE */
+    text-overflow: ellipsis;
+    /* ← DODANE */
 }
 
 .movieTitle a:hover {
@@ -199,8 +211,6 @@
 }
 
 @media (max-width: 768px) {
-
-
     .movieInfo {
         width: calc(100% - 100px);
         min-height: 140px;
@@ -297,8 +307,6 @@
 }
 
 @media (max-width: 320px) {
-
-
     .movieInfo {
         width: calc(100% - 70px);
     }

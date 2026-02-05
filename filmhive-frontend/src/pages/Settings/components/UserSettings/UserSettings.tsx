@@ -29,7 +29,7 @@ const UserSettings: React.FC = () => {
     try {
       const data = await userService.updateProfile({ name: formValues.name });
       setUserData(prev => ({ ...prev, name: data.name }));
-      setMessage({ type: 'success', text: 'Nazwa uĹźytkownika zostaĹa zmieniona.' });
+      setMessage({ type: 'success', text: 'Nazwa użytkownika została zmieniona.' });
       handleCancel();
     } catch (error: unknown) {
       if (error instanceof Error) {

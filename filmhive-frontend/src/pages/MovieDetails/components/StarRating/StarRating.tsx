@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { RatingService } from '../../services/ratingService';
 import { useUserRating } from '../../hooks/useUserRating';
 import { CommentService } from '../../services/commentService';
 import styles from './StarRating.module.css';
+
 
 interface StarRatingProps {
     movieId: number;
@@ -12,6 +14,7 @@ interface StarRatingProps {
     releaseDate?: string;
 }
 
+
 const StarRating: React.FC<StarRatingProps> = ({
     movieId,
     onRatingChange,
@@ -19,6 +22,7 @@ const StarRating: React.FC<StarRatingProps> = ({
     releaseDate
 }) => {
     const { user, getToken, openLoginModal } = useAuth();
+    const navigate = useNavigate();
     const [hover, setHover] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -32,23 +36,28 @@ const StarRating: React.FC<StarRatingProps> = ({
     const [ratingToRemove, setRatingToRemove] = useState<number | null>(null);
     const previousRatingRef = useRef<number>(0);
 
+
     // DEBUG - sprawdź co otrzymuje komponent
     console.log('StarRating - movieId:', movieId);
     console.log('StarRating - releaseDate:', releaseDate);
     console.log('StarRating - releaseDate type:', typeof releaseDate);
 
+
     // Sprawdź czy film już wyszedł
     const isMovieReleased = () => {
         console.log('Checking if movie is released...');
+
 
         if (!releaseDate) {
             console.log('No release date, returning true');
             return true;
         }
 
+
         const release = new Date(releaseDate);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+
 
         console.log('Release date object:', release);
         console.log('Today object:', today);
@@ -56,11 +65,14 @@ const StarRating: React.FC<StarRatingProps> = ({
         console.log('Today timestamp:', today.getTime());
         console.log('Is released (release <= today):', release <= today);
 
+
         return release <= today;
     };
 
+
     const movieReleased = isMovieReleased();
     console.log('Final movieReleased result:', movieReleased);
+
 
     useEffect(() => {
         if (rating > 0) {
@@ -68,8 +80,10 @@ const StarRating: React.FC<StarRatingProps> = ({
         }
     }, [rating]);
 
+
     const handleRatingClick = async (selectedRating: number) => {
         console.log('Rating click - movieReleased:', movieReleased);
+
 
         // Jeśli film nie wyszedł, nie rób nic
         if (!movieReleased) {
@@ -77,12 +91,15 @@ const StarRating: React.FC<StarRatingProps> = ({
             return;
         }
 
+
         if (!user) {
-            openLoginModal();
+            navigate('/login');
             return;
         }
 
+
         if (isSubmitting) return;
+
 
         if (rating > 0 && rating === selectedRating) {
             setRatingToRemove(selectedRating);
@@ -90,14 +107,17 @@ const StarRating: React.FC<StarRatingProps> = ({
             return;
         }
 
+
         setIsSubmitting(true);
         setError(null);
+
 
         try {
             const token = getToken();
             if (!token) {
                 throw new Error('Brak tokenu autoryzacyjnego');
             }
+
 
             await RatingService.submitRating(movieId, selectedRating, token);
             setRating(selectedRating);
@@ -109,11 +129,14 @@ const StarRating: React.FC<StarRatingProps> = ({
         }
     };
 
+
     const handleRemoveRating = async () => {
         if (!user || !ratingToRemove) return;
 
+
         setIsSubmitting(true);
         setError(null);
+
 
         try {
             const token = getToken();
@@ -121,12 +144,15 @@ const StarRating: React.FC<StarRatingProps> = ({
                 throw new Error('Brak tokenu autoryzacyjnego');
             }
 
+
             await RatingService.deleteRating(movieId, token);
+
 
             const userComment = await CommentService.getUserComment(movieId, token);
             if (userComment && userComment.id) {
                 await CommentService.deleteComment(userComment.id, token);
             }
+
 
             setRating(0);
             onRatingChange?.(0);
@@ -139,10 +165,12 @@ const StarRating: React.FC<StarRatingProps> = ({
         }
     };
 
+
     const handleCancelRemove = () => {
         setShowConfirmation(false);
         setRatingToRemove(null);
     };
+
 
     const handleMouseEnter = (ratingValue: number) => {
         // Jeśli film nie wyszedł, nie pozwalaj na hover
@@ -150,11 +178,13 @@ const StarRating: React.FC<StarRatingProps> = ({
         setHover(ratingValue);
     };
 
+
     const handleMouseLeave = () => {
         // Jeśli film nie wyszedł, nie pozwalaj na hover
         if (!movieReleased) return;
         setHover(0);
     };
+
 
     // Jeśli film nie wyszedł, pokaż tylko komunikat
     if (!movieReleased) {
@@ -172,6 +202,7 @@ const StarRating: React.FC<StarRatingProps> = ({
             </div>
         );
     }
+
 
     console.log('Rendering normal rating component');
     return (
@@ -194,9 +225,11 @@ const StarRating: React.FC<StarRatingProps> = ({
                 })}
             </div>
 
+
             {rating > 0 && (
                 <div className={styles['current-rating']}>Twoja ocena: {rating}/10</div>
             )}
+
 
             {isLoading && <div className={styles['loading']}>Ładowanie oceny...</div>}
             {isSubmitting && <div className={styles['loading']}>Zapisywanie oceny...</div>}
@@ -204,6 +237,7 @@ const StarRating: React.FC<StarRatingProps> = ({
             {!user && (
                 <div className={styles['login-prompt']}>Zaloguj się, aby ocenić film</div>
             )}
+
 
             {showConfirmation && (
                 <div className={styles['confirmation-dialog']}>
@@ -229,5 +263,6 @@ const StarRating: React.FC<StarRatingProps> = ({
         </div>
     );
 };
+
 
 export default StarRating;

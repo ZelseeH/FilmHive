@@ -11,7 +11,9 @@ interface NotificationsPopupProps {
     onMarkAsRead: (id: number) => void;
     onMarkAllAsRead: () => void;
     onNotificationClick?: (notificationId: number) => Promise<string | null>;
+    onRefresh?: () => Promise<void>; // ← NOWY PROP!
     isLoading?: boolean;
+    unreadCountFromParent?: number; // ← NOWY PROP! (liczba nieprzeczytanych z navbara)
 }
 
 const NotificationsPopup: React.FC<NotificationsPopupProps> = ({
@@ -21,11 +23,32 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({
     onMarkAsRead,
     onMarkAllAsRead,
     onNotificationClick,
-    isLoading = false
+    onRefresh, // ← NOWY!
+    isLoading = false,
+    unreadCountFromParent // ← NOWY!
 }) => {
     const navigate = useNavigate();
     const popupRef = useRef<HTMLDivElement>(null);
     const [showUnreadOnly, setShowUnreadOnly] = useState(true);
+    const [lastUnreadCount, setLastUnreadCount] = useState(unreadCountFromParent); // ← Śledzenie zmian
+
+    // ✅ NOWY EFFECT - Refresh powiadomień gdy liczba się zmieni
+    useEffect(() => {
+        if (isOpen && unreadCountFromParent !== undefined && unreadCountFromParent !== lastUnreadCount) {
+            // Liczba nieprzeczytanych się zmieniła - refresh!
+            if (onRefresh) {
+                onRefresh();
+            }
+            setLastUnreadCount(unreadCountFromParent);
+        }
+    }, [unreadCountFromParent, isOpen, lastUnreadCount, onRefresh]);
+
+    // Resetuj lastUnreadCount gdy popup się otwiera
+    useEffect(() => {
+        if (isOpen && unreadCountFromParent !== undefined) {
+            setLastUnreadCount(unreadCountFromParent);
+        }
+    }, [isOpen, unreadCountFromParent]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -60,17 +83,14 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({
 
     const handleNotificationClick = async (notification: NotificationItem) => {
         try {
-            // Oznacz jako przeczytane jeśli nie było
             if (!notification.is_read) {
                 onMarkAsRead(notification.id);
             }
 
-            // Przejdź do filmu z kotwicą do komentarza/odpowiedzi
             if (notification.movie) {
                 const movieSlug = createSlug(notification.movie.title);
                 let url = `/movie/details/${movieSlug}`;
 
-                // Dodaj hash do konkretnego komentarza/odpowiedzi
                 if (notification.reply_id) {
                     url += `#reply-${notification.reply_id}`;
                 } else if (notification.comment_id) {
@@ -82,7 +102,6 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({
                 return;
             }
 
-            // Fallback - użyj originalnej logiki
             if (onNotificationClick) {
                 const redirectUrl = await onNotificationClick(notification.id);
                 if (redirectUrl) {
@@ -107,7 +126,6 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({
         }
     };
 
-    // Filtrowanie powiadomień
     const filteredNotifications = showUnreadOnly
         ? notifications.filter(n => !n.is_read)
         : notifications;
@@ -268,7 +286,6 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({
                                 {unreadCount > 0 && ` • ${unreadCount} nieprzeczytanych`}
                             </small>
                         </div>
-
                     </div>
                 )}
             </div>

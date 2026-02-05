@@ -12,7 +12,6 @@ from ..config import (
     MIN_SIMILARITY_THRESHOLD,
     KNN_RECOMMENDATIONS,
     POSITIVE_RATING_THRESHOLD,
-    NEGATIVE_RATING_THRESHOLD,
 )
 
 
@@ -20,15 +19,15 @@ class KNNRecommender:
     """
     Content-Based K-NN Recommender (Pazzani & Billsus approach)
 
-    Poprawiona wersja z mechanizmem "Additive Bonus" dla kluczowych cech (aktorzy, reżyserzy).
-    Rozwiązuje problem niskich wyników similarity dla rzadkich wektorów (sparse vectors).
-
     Logic:
     1. Build user profile = average vector of positive-rated movies
-    2. Subtract weighted negative profile to penalize disliked features
-    3. Compute weighted cosine similarity
-    4. APPLY ADDITIVE BONUSES for strong feature matches (actors/directors) -> KEY FIX
-    5. Return top K candidates by similarity score
+    2. Apply adaptive weights (boost genres/actors/directors with patterns)
+    3. Compute weighted cosine similarity between user profile and candidates
+    4. Return top K candidates by similarity score
+
+    WAŻNE: To NIE jest collaborative filtering k-NN!
+    Nie szukamy k najbliższych sąsiadów w rated movies.
+    Zamiast tego: porównujemy każdego candidate z user profile.
     """
 
     def __init__(self):
@@ -41,12 +40,15 @@ class KNNRecommender:
         self,
         positive_ratings: pd.DataFrame,
         positive_features: pd.DataFrame,
-        negative_ratings: pd.DataFrame,
-        negative_features: pd.DataFrame,
         adaptive_weights: Dict[str, float],
     ) -> None:
         """
-        Build user profile z pozytywnych i negatywnych ocen
+        Build user profile z pozytywnych ocen
+
+        Args:
+            positive_ratings: DataFrame z pozytywnymi ocenami (≥6)
+            positive_features: DataFrame z cechami pozytywnie ocenionych filmów
+            adaptive_weights: Dict z adaptive weights {genres: 0.35, actors: 0.25, ...}
         """
         if positive_features.empty:
             raise ValueError("Brak pozytywnych filmów do budowy profilu")
@@ -62,44 +64,13 @@ class KNNRecommender:
         self.feature_names = features_only.columns.tolist()
         features_matrix = features_only.values.astype(float)
 
-        # Profil pozytywny (średnia)
-        positive_profile = np.mean(features_matrix, axis=0)
-
-        # Obsługa negatywnych ocen (Pazzani & Billsus)
-        if not negative_features.empty and len(negative_ratings) >= 2:
-            negative_features_only = negative_features.drop("movie_id", axis=1)
-
-            if list(negative_features_only.columns) == self.feature_names:
-                negative_matrix = negative_features_only.values.astype(float)
-                negative_profile = np.mean(negative_matrix, axis=0)
-
-                # Odejmujemy profil negatywny (z wagą 0.3)
-                self.user_profile = positive_profile - (0.3 * negative_profile)
-                self.user_profile = np.clip(
-                    self.user_profile, 0, None
-                )  # Nie chcemy ujemnych wartości
-
-                self.logger.info(
-                    f"User profile built WITH negative feedback: "
-                    f"{len(positive_ratings)} positive, {len(negative_ratings)} negative movies"
-                )
-            else:
-                self.logger.warning(
-                    "Negative features columns mismatch, using only positive profile"
-                )
-                self.user_profile = positive_profile
-        else:
-            self.user_profile = positive_profile
-            self.logger.info(
-                f"User profile built WITHOUT negative feedback: "
-                f"{len(positive_ratings)} positive movies only"
-            )
-
+        self.user_profile = np.mean(features_matrix, axis=0)
         self.adaptive_weights = adaptive_weights
 
         non_zero_features = np.count_nonzero(self.user_profile)
         self.logger.info(
-            f"Profile: {len(self.feature_names)} features ({non_zero_features} non-zero)"
+            f"User profile built: {len(positive_ratings)} positive movies, "
+            f"{len(self.feature_names)} features ({non_zero_features} non-zero)"
         )
 
         self.logger.info(
@@ -112,7 +83,13 @@ class KNNRecommender:
 
     def predict(self, candidate_features: pd.DataFrame) -> Dict[int, float]:
         """
-        Compute similarity scores + APPLY SOFT BONUSES
+        Compute similarity scores między user profile a candidates
+
+        Args:
+            candidate_features: DataFrame z cechami candidate movies
+
+        Returns:
+            Dict {movie_id: similarity_score} gdzie score ∈ [0, 1]
         """
         if self.user_profile is None:
             raise ValueError("Model nie został wytrenowany. Wywołaj fit() najpierw.")
@@ -125,6 +102,7 @@ class KNNRecommender:
             raise ValueError("candidate_features brak kolumny 'movie_id'")
 
         try:
+
             candidate_movie_ids = candidate_features["movie_id"].values
             features_only = candidate_features.drop("movie_id", axis=1)
 
@@ -133,69 +111,26 @@ class KNNRecommender:
 
             features_matrix = features_only.values.astype(float)
 
-            # 1. Wagi adaptacyjne
             weighted_user_profile = self._apply_adaptive_weights(
                 self.user_profile.reshape(1, -1)
             )[0]
+
             weighted_candidate_features = self._apply_adaptive_weights(features_matrix)
 
-            # 2. Bazowe podobieństwo (Cosine)
-            base_similarities = cosine_similarity(
+            similarities = cosine_similarity(
                 weighted_user_profile.reshape(1, -1), weighted_candidate_features
             )[0]
 
-            # 3. Indeksy dla bonusów
-            actor_indices = [
-                i for i, f in enumerate(self.feature_names) if f.startswith("actor_")
-            ]
-            director_indices = [
-                i for i, f in enumerate(self.feature_names) if f.startswith("director_")
-            ]
-
-           
-            ACTOR_BONUS_VAL = 0.10  
-            DIRECTOR_BONUS_VAL = 0.12  
-
-            predictions = {}
-
-            for i, movie_id in enumerate(candidate_movie_ids):
-                base_score = float(base_similarities[i])
-                bonus = 0.0
-
-                # Bonus za Aktorów
-                current_movie_actors = features_matrix[i, actor_indices]
-                user_pref_actors = self.user_profile[actor_indices]
-
-                matches = (current_movie_actors > 0) & (user_pref_actors > 0)
-                if np.any(matches):
-                    # Sumujemy siłę preferencji, ale pierwiastkujemy, żeby nie rosła liniowo
-                    strength_sum = np.sum(user_pref_actors[matches])
-                    # Wzór: mały bonus + (mały bonus * log(1 + siła)) - rośnie wolniej
-                    bonus += ACTOR_BONUS_VAL * (1.0 + np.log1p(strength_sum))
-
-                # Bonus za Reżyserów
-                current_movie_directors = features_matrix[i, director_indices]
-                user_pref_directors = self.user_profile[director_indices]
-
-                dir_matches = (current_movie_directors > 0) & (user_pref_directors > 0)
-                if np.any(dir_matches):
-                    strength_sum = np.sum(user_pref_directors[dir_matches])
-                    bonus += DIRECTOR_BONUS_VAL * (1.0 + np.log1p(strength_sum))
-
-                # Soft blending: zamiast score + bonus, robimy średnią ważoną w stronę 1.0
-                # Jeśli bonus > 0, wynik przesuwa się w stronę 1.0, ale nie przekracza go drastycznie.
-                # Wzór: base + (1 - base) * bonus_factor
-
-                # Ale zostańmy przy addytywnym, tylko mniejszym, bo jest bardziej przewidywalny w debugowaniu.
-                final_score = base_score + bonus
-
-                predictions[movie_id] = min(1.0, max(0.0, final_score))
+            predictions = {
+                movie_id: max(0.0, float(sim))
+                for movie_id, sim in zip(candidate_movie_ids, similarities)
+            }
 
             top_preds = sorted(predictions.items(), key=lambda x: x[1], reverse=True)[
                 :5
             ]
             self.logger.info(
-                f"K-NN top 5 (soft bonus): {[(mid, f'{s:.3f}') for mid, s in top_preds]}"
+                f"K-NN top 5 similarities: {[(mid, f'{s:.3f}') for mid, s in top_preds]}"
             )
 
             return predictions
@@ -207,6 +142,20 @@ class KNNRecommender:
     def _apply_adaptive_weights(self, features_matrix: np.ndarray) -> np.ndarray:
         """
         Apply adaptive weights do feature vectors
+
+        Logic:
+        - Multiply each feature column by its adaptive weight
+        - genres columns × genres_weight
+        - actors columns × actors_weight
+        - directors columns × directors_weight
+        - country columns × country_weight
+        - year column × year_weight
+
+        Args:
+            features_matrix: (n_samples, n_features) numpy array
+
+        Returns:
+            Weighted features matrix (same shape)
         """
         weighted_matrix = features_matrix.copy()
 
@@ -234,22 +183,24 @@ class KNNRecommender:
         self,
         positive_ratings: pd.DataFrame,
         positive_features: pd.DataFrame,
-        negative_ratings: pd.DataFrame,
-        negative_features: pd.DataFrame,
         candidate_features: pd.DataFrame,
         adaptive_weights: Dict[str, float],
         top_k: int = KNN_RECOMMENDATIONS,
     ) -> List[Tuple[int, float]]:
         """
         Pełny pipeline: fit + predict + rank
+
+        Args:
+            positive_ratings: DataFrame z pozytywnymi ocenami (≥6)
+            positive_features: DataFrame z cechami pozytywnie ocenionych filmów
+            candidate_features: DataFrame z cechami kandydatów
+            adaptive_weights: Dict z adaptive weights
+            top_k: Liczba rekomendacji do zwrócenia (default 7)
+
+        Returns:
+            List[(movie_id, similarity_score)] sorted by score (descending)
         """
-        self.fit(
-            positive_ratings,
-            positive_features,
-            negative_ratings,
-            negative_features,
-            adaptive_weights,
-        )
+        self.fit(positive_ratings, positive_features, adaptive_weights)
 
         predictions = self.predict(candidate_features)
 
@@ -258,6 +209,7 @@ class KNNRecommender:
             return []
 
         ranked = sorted(predictions.items(), key=lambda x: x[1], reverse=True)
+
         top_recommendations = ranked[:top_k]
 
         self.logger.info(
@@ -273,12 +225,12 @@ class KNNRecommender:
             return {"error": "Model nie został wytrenowany"}
 
         return {
-            "algorithm": "Content-Based K-NN (Pazzani & Billsus) + Additive Bonuses",
+            "algorithm": "Content-Based K-NN (Pazzani & Billsus)",
             "profile_size": len(self.user_profile),
             "non_zero_features": int(np.count_nonzero(self.user_profile)),
             "feature_count": len(self.feature_names),
             "adaptive_weights": self.adaptive_weights,
-            "similarity_metric": "weighted_cosine_with_bonuses",
+            "similarity_metric": "weighted_cosine",
             "min_threshold": MIN_SIMILARITY_THRESHOLD,
         }
 
@@ -286,7 +238,10 @@ class KNNRecommender:
         self, movie_id: int, candidate_features: pd.DataFrame
     ) -> Dict:
         """
-        Explain dlaczego movie został rekomendowany (uwzględnia bonusy w opisie)
+        Explain dlaczego movie został rekomendowany
+
+        Returns:
+            Dict z top matching features i ich contributions
         """
         if self.user_profile is None:
             return {"error": "Model nie został wytrenowany"}
@@ -298,40 +253,29 @@ class KNNRecommender:
 
         movie_features = movie_row.drop("movie_id", axis=1).values[0]
 
-        # Oblicz wkład cech (bez bonusu, bo bonus jest globalny dla typu cechy)
         weighted_profile = self._apply_adaptive_weights(
             self.user_profile.reshape(1, -1)
         )[0]
+
         weighted_movie = self._apply_adaptive_weights(movie_features.reshape(1, -1))[0]
 
         contributions = weighted_profile * weighted_movie
 
-        # Znajdź top cechy
         top_indices = np.argsort(contributions)[::-1][:10]
 
-        top_features = []
-        for i in top_indices:
-            if contributions[i] > 0:
-                feat_name = self.feature_names[i]
-                is_bonus = feat_name.startswith("actor_") or feat_name.startswith(
-                    "director_"
-                )
-
-                top_features.append(
-                    {
-                        "feature": feat_name,
-                        "contribution": float(contributions[i]),
-                        "user_profile_value": float(weighted_profile[i]),
-                        "movie_value": float(weighted_movie[i]),
-                        "is_bonus_applied": is_bonus,
-                    }
-                )
+        top_features = [
+            {
+                "feature": self.feature_names[i],
+                "contribution": float(contributions[i]),
+                "user_profile_value": float(weighted_profile[i]),
+                "movie_value": float(weighted_movie[i]),
+            }
+            for i in top_indices
+            if contributions[i] > 0
+        ]
 
         return {
             "movie_id": movie_id,
             "top_features": top_features,
-            "total_similarity": float(
-                np.sum(contributions)
-            ),  # To jest similarity bazy, bez bonusu
-            "note": "Score may be higher due to actor/director bonuses",
+            "total_similarity": float(np.sum(contributions)),
         }
