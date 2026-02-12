@@ -12,7 +12,6 @@ import logging
 load_dotenv(".env")
 
 # Inicjalizacja SQLAlchemy i OAuth
-db = SQLAlchemy()
 oauth = OAuth()
 
 
@@ -28,8 +27,9 @@ def create_app():
     )
 
     # Konfiguracja bazy danych
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "postgresql+psycopg2://postgres:ZAQ!2wsx@localhost:5432/filmhive"
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+        "DATABASE_URL",
+        "postgresql+psycopg2://postgres:ZAQ!2wsx@localhost:5432/filmhive",
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")

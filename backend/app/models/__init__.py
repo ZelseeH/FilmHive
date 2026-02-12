@@ -1,7 +1,3 @@
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
 from .base import Base
 from .movie import Movie
 from .genre import Genre

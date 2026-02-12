@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:17-alpine
+    container_name: filmhive-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ZAQ!2wsx
+      POSTGRES_DB: filmhive
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - filmhive-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Flask API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: filmhive-backend
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:ZAQ!2wsx@db:5432/filmhive
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - FLASK_ENV=production
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    networks:
+      - filmhive-network
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./filmhive-frontend
+      dockerfile: Dockerfile
+    container_name: filmhive-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - filmhive-network
+    restart: unless-stopped
+
+networks:
+  filmhive-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
